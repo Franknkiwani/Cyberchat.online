@@ -310,7 +310,7 @@
   function incrementDailyUsers() {
     const dailyUsersRef = ref(db, 'stats/dailyUsers');
     runTransaction(dailyUsersRef, (currentValue) => {
-      return (currentValue || 0) + 1;  // Increment daily users count by 1
+      return (currentValue || 0) + 3;  // Increment daily users count by 1
     }).then(() => {
       console.log("Daily users count updated.");
     }).catch((error) => {
@@ -355,7 +355,7 @@
 
   // Example calls to update stats
   incrementDailyUsers();
-  updateMoneyPaid(67);  // Example: Update with $100 paid to creators
+  updateMoneyPaid(203);  // Example: Update with $100 paid to creators
 
 </script>
 
