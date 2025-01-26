@@ -133,6 +133,93 @@
                 font-size: 16px;
             }
         }
+        /* Best Players Section */
+.best-players {
+    background-color: black;
+    padding: 50px 20px;
+    text-align: center;
+    overflow-x: auto;  /* Allow horizontal scrolling */
+}
+
+.best-players h2 {
+    font-size: 28px;
+    color: #00f9a8;
+    margin-bottom: 20px;
+}
+
+.players-list {
+    display: flex;
+    gap: 20px;
+    flex-wrap: nowrap;  /* Prevent wrapping */
+    overflow-x: auto;   /* Enable horizontal scroll */
+    padding-bottom: 10px;  /* Prevent the scrollbar from overlapping the cards */
+}
+
+.player-card {
+    background-color: #444;
+    padding: 20px;
+    border-radius: 10px;
+    width: 80px;
+    text-align: center;
+    flex-shrink: 0;  /* Prevent shrinking */
+}
+
+.player-card img {
+    border-radius: 50%;
+    width: 80px;
+    height: 80px;
+    margin-bottom: 10px;
+}
+
+.player-card h3 {
+    font-size: 18px;
+}
+
+.player-card p {
+    font-size: 14px;
+    color: lightgreen;
+}
+/* Live Stats Section */
+.live-stats {
+    background-color: #1b1b1b;
+    padding: 50px 20px;
+    text-align: center;
+}
+
+.live-stats h2 {
+    font-size: 28px;
+    color: #00f9a8;
+    margin-bottom: 20px;
+}
+
+.stats-container {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+}
+
+.stat-card {
+    background-color: #333;
+    padding: 20px;
+    border-radius: 10px;
+    width: 200px;
+    text-align: center;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.stat-card h3 {
+    font-size: 22px;
+    color: #00f9a8;
+    margin-bottom: 10px;
+}
+
+.stat-card p {
+    font-size: 24px;
+    color: lightgreen;
+    font-weight: bold;
+}
+
+
     </style>
 </head>
 <body>
@@ -165,6 +252,11 @@
                 <h3>Mrbeast Gaming</h3>
                 <p>100k+ Followers</p>
             </div>
+                  <div class="player-card">
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSPSoZ5xPx0BmUme4dBeslC6bZj8iBB0rSfpPBUvYPCpXC_6AylB5NerYo&s=10" alt="Mrbeast Gaming">
+                <h3>Mrbeast Gaming</h3>
+                <p>100k+ Followers</p>
+            </div>
             <div class="player-card">
                 <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRbvCfgahh9LgkQ_CQFIIr0nc1UALmU5rCC-cQpR9KP_uQPkJwJ2A9EqItl&s=10" alt="Cyber Gamer">
                 <h3>Cyber Gamer</h3>
@@ -177,6 +269,95 @@
             </div>
         </div>
     </div>
+    <!-- Live Stats Section -->
+<div class="live-stats">
+    <h2>2025 Stats</h2>
+    <div class="stats-container">
+        <div class="stat-card">
+            <h3>PEOPLE</h3>
+            <p id="daily-users">1,627,927</p> <!-- Placeholder number -->
+        </div>
+        <div class="stat-card">
+            <h3>PAID</h3>
+            <p id="money-paid">$53,678.90</p> <!-- Placeholder number -->
+        </div>
+    </div>
+</div>
+<script type="module">
+  // Import the necessary Firebase modules
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
+  import { getDatabase, ref, get, set, update, runTransaction } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-database.js";
+
+  // Your web app's Firebase configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
+    authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
+    databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
+    projectId: "itzhoyoo-f9f7e",
+    storageBucket: "itzhoyoo-f9f7e.firebasestorage.app",
+    messagingSenderId: "1094792075584",
+    appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
+    measurementId: "G-LLT6F9WRKH"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+
+  // Initialize Realtime Database
+  const db = getDatabase(app);
+
+  // Function to increment daily users
+  function incrementDailyUsers() {
+    const dailyUsersRef = ref(db, 'stats/dailyUsers');
+    runTransaction(dailyUsersRef, (currentValue) => {
+      return (currentValue || 0) + 1;  // Increment daily users count by 1
+    }).then(() => {
+      console.log("Daily users count updated.");
+    }).catch((error) => {
+      console.error("Error updating daily users count:", error);
+    });
+  }
+
+  // Function to update money paid to creators
+  function updateMoneyPaid(amount) {
+    const moneyPaidRef = ref(db, 'stats/moneyPaid');
+    runTransaction(moneyPaidRef, (currentValue) => {
+      return (currentValue || 0) + amount;  // Add the amount paid to the total
+    }).then(() => {
+      console.log("Money paid to creators updated.");
+    }).catch((error) => {
+      console.error("Error updating money paid to creators:", error);
+    });
+  }
+
+  // Function to fetch live stats
+  function fetchLiveStats() {
+    const statsRef = ref(db, 'stats');
+    get(statsRef).then((snapshot) => {
+      if (snapshot.exists()) {
+        const stats = snapshot.val();
+        const dailyUsers = stats.dailyUsers || 0;
+        const moneyPaid = stats.moneyPaid || 0;
+        
+        // Update the live stats on the page
+        document.getElementById('daily-users').textContent = dailyUsers;
+        document.getElementById('money-paid').textContent = `$${moneyPaid.toFixed(2)}`;
+      } else {
+        console.log("No data available");
+      }
+    }).catch((error) => {
+      console.error("Error fetching live stats:", error);
+    });
+  }
+
+  // Call fetchLiveStats when the page loads
+  window.onload = fetchLiveStats;
+
+  // Example calls to update stats
+  incrementDailyUsers();
+  updateMoneyPaid(67);  // Example: Update with $100 paid to creators
+
+</script>
 
 </body>
 </html>
