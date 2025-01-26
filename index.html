@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberChat</title>
+    <style>
+        /* General Styles */
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #111;
+            color: white;
+        }
+        h1, h2 {
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Header Styles */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            background-color: #222;
+        }
+        header h1 {
+            font-size: 24px;
+            text-transform: uppercase;
+        }
+        .burger-menu {
+            display: none;
+            cursor: pointer;
+        }
+        .burger-menu div {
+            width: 25px;
+            height: 3px;
+            background-color: white;
+            margin: 5px;
+            transition: all 0.3s;
+        }
+
+        /* Hero Section */
+        .hero {
+            background-image: url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTnVoeX3nspxsTaRpO_rZzQne2rj6WuBfdgTA&usqp=CAU');
+            background-size: cover;
+            background-position: center;
+            text-align: center;
+            padding: 100px 20px;
+            color: white;
+            position: relative;
+        }
+
+        /* Glass Effect Container with WebKit */
+        .glass-container {
+            background: rgba(0, 0, 0, 0.6); /* Semi-transparent black background */
+            backdrop-filter: blur(10px); /* Blur the background */
+            -webkit-backdrop-filter: blur(10px); /* WebKit for Safari */
+            border-radius: 15px;
+            padding: 40px 20px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .hero h2 {
+            font-size: 40px;
+            color: cyan;
+            margin-bottom: 10px;
+        }
+        .hero p {
+            font-size: 18px;
+            color: #ddd;
+            margin-bottom: 20px;
+        }
+        .cta-button {
+            background-color: #00f9a8;
+            color: #111;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        /* Best Players Section */
+        .best-players {
+            background-color: black;
+            padding: 50px 20px;
+            text-align: center;
+        }
+        .best-players h2 {
+            font-size: 28px;
+            color: #00f9a8;
+            margin-bottom: 20px;
+        }
+        .players-list {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .player-card {
+            background-color: #444;
+            padding: 20px;
+            border-radius: 10px;
+            width: 150px;
+            text-align: center;
+        }
+        .player-card img {
+            border-radius: 50%;
+            width: 80px;
+            height: 80px;
+            margin-bottom: 10px;
+        }
+        .player-card h3 {
+            font-size: 18px;
+        }
+        .player-card p {
+            font-size: 14px;
+            color: lightgreen;
+        }
+
+        /* Mobile Styles */
+        @media (max-width: 768px) {
+            .burger-menu {
+                display: block;
+            }
+            .hero h2 {
+                font-size: 30px;
+            }
+            .hero p {
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Section -->
+    <header>
+        <h1>CyberChat</h1>
+        <div class="burger-menu">
+            <div></div>
+            <div></div>
+            <div></div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <div class="hero">
+        <div class="glass-container">
+            <h2>WELCOME TO CYBERCHAT</h2>
+            <p>The ultimate social platform for gamers and creators. Connect, share, and engage with like-minded players.</p>
+            <button class="cta-button">Join Now</button>
+        </div>
+    </div>
+
+    <!-- Best Players Section -->
+    <div class="best-players">
+        <h2>Top Players of CyberChat</h2>
+        <div class="players-list">
+            <div class="player-card">
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSPSoZ5xPx0BmUme4dBeslC6bZj8iBB0rSfpPBUvYPCpXC_6AylB5NerYo&s=10" alt="Mrbeast Gaming">
+                <h3>Mrbeast Gaming</h3>
+                <p>100k+ Followers</p>
+            </div>
+            <div class="player-card">
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRbvCfgahh9LgkQ_CQFIIr0nc1UALmU5rCC-cQpR9KP_uQPkJwJ2A9EqItl&s=10" alt="Cyber Gamer">
+                <h3>Cyber Gamer</h3>
+                <p>50k+ Followers</p>
+            </div>
+            <div class="player-card">
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRdN_8i6yYNN09SKZRQ-clTVMlu17Y9xh76CQ&usqp=CAU" alt="Noob Master">
+                <h3>Noob Master</h3>
+                <p>20k+ Followers</p>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
