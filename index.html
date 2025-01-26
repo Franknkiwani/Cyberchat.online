@@ -275,11 +275,11 @@
     <div class="stats-container">
         <div class="stat-card">
             <h3>PEOPLE</h3>
-            <p id="daily-users">1,627,927</p> <!-- Placeholder number -->
+            <p id="daily-users">LOADING</p> <!-- Placeholder number -->
         </div>
         <div class="stat-card">
             <h3>PAID</h3>
-            <p id="money-paid">$53,678.90</p> <!-- Placeholder number -->
+            <p id="money-paid">LOADING</p> <!-- Placeholder number -->
         </div>
     </div>
 </div>
@@ -310,7 +310,7 @@
   function incrementDailyUsers() {
     const dailyUsersRef = ref(db, 'stats/dailyUsers');
     runTransaction(dailyUsersRef, (currentValue) => {
-      return (currentValue || 0) + 3;  // Increment daily users count by 1
+      return (currentValue || 0) +3;  // Increment daily users count by 1
     }).then(() => {
       console.log("Daily users count updated.");
     }).catch((error) => {
@@ -341,7 +341,7 @@
         
         // Update the live stats on the page
         document.getElementById('daily-users').textContent = dailyUsers;
-        document.getElementById('money-paid').textContent = `$${moneyPaid.toFixed(2)}`;
+        document.getElementById('money-paid').textContent = `$${moneyPaid.toFixed(1)}`;
       } else {
         console.log("No data available");
       }
@@ -355,7 +355,7 @@
 
   // Example calls to update stats
   incrementDailyUsers();
-  updateMoneyPaid(203);  // Example: Update with $100 paid to creators
+  updateMoneyPaid(+265);  // Example: Update with $100 paid to creator
 
 </script>
 
