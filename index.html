@@ -342,6 +342,26 @@
         .save-button:hover {
             background-color: #ff00ff;
         }
+        {
+    "title": "Post Title",
+    "body": "Post content",
+    "imageUrl": "https://example.com/image.jpg"
+}
+.post {
+    margin-bottom: 20px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+}
+
+.post-image {
+    max-width: 100%;
+    height: auto;
+    margin-top: 10px;
+    border-radius: 5px;
+}
+
+
     </style>
 </head>
 <body>
@@ -552,6 +572,54 @@
             if (savedGender) genderInput.value = savedGender;
             if (savedYearOfBirth) yearOfBirthInput.value = savedYearOfBirth;
         };
+        // Fetch posts from Firebase
+function fetchPosts() {
+    const postsRef = ref(database, 'posts');
+    get(postsRef).then(snapshot => {
+        if (snapshot.exists()) {
+            posts = Object.values(snapshot.val());
+            displayPosts(posts); // Display all posts initially
+        } else {
+            console.log("No posts found.");
+        }
+    }).catch(error => {
+        console.error(error);
+    });
+}
+
+// Display posts on the page
+function displayPosts(posts) {
+    const postsContainer = document.getElementById('postsContainer');
+    postsContainer.innerHTML = ''; // Clear the existing posts
+    
+    posts.forEach(post => {
+        const postDiv = document.createElement('div');
+        postDiv.classList.add('post');
+
+        const postTitle = document.createElement('div');
+        postTitle.classList.add('post-title');
+        postTitle.textContent = post.title;
+
+        const postBody = document.createElement('div');
+        postBody.classList.add('post-body');
+        postBody.textContent = post.body;
+
+        // Add post image if exists
+        if (post.imageUrl) {
+            const postImage = document.createElement('img');
+            postImage.classList.add('post-image');
+            postImage.src = post.imageUrl; // Set the image source
+            postImage.alt = post.title; // Alt text for accessibility
+            postDiv.appendChild(postImage);
+        }
+
+        postDiv.appendChild(postTitle);
+        postDiv.appendChild(postBody);
+
+        postsContainer.appendChild(postDiv);
+    });
+}
+
     </script>
 
 </body>
