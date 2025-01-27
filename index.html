@@ -3,10 +3,132 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Post with Firebase</title>
+  <title>Post with Views</title>
   <style>
-    /* Same CSS styles from the previous example */
-    /* (omitted here for brevity) */
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #121212;
+      margin: 0;
+      padding: 0;
+      color: #e0e0e0;
+    }
+    .post-container {
+      width: 80%;
+      background: #1f1f1f;
+      border-radius: 15px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+      margin: 20px auto;
+      padding: 20px;
+      overflow: hidden;
+      border: 2px solid #ffffff; /* White border around the container */
+    }
+    .post-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+    .post-header .avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background-color: #444;
+      margin-right: 10px;
+      object-fit: cover;
+    }
+    .post-header .username {
+      font-weight: bold;
+      color: #ffffff;
+      margin-right: 10px;
+    }
+    .post-header .follow-button {
+      background: linear-gradient(45deg, #ff00ff, #00bcd4);
+      color: #ffffff;
+      border: none;
+      padding: 8px 15px;
+      font-size: 14px;
+      border-radius: 25px;
+      cursor: pointer;
+      transition: all 0.3s;
+      box-shadow: 0 0 15px rgba(0, 255, 255, 0.6), 0 0 30px rgba(255, 0, 255, 0.6);
+    }
+    .post-header .follow-button.following {
+      background: linear-gradient(45deg, #757575, #555555);
+      color: #000000;
+      box-shadow: none;
+      cursor: pointer;
+    }
+    .post-content {
+      font-size: 16px;
+      color: #b0b0b0;
+      margin-bottom: 15px;
+    }
+    .uploaded-on {
+      font-size: 14px;
+      color: #757575;
+      text-align: left;
+      margin-bottom: 15px;
+    }
+    .post-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 15px;
+    }
+    .like-button {
+      background-color: transparent;
+      border: 2px solid #00bcd4;
+      color: #00bcd4;
+      padding: 8px 15px;
+      border-radius: 25px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.3s;
+    }
+    .like-button:hover {
+      background-color: #00bcd4;
+      color: #121212;
+    }
+    .like-button.liked {
+      background-color: #00bcd4;
+      color: #121212;
+    }
+    .like-view-container {
+      display: flex;
+      gap: 15px; /* Space between like and view count */
+    }
+    .like-count, .view-count {
+      font-size: 16px;
+      color: #b0b0b0;
+    }
+    .post-image-container {
+      margin-top: 20px;
+      border-top: 2px solid #444;
+      padding-top: 20px;
+      text-align: center;
+    }
+    .post-image-container img {
+      width: 100%;
+      max-height: 400px;
+      object-fit: cover;
+      border-radius: 15px;
+    }
+    .title-description-container {
+      margin-top: 20px;
+      padding: 15px;
+      background-color: #222;
+      border-top: 2px solid #444;
+      border-radius: 10px;
+      text-align: center;
+    }
+    .title-description-container h2 {
+      font-size: 24px;
+      color: #ffffff;
+      margin-bottom: 10px;
+    }
+    .title-description-container p {
+      font-size: 16px;
+      color: #b0b0b0;
+    }
   </style>
 </head>
 <body>
@@ -34,6 +156,69 @@
     </div>
   </div>
 
+  <script>
+    // Fetch view count from localStorage and increment
+    const viewCountDisplay = document.getElementById('viewCount');
+    let viewCount = parseInt(localStorage.getItem('viewCount')) || 0;
+    viewCount++;
+    localStorage.setItem('viewCount', viewCount);
+    viewCountDisplay.textContent = `${viewCount} View${viewCount !== 1 ? 's' : ''}`;
+
+    // Fetch like count and status from localStorage
+    const likeButton = document.getElementById('likeButton');
+    const likeCountDisplay = document.getElementById('likeCount');
+    let likeCount = parseInt(localStorage.getItem('likeCount')) || 0;
+    let isLiked = localStorage.getItem('likeStatus') === 'true';
+    likeCountDisplay.textContent = `${likeCount} Like${likeCount !== 1 ? 's' : ''}`;
+
+    if (isLiked) {
+      likeButton.textContent = 'Liked';
+      likeButton.classList.add('liked');
+    }
+
+    // Toggle like button functionality
+    likeButton.addEventListener('click', () => {
+      if (isLiked) {
+        isLiked = false;
+        likeCount--;
+        likeButton.textContent = 'Like';
+        likeButton.classList.remove('liked');
+      } else {
+        isLiked = true;
+        likeCount++;
+        likeButton.textContent = 'Liked';
+        likeButton.classList.add('liked');
+      }
+      likeCountDisplay.textContent = `${likeCount} Like${likeCount !== 1 ? 's' : ''}`;
+      localStorage.setItem('likeCount', likeCount);
+      localStorage.setItem('likeStatus', isLiked);
+    });
+
+    // Fetch follow status from localStorage
+    const followButton = document.getElementById('followButton');
+    let isFollowing = localStorage.getItem('followStatus') === 'true';
+
+    if (isFollowing) {
+      followButton.textContent = 'Following';
+      followButton.classList.add('following');
+    }
+
+    // Toggle follow button functionality
+    followButton.addEventListener('click', () => {
+      if (isFollowing) {
+        isFollowing = false;
+        followButton.textContent = 'Follow';
+        followButton.classList.remove('following');
+      } else {
+        isFollowing = true;
+        followButton.textContent = 'Following';
+        followButton.classList.add('following');
+      }
+      localStorage.setItem('followStatus', isFollowing);
+    });
+  </script>
+
+  <!-- Firebase initialization script -->
   <script type="module">
     // Import the Firebase SDK
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
@@ -54,88 +239,6 @@
     // Initialize Firebase
     const app = initializeApp(firebaseConfig);
     const database = getDatabase(app);
-
-    // Post ID for this example
-    const postId = "post_001";
-    // Get user ID (for example, using localStorage or Firebase authentication)
-    const userId = localStorage.getItem('userId') || 'guest'; // Use 'guest' if no user ID exists
-
-    // DOM Elements
-    const viewCountDisplay = document.getElementById("viewCount");
-    const likeCountDisplay = document.getElementById("likeCount");
-    const likeButton = document.getElementById("likeButton");
-
-    // Initialize view count and like count
-    let viewCount = 0;
-    let likeCount = 0;
-    let isLiked = false;
-
-    // Reference to the post in Firebase
-    const postRef = ref(database, `posts/${postId}`);
-
-    // Increment view count on page load
-    get(postRef).then((snapshot) => {
-      if (snapshot.exists()) {
-        const data = snapshot.val();
-        viewCount = data.views || 0;
-        likeCount = data.likes || 0;
-
-        // Update the view count and save to Firebase
-        viewCount++;
-        update(postRef, { views: viewCount });
-        viewCountDisplay.textContent = `${viewCount} View${viewCount !== 1 ? "s" : ""}`;
-
-        // Check if the user has liked this post
-        const userLikeStatus = data.likesByUser || {};
-        isLiked = userLikeStatus[userId] || false;
-
-        // Update like count and button state
-        likeCountDisplay.textContent = `${likeCount} Like${likeCount !== 1 ? "s" : ""}`;
-        if (isLiked) {
-          likeButton.textContent = "Liked";
-          likeButton.classList.add("liked");
-        }
-      } else {
-        // If no data exists, initialize it
-        set(postRef, { views: 1, likes: 0, likesByUser: {} });
-        viewCountDisplay.textContent = "1 View";
-      }
-    });
-
-    // Listen for real-time updates to likes and views
-    onValue(postRef, (snapshot) => {
-      if (snapshot.exists()) {
-        const data = snapshot.val();
-        viewCountDisplay.textContent = `${data.views || 0} View${data.views !== 1 ? "s" : ""}`;
-        likeCountDisplay.textContent = `${data.likes || 0} Like${data.likes !== 1 ? "s" : ""}`;
-      }
-    });
-
-    // Like button functionality
-    likeButton.addEventListener("click", () => {
-      get(postRef).then((snapshot) => {
-        if (snapshot.exists()) {
-          const data = snapshot.val();
-          let userLikeStatus = data.likesByUser || {};
-          likeCount = data.likes || 0;
-
-          if (isLiked) {
-            likeCount--;
-            userLikeStatus[userId] = false;
-            likeButton.textContent = "Like";
-            likeButton.classList.remove("liked");
-          } else {
-            likeCount++;
-            userLikeStatus[userId] = true;
-            likeButton.textContent = "Liked";
-            likeButton.classList.add("liked");
-          }
-
-          // Update Firebase with the new like count and user like status
-          update(postRef, { likes: likeCount, likesByUser: userLikeStatus });
-        }
-      });
-    });
   </script>
 </body>
 </html>
