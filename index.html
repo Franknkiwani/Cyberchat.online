@@ -5,359 +5,240 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CyberChat</title>
     <style>
-        /* General Styles */
         body {
-            font-family: 'Arial', sans-serif;
             margin: 0;
-            padding: 0;
-            background-color: #111;
-            color: white;
-        }
-        h1, h2 {
-            margin: 0;
-            padding: 0;
+            font-family: 'Roboto', sans-serif;
+            background: #1c1c1c;
+            color: #00ffcc;
         }
 
-        /* Header Styles */
-        header {
+        /* Loading Screen */
+        .loading-screen {
+            text-align: center;
+            height: 100vh;
             display: flex;
-            justify-content: space-between;
+            justify-content: center;
             align-items: center;
-            padding: 10px 20px;
-            background-color: #222;
-        }
-        header h1 {
-            font-size: 24px;
-            text-transform: uppercase;
-        }
-        .burger-menu {
-            display: none;
-            cursor: pointer;
-        }
-        .burger-menu div {
-            width: 25px;
-            height: 3px;
-            background-color: white;
-            margin: 5px;
-            transition: all 0.3s;
+            flex-direction: column;
         }
 
-        /* Hero Section */
-        .hero {
-            background-image: url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTnVoeX3nspxsTaRpO_rZzQne2rj6WuBfdgTA&usqp=CAU');
-            background-size: cover;
-            background-position: center;
+        .loading-screen h1 {
+            font-size: 48px;
+            color: #00ffcc;
+            letter-spacing: 5px;
+            margin-top: 20px;
+        }
+
+        .loader {
+            border: 16px solid #f3f3f3;
+            border-top: 16px solid #00ffcc;
+            border-radius: 50%;
+            width: 120px;
+            height: 120px;
+            animation: spin 2s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Profile Page */
+        .profile-container {
+            background: #1c1c1c;
+            color: #00ffcc;
+            padding: 20px;
             text-align: center;
-            padding: 100px 20px;
-            color: white;
-            position: relative;
-        }
-
-        /* Glass Effect Container with WebKit */
-        .glass-container {
-            background: rgba(0, 0, 0, 0.6); /* Semi-transparent black background */
-            backdrop-filter: blur(10px); /* Blur the background */
-            -webkit-backdrop-filter: blur(10px); /* WebKit for Safari */
-            border-radius: 15px;
-            padding: 40px 20px;
-            max-width: 600px;
+            max-width: 500px;
             margin: 0 auto;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 255, 204, 0.5);
+            display: none; /* Hidden initially, shown after loading */
         }
 
-        .hero h2 {
-            font-size: 40px;
-            color: cyan;
-            margin-bottom: 10px;
-        }
-        .hero p {
-            font-size: 18px;
-            color: #ddd;
+        .profile-container h1 {
+            font-size: 36px;
             margin-bottom: 20px;
-        }
-        .cta-button {
-            background-color: #00f9a8;
-            color: #111;
-            padding: 10px 20px;
-            border: none;
-            cursor: pointer;
-            font-size: 16px;
         }
 
-        /* Best Players Section */
-        .best-players {
-            background-color: black;
-            padding: 50px 20px;
-            text-align: center;
-        }
-        .best-players h2 {
-            font-size: 28px;
-            color: #00f9a8;
-            margin-bottom: 20px;
-        }
-        .players-list {
+        .profile-pic {
             display: flex;
             justify-content: center;
             gap: 20px;
-            flex-wrap: wrap;
+            margin-bottom: 20px;
         }
-        .player-card {
-            background-color: #444;
-            padding: 20px;
-            border-radius: 10px;
-            width: 150px;
-            text-align: center;
-        }
-        .player-card img {
+
+        .profile-pic img {
+            width: 100px;
+            height: 100px;
             border-radius: 50%;
-            width: 80px;
-            height: 80px;
-            margin-bottom: 10px;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: transform 0.3s ease, border 0.3s ease;
         }
-        .player-card h3 {
+
+        .profile-pic img:hover {
+            transform: scale(1.1);
+        }
+
+        .profile-pic img.selected {
+            border: 3px solid #00ffcc;
+        }
+
+        .premium-message {
+            color: #ff0033;
             font-size: 18px;
-        }
-        .player-card p {
-            font-size: 14px;
-            color: lightgreen;
+            margin-top: 10px;
         }
 
-        /* Mobile Styles */
-        @media (max-width: 768px) {
-            .burger-menu {
-                display: block;
-            }
-            .hero h2 {
-                font-size: 30px;
-            }
-            .hero p {
-                font-size: 16px;
-            }
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
         }
-        /* Best Players Section */
-.best-players {
-    background-color: black;
-    padding: 50px 20px;
-    text-align: center;
-    overflow-x: auto;  /* Allow horizontal scrolling */
-}
 
-.best-players h2 {
-    font-size: 28px;
-    color: #00f9a8;
-    margin-bottom: 20px;
-}
+        input, select, textarea {
+            background-color: #121212;
+            color: #00ffcc;
+            border: 1px solid #00ffcc;
+            padding: 10px;
+            font-size: 16px;
+            border-radius: 5px;
+        }
 
-.players-list {
-    display: flex;
-    gap: 20px;
-    flex-wrap: nowrap;  /* Prevent wrapping */
-    overflow-x: auto;   /* Enable horizontal scroll */
-    padding-bottom: 10px;  /* Prevent the scrollbar from overlapping the cards */
-}
+        button {
+            background-color: #00ffcc;
+            color: #1c1c1c;
+            border: none;
+            padding: 10px;
+            font-size: 18px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
 
-.player-card {
-    background-color: #444;
-    padding: 20px;
-    border-radius: 10px;
-    width: 80px;
-    text-align: center;
-    flex-shrink: 0;  /* Prevent shrinking */
-}
-
-.player-card img {
-    border-radius: 50%;
-    width: 80px;
-    height: 80px;
-    margin-bottom: 10px;
-}
-
-.player-card h3 {
-    font-size: 18px;
-}
-
-.player-card p {
-    font-size: 14px;
-    color: lightgreen;
-}
-/* Live Stats Section */
-.live-stats {
-    background-color: #1b1b1b;
-    padding: 50px 20px;
-    text-align: center;
-}
-
-.live-stats h2 {
-    font-size: 28px;
-    color: #00f9a8;
-    margin-bottom: 20px;
-}
-
-.stats-container {
-    display: flex;
-    justify-content: center;
-    gap: 40px;
-}
-
-.stat-card {
-    background-color: #333;
-    padding: 20px;
-    border-radius: 10px;
-    width: 200px;
-    text-align: center;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-}
-
-.stat-card h3 {
-    font-size: 22px;
-    color: #00f9a8;
-    margin-bottom: 10px;
-}
-
-.stat-card p {
-    font-size: 24px;
-    color: lightgreen;
-    font-weight: bold;
-}
-
-
+        button:hover {
+            background-color: #00cc99;
+        }
     </style>
 </head>
 <body>
 
-    <!-- Header Section -->
-    <header>
+    <!-- Loading Screen -->
+    <div class="loading-screen" id="loadingScreen">
+        <div class="loader"></div>
         <h1>CyberChat</h1>
-        <div class="burger-menu">
-            <div></div>
-            <div></div>
-            <div></div>
-        </div>
-    </header>
-
-    <!-- Hero Section -->
-    <div class="hero">
-        <div class="glass-container">
-            <h2>WELCOME TO CYBERCHAT</h2>
-            <p>The ultimate social platform for gamers and creators. Connect, share, and engage with like-minded players.</p>
-            <button class="cta-button" onclick="window.location.href='login.html'">Join Now</button>
-        </div>
     </div>
 
-    <!-- Best Players Section -->
-    <div class="best-players">
-        <h2>Top Players of CyberChat</h2>
-        <div class="players-list">
-            <div class="player-card">
-                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSPSoZ5xPx0BmUme4dBeslC6bZj8iBB0rSfpPBUvYPCpXC_6AylB5NerYo&s=10" alt="Mrbeast Gaming">
-                <h3>Mrbeast Gaming</h3>
-                <p>100k+ Followers</p>
-            </div>
-                  <div class="player-card">
-                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSPSoZ5xPx0BmUme4dBeslC6bZj8iBB0rSfpPBUvYPCpXC_6AylB5NerYo&s=10" alt="Mrbeast Gaming">
-                <h3>Mrbeast Gaming</h3>
-                <p>100k+ Followers</p>
-            </div>
-            <div class="player-card">
-                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRbvCfgahh9LgkQ_CQFIIr0nc1UALmU5rCC-cQpR9KP_uQPkJwJ2A9EqItl&s=10" alt="Cyber Gamer">
-                <h3>Cyber Gamer</h3>
-                <p>50k+ Followers</p>
-            </div>
-            <div class="player-card">
-                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRdN_8i6yYNN09SKZRQ-clTVMlu17Y9xh76CQ&usqp=CAU" alt="Noob Master">
-                <h3>Noob Master</h3>
-                <p>20k+ Followers</p>
-            </div>
+    <!-- Profile Creation Form -->
+    <div class="profile-container" id="profileContainer">
+        <h1>Create Your Profile</h1>
+
+        <div class="profile-pic">
+            <h3>Select Profile Picture</h3>
+            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRdN_8i6yYNN09SKZRQ-clTVMlu17Y9xh76CQ&usqp=CAU" alt="Profile 1">
+            <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRCoyaYc5R4mi5bKTnPUvcy7yHq50k2eQxQew&usqp=CAU" alt="Profile 2">
         </div>
+
+        <div class="premium-message">
+            <p>Premium users can upload their own profile picture. Contact support to upgrade.</p>
+        </div>
+
+        <form id="profile-form">
+            <label for="username">Username (@):</label>
+            <input type="text" id="username" required><br>
+
+            <label for="gender">Gender:</label>
+            <select id="gender" required>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+            </select><br>
+
+            <label for="age">Age:</label>
+            <input type="number" id="age" required><br>
+
+            <label for="description">Description:</label>
+            <textarea id="description" required></textarea><br>
+
+            <label for="paypal">PayPal Email:</label>
+            <input type="email" id="paypal" required><br>
+
+            <label for="referral">Where did you hear about us?</label>
+            <input type="text" id="referral" required><br>
+
+            <button type="submit">Save & Login</button>
+        </form>
     </div>
-    <!-- Live Stats Section -->
-<div class="live-stats">
-    <h2>2025 Stats</h2>
-    <div class="stats-container">
-        <div class="stat-card">
-            <h3>PEOPLE</h3>
-            <p id="daily-users">LOADING</p> <!-- Placeholder number -->
-        </div>
-        <div class="stat-card">
-            <h3>PAID</h3>
-            <p id="money-paid">LOADING</p> <!-- Placeholder number -->
-        </div>
-    </div>
-</div>
-<script type="module">
-  // Import the necessary Firebase modules
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
-  import { getDatabase, ref, get, set, update, runTransaction } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-database.js";
 
-  // Your web app's Firebase configuration
-  const firebaseConfig = {
-    apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
-    authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
-    databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
-    projectId: "itzhoyoo-f9f7e",
-    storageBucket: "itzhoyoo-f9f7e.firebasestorage.app",
-    messagingSenderId: "1094792075584",
-    appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
-    measurementId: "G-LLT6F9WRKH"
-  };
+    <script type="module">
+        // Import Firebase modules
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
+        import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-database.js";
 
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
+            authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
+            databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
+            projectId: "itzhoyoo-f9f7e",
+            storageBucket: "itzhoyoo-f9f7e.firebasestorage.app",
+            messagingSenderId: "1094792075584",
+            appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
+            measurementId: "G-LLT6F9WRKH"
+        };
 
-  // Initialize Realtime Database
-  const db = getDatabase(app);
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const database = getDatabase(app);
 
-  // Function to increment daily users
-  function incrementDailyUsers() {
-    const dailyUsersRef = ref(db, 'stats/dailyUsers');
-    runTransaction(dailyUsersRef, (currentValue) => {
-      return (currentValue || 0) +3;  // Increment daily users count by 1
-    }).then(() => {
-      console.log("Daily users count updated.");
-    }).catch((error) => {
-      console.error("Error updating daily users count:", error);
-    });
-  }
+        // Simulate loading screen
+        setTimeout(() => {
+            document.getElementById('loadingScreen').style.display = 'none';
+            document.getElementById('profileContainer').style.display = 'block';
+        }, 3000); // 3 seconds loading time
 
-  // Function to update money paid to creators
-  function updateMoneyPaid(amount) {
-    const moneyPaidRef = ref(db, 'stats/moneyPaid');
-    runTransaction(moneyPaidRef, (currentValue) => {
-      return (currentValue || 0) + amount;  // Add the amount paid to the total
-    }).then(() => {
-      console.log("Money paid to creators updated.");
-    }).catch((error) => {
-      console.error("Error updating money paid to creators:", error);
-    });
-  }
+        // Profile selection and form submission
+        document.querySelectorAll('.profile-pic img').forEach(img => {
+            img.addEventListener('click', function() {
+                document.querySelectorAll('.profile-pic img').forEach(i => i.classList.remove('selected'));
+                img.classList.add('selected');
+            });
+        });
 
-  // Function to fetch live stats
-  function fetchLiveStats() {
-    const statsRef = ref(db, 'stats');
-    get(statsRef).then((snapshot) => {
-      if (snapshot.exists()) {
-        const stats = snapshot.val();
-        const dailyUsers = stats.dailyUsers || 0;
-        const moneyPaid = stats.moneyPaid || 0;
-        
-        // Update the live stats on the page
-        document.getElementById('daily-users').textContent = dailyUsers;
-        document.getElementById('money-paid').textContent = `$${moneyPaid.toFixed(1)}`;
-      } else {
-        console.log("No data available");
-      }
-    }).catch((error) => {
-      console.error("Error fetching live stats:", error);
-    });
-  }
+        // Handle form submission
+        document.querySelector('#profile-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            console.log("Form submitted");
 
-  // Call fetchLiveStats when the page loads
-  window.onload = fetchLiveStats;
+            const selectedProfilePic = document.querySelector('.profile-pic img.selected');
+            const profilePic = selectedProfilePic ? selectedProfilePic.src : '';
 
-  // Example calls to update stats
-  incrementDailyUsers();
-  updateMoneyPaid(+265);  // Example: Update with $100 paid to creator
+            // Get form data
+            const profileData = {
+                username: document.getElementById('username').value,
+                gender: document.getElementById('gender').value,
+                age: document.getElementById('age').value,
+                description: document.getElementById('description').value,
+                paypal: document.getElementById('paypal').value,
+                referral: document.getElementById('referral').value,
+                profilePic: profilePic
+            };
 
-</script>
+            console.log("Profile data: ", profileData); // Log the data to ensure it's collected
 
+            // Save profile data to Firebase Realtime Database
+            const userId = Date.now(); // Unique ID based on timestamp
+            set(ref(database, 'profiles/' + userId), profileData)
+                .then(() => {
+                    console.log("Data saved to Firebase successfully");
+                    // Redirect to home page after successful submission
+                    window.location.href = 'home.html';
+                })
+                .catch((error) => {
+                    console.error("Error writing to Firebase: ", error);
+                });
+        });
+    </script>
 </body>
 </html>
