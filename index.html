@@ -57,6 +57,8 @@
 
     // Post ID for this example
     const postId = "post_001";
+    // Get user ID (for example, using localStorage or Firebase authentication)
+    const userId = localStorage.getItem('userId') || 'guest'; // Use 'guest' if no user ID exists
 
     // DOM Elements
     const viewCountDisplay = document.getElementById("viewCount");
@@ -77,12 +79,15 @@
         const data = snapshot.val();
         viewCount = data.views || 0;
         likeCount = data.likes || 0;
-        isLiked = data.liked || false;
 
         // Update the view count and save to Firebase
         viewCount++;
         update(postRef, { views: viewCount });
         viewCountDisplay.textContent = `${viewCount} View${viewCount !== 1 ? "s" : ""}`;
+
+        // Check if the user has liked this post
+        const userLikeStatus = data.likesByUser || {};
+        isLiked = userLikeStatus[userId] || false;
 
         // Update like count and button state
         likeCountDisplay.textContent = `${likeCount} Like${likeCount !== 1 ? "s" : ""}`;
@@ -92,7 +97,7 @@
         }
       } else {
         // If no data exists, initialize it
-        set(postRef, { views: 1, likes: 0, liked: false });
+        set(postRef, { views: 1, likes: 0, likesByUser: {} });
         viewCountDisplay.textContent = "1 View";
       }
     });
@@ -111,23 +116,23 @@
       get(postRef).then((snapshot) => {
         if (snapshot.exists()) {
           const data = snapshot.val();
-          isLiked = data.liked || false;
+          let userLikeStatus = data.likesByUser || {};
           likeCount = data.likes || 0;
 
           if (isLiked) {
             likeCount--;
-            isLiked = false;
+            userLikeStatus[userId] = false;
             likeButton.textContent = "Like";
             likeButton.classList.remove("liked");
           } else {
             likeCount++;
-            isLiked = true;
+            userLikeStatus[userId] = true;
             likeButton.textContent = "Liked";
             likeButton.classList.add("liked");
           }
 
-          // Update Firebase with the new like count and status
-          update(postRef, { likes: likeCount, liked: isLiked });
+          // Update Firebase with the new like count and user like status
+          update(postRef, { likes: likeCount, likesByUser: userLikeStatus });
         }
       });
     });
