@@ -3,149 +3,238 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - CyberChat</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron&display=swap" rel="stylesheet">
+    <title>Login / Register - CyberChat</title>
     <style>
         body {
-            background: #121212;
-            color: #00ffcc;
-            font-family: 'Orbitron', sans-serif;
-            margin: 0;
-            padding: 0;
+            font-family: 'Roboto', sans-serif;
+            background: #1f1f1f;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
-            flex-direction: column;
+            margin: 0;
+            color: #e6e6e6;
+            overflow: hidden;
         }
-        .container {
-            background: rgba(0, 0, 0, 0.8);
-            padding: 40px;
+
+        h1 {
+            font-size: 3rem;
+            text-align: center;
+            color: #00b0b9;
+            margin-bottom: 30px;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+        }
+
+        .form-container {
+            background: rgba(0, 0, 0, 0.7);
             border-radius: 10px;
-            box-shadow: 0 4px 30px rgba(0, 255, 204, 0.2);
-            width: 400px;
+            padding: 40px 50px;
+            width: 350px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.6);
             text-align: center;
         }
-        h1 {
-            font-size: 40px;
-            color: #00ffcc;
+
+        .form-container h2 {
+            font-size: 2rem;
+            color: #00b0b9;
             margin-bottom: 20px;
-            text-transform: uppercase;
         }
-        input {
+
+        .input-field {
             width: 100%;
-            padding: 15px;
-            margin: 10px 0;
-            border: 2px solid #00ffcc;
-            border-radius: 5px;
-            background: transparent;
-            color: #fff;
-            font-size: 18px;
-        }
-        input:focus {
-            outline: none;
-            border-color: #ff0066;
-        }
-        button {
-            width: 100%;
-            padding: 15px;
-            background: linear-gradient(90deg, #ff0066, #00ffcc);
+            padding: 12px;
+            margin: 12px 0;
+            background: #2b2b2b;
+            color: #e6e6e6;
             border: none;
             border-radius: 5px;
+            font-size: 1rem;
+            outline: none;
+            box-sizing: border-box;
+        }
+
+        .input-field:focus {
+            border: 2px solid #00b0b9;
+            background: #333;
+        }
+
+        .button {
+            width: 100%;
+            padding: 15px;
+            background: #00b0b9;
             color: #121212;
-            font-size: 18px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 5px;
             cursor: pointer;
+            transition: background 0.3s;
         }
-        button:hover {
-            background: linear-gradient(90deg, #ff0066, #00ffcc, #ff0066);
+
+        .button:hover {
+            background: #008c8a;
         }
-        .error {
-            color: #ff0066;
-            margin: 10px 0;
-        }
+
         .link {
-            color: #00ffcc;
-            text-decoration: none;
+            color: #00b0b9;
+            font-size: 1rem;
             margin-top: 15px;
-            font-size: 16px;
+            text-decoration: none;
+            transition: color 0.3s;
         }
+
         .link:hover {
-            color: #ff0066;
+            color: #008c8a;
+            text-decoration: underline;
+        }
+
+        .error {
+            color: #ff4040;
+            margin-top: 10px;
+            font-size: 0.9rem;
+        }
+
+        .form-toggle {
+            margin-top: 30px;
+        }
+
+        .form-toggle a {
+            color: #e6e6e6;
+            font-size: 1rem;
+            text-decoration: none;
+        }
+
+        .form-toggle a:hover {
+            color: #00b0b9;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Login</h1>
-        <input type="email" id="email" placeholder="Email" required>
-        <input type="password" id="password" placeholder="Password" required>
-        <button id="loginBtn">Login</button>
-        <div id="error-message" class="error"></div>
-        <a href="register.html" class="link">Don't have an account? Register</a>
+
+    <div class="form-container" id="loginForm">
+        <h1>CyberChat</h1>
+        <h2>Login</h2>
+        <input type="email" id="loginEmail" class="input-field" placeholder="Email">
+        <input type="password" id="loginPassword" class="input-field" placeholder="Password">
+        <button id="loginBtn" class="button">Login</button>
+        <div id="loginErrorMessage" class="error"></div>
+        <div class="form-toggle">
+            <a href="#" id="goToRegister">Don't have an account? Register</a>
+        </div>
+    </div>
+
+    <div class="form-container" id="registerForm" style="display: none;">
+        <h1>CyberChat</h1>
+        <h2>Register</h2>
+        <input type="text" id="username" class="input-field" placeholder="Username">
+        <input type="email" id="registerEmail" class="input-field" placeholder="Email">
+        <input type="password" id="registerPassword" class="input-field" placeholder="Password">
+        <button id="registerBtn" class="button">Register</button>
+        <div id="registerErrorMessage" class="error"></div>
+        <div class="form-toggle">
+            <a href="#" id="goToLogin">Already have an account? Login</a>
+        </div>
     </div>
 
     <script type="module">
-      // Import the functions you need from the SDKs you need
-      import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
-      import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-analytics.js";
-      import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
-      import { getFirestore } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
+        import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
 
-      // Your web app's Firebase configuration
-      const firebaseConfig = {
-        apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
-        authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
-        databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
-        projectId: "itzhoyoo-f9f7e",
-        storageBucket: "itzhoyoo-f9f7e.firebasestorage.app",
-        messagingSenderId: "1094792075584",
-        appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
-        measurementId: "G-LLT6F9WRKH"
-      };
+        const firebaseConfig = {
+            apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
+            authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
+            databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
+            projectId: "itzhoyoo-f9f7e",
+            storageBucket: "itzhoyoo-f9f7e.firebasestorage.app",
+            messagingSenderId: "1094792075584",
+            appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
+            measurementId: "G-LLT6F9WRKH"
+        };
 
-      // Initialize Firebase
-      const app = initializeApp(firebaseConfig);
-      const analytics = getAnalytics(app);
-      const auth = getAuth(app);
-      const db = getFirestore(app);
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
 
-      // DOM Elements
-      const loginBtn = document.getElementById('loginBtn');
-      const email = document.getElementById('email');
-      const password = document.getElementById('password');
-      const errorMessage = document.getElementById('error-message');
+        const loginForm = document.getElementById("loginForm");
+        const registerForm = document.getElementById("registerForm");
 
-      loginBtn.addEventListener('click', async () => {
-        const emailValue = email.value;
-        const passwordValue = password.value;
+        const loginBtn = document.getElementById("loginBtn");
+        const registerBtn = document.getElementById("registerBtn");
+        const goToRegister = document.getElementById("goToRegister");
+        const goToLogin = document.getElementById("goToLogin");
 
-        if (!emailValue || !passwordValue) {
-          errorMessage.textContent = 'Please fill in both fields!';
-          return;
-        }
+        const loginEmail = document.getElementById("loginEmail");
+        const loginPassword = document.getElementById("loginPassword");
+        const registerEmail = document.getElementById("registerEmail");
+        const registerPassword = document.getElementById("registerPassword");
+        const username = document.getElementById("username");
 
-        try {
-          // Sign the user in with Firebase Authentication
-          const userCredential = await signInWithEmailAndPassword(auth, emailValue, passwordValue);
-          const user = userCredential.user;
+        const loginErrorMessage = document.getElementById("loginErrorMessage");
+        const registerErrorMessage = document.getElementById("registerErrorMessage");
 
-          // Save user data to localStorage
-          localStorage.setItem('username', user.displayName || 'User');
-          localStorage.setItem('email', emailValue);
+        // Show Login Form by default
+        loginForm.style.display = 'block';
+        registerForm.style.display = 'none';
 
-          // Redirect to dashboard or homepage
-          window.location.href = 'dashboard.html';  // Adjust the redirect based on your app
+        // Switch to Register Form
+        goToRegister.addEventListener("click", () => {
+            loginForm.style.display = 'none';
+            registerForm.style.display = 'block';
+        });
 
-        } catch (error) {
-          if (error.code === 'auth/wrong-password') {
-            errorMessage.textContent = 'Incorrect password. Please try again.';
-          } else if (error.code === 'auth/user-not-found') {
-            errorMessage.textContent = 'No account found with that email. Please register first.';
-          } else {
-            errorMessage.textContent = error.message;
-          }
-        }
-      });
+        // Switch to Login Form
+        goToLogin.addEventListener("click", () => {
+            registerForm.style.display = 'none';
+            loginForm.style.display = 'block';
+        });
+
+        // Login Function
+        loginBtn.addEventListener("click", async () => {
+            const emailValue = loginEmail.value;
+            const passwordValue = loginPassword.value;
+
+            if (!emailValue || !passwordValue) {
+                loginErrorMessage.textContent = "Please fill in both email and password!";
+                return;
+            }
+
+            try {
+                const userCredential = await signInWithEmailAndPassword(auth, emailValue, passwordValue);
+                localStorage.setItem("user", JSON.stringify(userCredential.user));
+                window.location.href = "dashboard.html"; // Redirect to dashboard page
+            } catch (error) {
+                loginErrorMessage.textContent = error.message;
+            }
+        });
+
+        // Register Function
+        registerBtn.addEventListener("click", async () => {
+            const userNameValue = username.value;
+            const emailValue = registerEmail.value;
+            const passwordValue = registerPassword.value;
+
+            if (!userNameValue || !emailValue || !passwordValue) {
+                registerErrorMessage.textContent = "Please fill in all fields!";
+                return;
+            }
+
+            try {
+                const userCredential = await createUserWithEmailAndPassword(auth, emailValue, passwordValue);
+                const user = userCredential.user;
+
+                await setDoc(doc(db, "users", user.uid), {
+                    username: userNameValue,
+                    email: emailValue
+                });
+
+                localStorage.setItem("user", JSON.stringify(user));
+                window.location.href = "dashboard.html"; // Redirect to dashboard page
+            } catch (error) {
+                registerErrorMessage.textContent = error.message;
+            }
+        });
     </script>
 </body>
 </html>
