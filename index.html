@@ -5,360 +5,302 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CyberChat</title>
     <style>
-        /* Base styling */
-        body {
-            background-color: #000000;
-            color: #ffffff;
-            font-family: Arial, sans-serif;
+        * {
             margin: 0;
             padding: 0;
-            -webkit-user-select: none; /* Prevent text selection */
-            -moz-user-select: none;
-            -ms-user-select: none;
-            user-select: none;
+            box-sizing: border-box;
         }
-
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #1a1a1a;
+            color: #fff;
+        }
         header {
-            background-color: #3c3c3c;
-            color: #e1e1e1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+            background-color: #333;
+        }
+        header h1 {
+            font-size: 18px;
+            letter-spacing: 2px;
+        }
+        .register-btn {
+            background-color: #28a745;
+            color: #fff;
+            font-size: 12px;
+            padding: 8px 20px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .register-btn:hover {
+            background-color: #218838;
+        }
+        .hero-section {
+            background-image: url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTnVoeX3nspxsTaRpO_rZzQne2rj6WuBfdgTA&usqp=CAU');
+            background-size: cover;
+            background-position: center;
+            height: 400px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             text-align: center;
             padding: 20px;
-            font-size: 2rem;
-            box-shadow: 0 0 15px 5px rgba(0, 255, 0, 0.6); /* Neon effect */
+        }
+        .hero-content {
+            border: 2px solid cyan;
+            border-radius: 25px;
+            padding: 20px;
+            background-color: black;
+        }
+        .hero-section h2 {
+            font-size: 15px;
+            color: white;
+            font-weight: 700;
             text-transform: uppercase;
-            font-weight: bold;
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
+            font-family: 'Verdana', sans-serif;
+        }
+        .cta {
+            font-size: 12px;
+            color: lightgreen;
+            margin-top: 10px;
         }
 
-        header::before {
-            content: '';
+        /* Testimonial Section */
+        .testimonial-section {
+            padding: 40px 20px;
+            text-align: center;
+            background: linear-gradient(135deg, #ff00c1, #00ffff, #ff6600);
+            background-size: 300% 300%;
+            animation: gradientAnimation 10s ease infinite;
+            position: relative;
+            overflow: hidden;
+        }
+        @keyframes gradientAnimation {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        .testimonial-slider {
+            display: flex;
+            transition: transform 0.5s ease-in-out;
+            will-change: transform;
+        }
+        .testimonial-container {
+            width: 100%;
+            overflow: hidden;
+        }
+        .testimonial-content {
+            background-color: rgba(0, 0, 0, 0.7);
+            border-radius: 15px;
+            padding: 30px;
+            min-width: 100%;
+            text-align: center;
+        }
+        .profile-image {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            margin-bottom: 15px;
+        }
+        .name {
+            font-size: 16px;
+            color: #ffcc00;
+            font-weight: 700;
+            margin-top: 10px;
+            font-family: 'Verdana', sans-serif;
+            letter-spacing: 1px;
+        }
+        .star-rating {
+            font-size: 18px;
+            color: gold;
+            margin: 10px 0;
+        }
+        .followers-count {
+            font-size: 14px;
+            color: #ddd;
+            margin-bottom: 20px;
+        }
+        .testimonial-text {
+            font-size: 14px;
+            color: #fff;
+            font-style: italic;
+        }
+
+        /* Arrows */
+        .arrow {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 5px;
-            background: linear-gradient(90deg, #7f7f7f, #e1e1e1, #7f7f7f); /* Netherite-inspired gradient */
-            box-shadow: 0 0 15px 5px rgba(255, 0, 255, 0.7);
-        }
-
-        header::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 5px;
-            background: linear-gradient(90deg, #7f7f7f, #e1e1e1, #7f7f7f);
-            box-shadow: 0 0 15px 5px rgba(255, 0, 255, 0.7);
-        }
-
-        .hamburger-menu {
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            width: 30px;
-            height: 25px;
-            cursor: pointer;
-        }
-
-        .hamburger-menu div {
-            background-color: #e1e1e1;
-            height: 5px;
-            width: 100%;
-            border-radius: 5px;
-        }
-
-        .logo {
-            font-size: 1.8rem;
-            font-weight: bold;
-            color: #e1e1e1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            font-family: 'Courier New', Courier, monospace;
-            padding-left: 10px;
-        }
-
-        .logo span {
-            color: #00ff00;
-        }
-
-        .profile-pic {
+            top: 50%;
+            transform: translateY(-50%);
+            background-color: rgba(0, 0, 0, 0.5);
+            border: none;
+            border-radius: 50%;
+            color: white;
+            font-size: 20px;
             width: 40px;
             height: 40px;
-            border-radius: 50%;
-            background-image: url('https://www.w3schools.com/w3images/avatar2.png');
-            background-size: cover;
-            background-position: center;
-            cursor: pointer;
-            border: 2px solid #e1e1e1;
-            box-shadow: 0 0 10px 3px rgba(0, 255, 0, 0.7);
-        }
-
-        .buttons {
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            margin-top: 20px;
-        }
-
-        .button {
-            background-color: #222;
-            color: #e1e1e1;
-            border: 2px solid #3c3c3c;
-            padding: 10px 20px;
-            font-size: 1rem;
-            border-radius: 20px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .button:hover {
-            background-color: #00ff00;
-            border-color: #00ff00;
-        }
-
-        .plus-button {
-            background-color: #222;
-            color: #e1e1e1;
-            border: 3px solid red;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .plus-button:hover {
-            background-color: red;
-            color: #fff;
-            border-color: #fff;
-        }
-
-        .upload-text {
-            color: #e1e1e1;
-            font-size: 0.9rem;
-            margin-top: 5px;
-        }
-
-        /* Search Engine */
-        .search-container {
             display: flex;
             justify-content: center;
-            margin-top: 30px;
-            padding: 20px;
-        }
-
-        .search-box {
-            width: 80%;
-            max-width: 500px;
-            display: flex;
             align-items: center;
-            background-color: #222;
-            border-radius: 25px;
-            padding: 10px;
-            border: 2px solid #3c3c3c;
-            box-shadow: 0 0 10px 3px rgba(0, 255, 0, 0.7);
-        }
-
-        .search-box input {
-            width: 90%;
-            background-color: transparent;
-            border: none;
-            outline: none;
-            color: #e1e1e1;
-            font-size: 1.2rem;
-            padding: 10px;
-            border-radius: 20px;
-            margin-right: 10px;
-        }
-
-        .search-box button {
-            background-color: #00ff00;
-            color: #fff;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 20px;
             cursor: pointer;
-            font-size: 1rem;
-            transition: all 0.3s ease;
+            transition: background-color 0.3s;
         }
-
-        .search-box button:hover {
-            background-color: #ff00ff;
-            color: #222;
+        .arrow:hover {
+            background-color: rgba(255, 255, 255, 0.5);
+            color: black;
         }
-
-        /* Posts Section */
-        .posts-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin-top: 20px;
+        .arrow-left {
+            left: 10px;
         }
-
-        .post {
-            background-color: #222;
-            color: #e1e1e1;
-            border: 2px solid #3c3c3c;
-            margin: 10px;
-            padding: 15px;
-            width: 80%;
-            max-width: 600px;
-            border-radius: 10px;
-        }
-
-        .post-title {
-            font-size: 1.5rem;
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
-
-        .post-body {
-            font-size: 1rem;
-        }
-            .profile-pic {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background-image: url('https://www.w3schools.com/w3images/avatar2.png');
-            background-size: cover;
-            background-position: center;
-            cursor: pointer;
-            border: 2px solid #00ff00;
-            box-shadow: 0 0 10px 3px rgba(0, 255, 0, 0.7);
-        }
-
-        /* Popup Styles */
-        .popup {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 90%;
-            max-width: 400px;
-            background-color: #222;
-            border-radius: 10px;
-            box-shadow: 0 0 15px rgba(0, 255, 0, 0.6);
-            padding: 20px;
-            display: none;
-            z-index: 1001;
-        }
-
-        .popup.active {
-            display: block;
-        }
-
-        .popup-header {
-            text-align: center;
-        }
-
-        .popup-profile-pic {
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-            background-size: cover;
-            background-position: center;
-            margin: 0 auto;
-            border: 2px solid #00ff00;
-            box-shadow: 0 0 10px 3px rgba(0, 255, 0, 0.7);
-        }
-
-        .popup-button {
-            background-color: #00ff00;
-            color: #222;
-            border: none;
-            padding: 10px 20px;
-            margin: 10px 0;
-            border-radius: 20px;
-            cursor: pointer;
-            transition: 0.3s;
-            display: block;
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        .popup-button:hover {
-            background-color: #ff00ff;
-        }
-
-        .popup-input {
-            width: 100%;
-            background-color: #333;
-            border: 2px solid #555;
-            padding: 10px;
-            border-radius: 5px;
-            color: #fff;
-            margin-bottom: 10px;
-            font-size: 1rem;
-        }
-
-        .fluffy-message {
-            color: #ff0000;
-            font-size: 1rem;
-            text-align: center;
-            margin: 10px 0;
-        }
-
-        .close-popup {
-            background-color: #ff0000;
-            color: #fff;
-            border: none;
-            padding: 5px 10px;
-            border-radius: 5px;
-            cursor: pointer;
-            position: absolute;
-            top: 10px;
+        .arrow-right {
             right: 10px;
         }
 
-        .close-popup:hover {
-            background-color: #ff5555;
-        }
-
-        .save-button {
-            background-color: #00ff00;
-            color: #222;
-            border: none;
+        footer {
+            background-color: #333;
+            text-align: center;
             padding: 10px;
-            width: 100%;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: 0.3s;
+            font-size: 12px;
         }
-
-        .save-button:hover {
-            background-color: #ff00ff;
-        }
-        {
-    "title": "Post Title",
-    "body": "Post content",
-    "imageUrl": "https://example.com/image.jpg"
-}
-.post {
-    margin-bottom: 20px;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 8px;
+        .features-section {
+    padding: 50px 20px;
+    text-align: center;
+    background: linear-gradient(135deg, #111, #222);
+    color: #fff;
 }
 
-.post-image {
-    max-width: 100%;
-    height: auto;
-    margin-top: 10px;
-    border-radius: 5px;
+.features-section h2 {
+    font-size: 24px;
+    font-weight: 700;
+    color: cyan;
+    margin-bottom: 30px;
+}
+
+.features-section h2 span {
+    color: #ff00c1;
+}
+
+.features-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.feature {
+    background-color: rgba(0, 0, 0, 0.8);
+    border: 2px solid cyan;
+    border-radius: 15px;
+    padding: 20px;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.feature:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 15px rgba(0, 255, 255, 0.2);
+}
+
+.feature h3 {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 10px;
+    color: lightgreen;
+}
+
+.feature p {
+    font-size: 14px;
+    color: #ddd;
+    line-height: 1.6;
+}
+.stats-section {
+    padding: 50px 20px;
+    text-align: center;
+    background: linear-gradient(135deg, #2a2a2a, #121212);
+    color: #fff;
+    margin-top: 30px;
+}
+
+.stats-section h2 {
+    font-size: 24px;
+    font-weight: 700;
+    color: cyan;
+    margin-bottom: 30px;
+}
+
+.stats-container {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.stat {
+    background-color: rgba(0, 0, 0, 0.8);
+    border: 2px solid #ff00c1;
+    border-radius: 15px;
+    padding: 20px 30px;
+    text-align: center;
+    width: 250px;
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.stat:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 15px rgba(255, 0, 193, 0.3);
+}
+
+.stat h3 {
+    font-size: 30px;
+    font-weight: 700;
+    color: lightgreen;
+    margin-bottom: 10px;
+}
+
+.stat p {
+    font-size: 16px;
+    color: #ddd;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+.join-now-section {
+    text-align: center;
+    padding: 40px 20px;
+    background: linear-gradient(135deg, #111, #222);
+}
+
+.join-now-btn {
+    background: linear-gradient(135deg, cyan, #ff00c1);
+    color: #fff;
+    font-size: 18px;
+    font-weight: 700;
+    padding: 15px 40px;
+    border: none;
+    border-radius: 30px;
+    cursor: pointer;
+    box-shadow: 0 5px 15px rgba(0, 255, 255, 0.3);
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.join-now-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 10px 20px rgba(255, 0, 193, 0.4);
+}
+/* Disable text selection globally */
+* {
+    -webkit-user-select: none;  /* WebKit-based browsers like Safari */
+    -moz-user-select: none;     /* Firefox */
+    -ms-user-select: none;      /* Internet Explorer/Edge */
+    user-select: none;          /* Standard syntax */
+}
+
+/* Optionally, disable right-click context menu */
+body {
+    -webkit-touch-callout: none; /* WebKit browsers */
+    -webkit-user-select: none;   /* Prevent selection in WebKit browsers */
+    user-select: none;           /* Prevent selection in other browsers */
 }
 
 
@@ -367,259 +309,127 @@
 <body>
 
     <header>
-        <div class="hamburger-menu">
-            <div></div>
-            <div></div>
-            <div></div>
-        </div>
-
-        <div class="logo">
-            <span>Cyber</span>CHAT
-        </div>
-
-        <div class="profile-pic" id="profilePic"></div>
+        <h1>CyberChat</h1>
+        <button class="register-btn" onclick="location.href='/register'">Register</button>
     </header>
 
-    <div class="buttons">
-        <div class="button">Following</div>
-
-        <div class="plus-button">
-            +
+    <section class="hero-section">
+        <div class="hero-content">
+            <h2>WELCOME TO CyberChat</h2>
+            <p class="cta">Join the future of chat. Chat, share, and explore!</p>
         </div>
-        <div class="upload-text">Upload</div>
+    </section>
 
-        <div class="button">Followers</div>
-    </div>
+    <!-- Testimonial Section -->
+    <section class="testimonial-section">
+        <div class="testimonial-container">
+            <div class="testimonial-slider" id="slider">
+                <!-- Testimonial 1 -->
+                <div class="testimonial-content">
+                    <img class="profile-image" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRTSb1AdjFcC_4gbCOZNO2Ok-cV6tP8qMFKDztv8Go1HOgtl9c5wTpOrjM&s=10" alt="User Profile">
+                    <div class="name">GamerXx123</div>
+                    <div class="star-rating">★★★★★</div>
+                    <div class="followers-count">Followers: 1250</div>
+                    <p class="testimonial-text">
+                        "CyberChat has revolutionized how I communicate with friends. Highly recommended!"
+                    </p>
+                </div>
+                <!-- Testimonial 2 -->
+                <div class="testimonial-content">
+                    <img class="profile-image" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRTSb1AdjFcC_4gbCOZNO2Ok-cV6tP8qMFKDztv8Go1HOgtl9c5wTpOrjM&s=10" alt="User Profile">
+                    <div class="name">GamerAlphaX</div>
+                    <div class="star-rating">★★★★☆</div>
+                    <div class="followers-count">Followers: 880</div>
+                    <p class="testimonial-text">
+                        "Best chatting app for gamers. Smooth interface and great features!"
+                    </p>
+                </div>
+                <!-- Testimonial 3 -->
+                <div class="testimonial-content">
+                    <img class="profile-image" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRTSb1AdjFcC_4gbCOZNO2Ok-cV6tP8qMFKDztv8Go1HOgtl9c5wTpOrjM&s=10" alt="User Profile">
+                    <div class="name">TechnoKnight77</div>
+                    <div class="star-rating">★★★★★</div>
+                    <div class="followers-count">Followers: 1420</div>
+                    <p class="testimonial-text">
+                        "Awesome app for staying connected while gaming!"
+                    </p>
+                </div>
+            </div>
+        </div>
 
-    <!-- Search Engine Section -->
-    <div class="search-container">
-        <div class="search-box">
-            <input type="text" id="searchInput" placeholder="Search..." oninput="searchPosts()" />
-            <button onclick="searchPosts()">Search</button>
+        <!-- Arrows -->
+        <button class="arrow arrow-left" id="arrowLeft">&#9664;</button>
+        <button class="arrow arrow-right" id="arrowRight">&#9654;</button>
+    </section>
+<section class="features-section">
+    <h2>Why Choose <span>CyberChat?</span></h2>
+    <div class="features-container">
+        <div class="feature">
+            <h3>Real-Time Messaging</h3>
+            <p>Connect instantly with friends and communities through fast, real-time messaging.</p>
+        </div>
+        <div class="feature">
+            <h3>Social Media & Sharing</h3>
+            <p>Share your moments, interact with posts, and grow your online presence effortlessly.</p>
+        </div>
+        <div class="feature">
+            <h3>Gamers Marketplace</h3>
+            <p>Buy, sell, and trade your favorite gaming items all in one platform.</p>
+        </div>
+        <div class="feature">
+            <h3>Make Money Online</h3>
+            <p>Earn while you chat! Monetize your activities by participating in CyberChat’s rewards program.</p>
         </div>
     </div>
-
-    <!-- Posts Container where the results will show up -->
-    <div class="posts-container" id="postsContainer">
-        <!-- Posts will be displayed here dynamically -->
-    </div>
-<!-- Popup -->
-    <div class="popup" id="profilePopup">
-        <button class="close-popup" id="closePopup">X</button>
-        <div class="popup-header">
-            <div class="popup-profile-pic" id="popupProfilePic"></div>
-            <button class="popup-button" id="changePic">Change Profile Picture</button>
-            <div class="fluffy-message" id="fluffyMessage"></div>
+    <section class="stats-section">
+    <h2>CyberChat 2025 stats</h2>
+    <div class="stats-container">
+        <div class="stat">
+            <h3>10,000+</h3>
+            <p>Monthly Users</p>
         </div>
-        <input type="text" id="premiumPassword" class="popup-input" placeholder="Enter Premium Password" style="display: none;">
-        <button class="popup-button" id="confirmPassword" style="display: none;">Confirm</button>
-        <input type="text" id="username" class="popup-input" placeholder="@Username (6 letters max)" maxlength="6">
-        <textarea id="description" class="popup-input" placeholder="Enter your description..."></textarea>
-        <input type="text" id="gender" class="popup-input" placeholder="Enter your gender">
-        <input type="number" id="yearOfBirth" class="popup-input" placeholder="Year of Birth">
-        <button class="save-button" id="saveProfile">Save</button>
+        <div class="stat">
+            <h3>1,000,000+</h3>
+            <p>Messages Sent</p>
+        </div>
+        <div class="stat">
+            <h3>$15,000+</h3>
+            <p>Money Paid</p>
+        </div>
     </div>
-    <script type="module">
-        // Firebase setup
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
-        import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-database.js";
+    <section class="join-now-section">
+    <button class="join-now-btn" onclick="window.location.href='index.html'">
+        JOIN CYBERCHAT
+    </button>
+</section>
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
-            authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
-            databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
-            projectId: "itzhoyoo-f9f7e",
-            storageBucket: "itzhoyoo-f9f7e.firebasestorage.app",
-            messagingSenderId: "1094792075584",
-            appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
-            measurementId: "G-LLT6F9WRKH"
-        };
+</section>
 
-        const app = initializeApp(firebaseConfig);
-        const database = getDatabase(app);
+</section>
 
-        // Fetch posts from Firebase
-        let posts = [];
+    <footer>
+        <p>&copy; 2025 CyberChat. All rights reserved.</p>
+    </footer>
 
-        function fetchPosts() {
-            const postsRef = ref(database, 'posts');
-            get(postsRef).then(snapshot => {
-                if (snapshot.exists()) {
-                    posts = Object.values(snapshot.val());
-                    displayPosts(posts); // Display all posts initially
-                } else {
-                    console.log("No posts found.");
-                }
-            }).catch(error => {
-                console.error(error);
-            });
-        }
+    <script>
+        const slider = document.getElementById('slider');
+        const arrowLeft = document.getElementById('arrowLeft');
+        const arrowRight = document.getElementById('arrowRight');
+        let currentIndex = 0;
 
-        // Display posts on the page
-        function displayPosts(posts) {
-            const postsContainer = document.getElementById('postsContainer');
-            postsContainer.innerHTML = '';
-            posts.forEach(post => {
-                const postDiv = document.createElement('div');
-                postDiv.classList.add('post');
-
-                const postTitle = document.createElement('div');
-                postTitle.classList.add('post-title');
-                postTitle.textContent = post.title;
-
-                const postBody = document.createElement('div');
-                postBody.classList.add('post-body');
-                postBody.textContent = post.body;
-
-                postDiv.appendChild(postTitle);
-                postDiv.appendChild(postBody);
-
-                postsContainer.appendChild(postDiv);
-            });
-        }
-
-        // Filter posts based on the search query
-        function searchPosts() {
-            const searchQuery = document.getElementById('searchInput').value.toLowerCase();
-            const filteredPosts = posts.filter(post => 
-                post.title.toLowerCase().includes(searchQuery) || 
-                post.body.toLowerCase().includes(searchQuery)
-            );
-            displayPosts(filteredPosts);
-        }
-
-        // Fetch posts on page load
-        fetchPosts();
-        const profilePic = document.getElementById('profilePic');
-        const profilePopup = document.getElementById('profilePopup');
-        const closePopup = document.getElementById('closePopup');
-        const changePic = document.getElementById('changePic');
-        const fluffyMessage = document.getElementById('fluffyMessage');
-        const premiumPassword = document.getElementById('premiumPassword');
-        const confirmPassword = document.getElementById('confirmPassword');
-        const usernameInput = document.getElementById('username');
-        const descriptionInput = document.getElementById('description');
-        const genderInput = document.getElementById('gender');
-        const yearOfBirthInput = document.getElementById('yearOfBirth');
-        const saveProfile = document.getElementById('saveProfile');
-        const popupProfilePic = document.getElementById('popupProfilePic');
-
-        // Open popup
-        profilePic.addEventListener('click', () => {
-            profilePopup.classList.add('active');
+        arrowLeft.addEventListener('click', () => {
+            currentIndex = (currentIndex === 0) ? 2 : currentIndex - 1; // Wrap around
+            updateSlider();
         });
 
-        // Close popup
-        closePopup.addEventListener('click', () => {
-            profilePopup.classList.remove('active');
-            fluffyMessage.textContent = '';
-            premiumPassword.style.display = 'none';
-            confirmPassword.style.display = 'none';
+        arrowRight.addEventListener('click', () => {
+            currentIndex = (currentIndex === 2) ? 0 : currentIndex + 1; // Wrap around
+            updateSlider();
         });
 
-        // Change profile picture
-        changePic.addEventListener('click', () => {
-            fluffyMessage.textContent = 'Only premium users can change their profile picture.';
-            premiumPassword.style.display = 'block';
-            confirmPassword.style.display = 'block';
-        });
-
-        // Confirm premium password
-        confirmPassword.addEventListener('click', () => {
-            const password = premiumPassword.value;
-            if (password === '123456') { // Example premium password
-                const newPic = prompt('Enter the image link for your new profile picture:');
-                if (newPic) {
-                    profilePic.style.backgroundImage = `url('${newPic}')`;
-                    popupProfilePic.style.backgroundImage = `url('${newPic}')`;
-                    localStorage.setItem('profilePic', newPic);
-                    fluffyMessage.textContent = 'Profile picture updated!';
-                }
-            } else {
-                fluffyMessage.textContent = 'Incorrect premium password!';
-            }
-        });
-
-        // Save profile data
-        saveProfile.addEventListener('click', () => {
-            const username = usernameInput.value;
-            const description = descriptionInput.value;
-            const gender = genderInput.value;
-            const yearOfBirth = yearOfBirthInput.value;
-
-            localStorage.setItem('username', username);
-            localStorage.setItem('description', description);
-            localStorage.setItem('gender', gender);
-            localStorage.setItem('yearOfBirth', yearOfBirth);
-
-            alert('Profile saved successfully!');
-        });
-
-        // Load saved data
-        window.onload = () => {
-            const savedPic = localStorage.getItem('profilePic');
-            const savedUsername = localStorage.getItem('username');
-            const savedDescription = localStorage.getItem('description');
-            const savedGender = localStorage.getItem('gender');
-            const savedYearOfBirth = localStorage.getItem('yearOfBirth');
-
-            if (savedPic) {
-                profilePic.style.backgroundImage = `url('${savedPic}')`;
-                popupProfilePic.style.backgroundImage = `url('${savedPic}')`;
-            }
-            if (savedUsername) usernameInput.value = savedUsername;
-            if (savedDescription) descriptionInput.value = savedDescription;
-            if (savedGender) genderInput.value = savedGender;
-            if (savedYearOfBirth) yearOfBirthInput.value = savedYearOfBirth;
-        };
-        // Fetch posts from Firebase
-function fetchPosts() {
-    const postsRef = ref(database, 'posts');
-    get(postsRef).then(snapshot => {
-        if (snapshot.exists()) {
-            posts = Object.values(snapshot.val());
-            displayPosts(posts); // Display all posts initially
-        } else {
-            console.log("No posts found.");
+        function updateSlider() {
+            slider.style.transform = `translateX(-${currentIndex * 100}%)`;
         }
-    }).catch(error => {
-        console.error(error);
-    });
-}
-
-// Display posts on the page
-function displayPosts(posts) {
-    const postsContainer = document.getElementById('postsContainer');
-    postsContainer.innerHTML = ''; // Clear the existing posts
-    
-    posts.forEach(post => {
-        const postDiv = document.createElement('div');
-        postDiv.classList.add('post');
-
-        const postTitle = document.createElement('div');
-        postTitle.classList.add('post-title');
-        postTitle.textContent = post.title;
-
-        const postBody = document.createElement('div');
-        postBody.classList.add('post-body');
-        postBody.textContent = post.body;
-
-        // Add post image if exists
-        if (post.imageUrl) {
-            const postImage = document.createElement('img');
-            postImage.classList.add('post-image');
-            postImage.src = post.imageUrl; // Set the image source
-            postImage.alt = post.title; // Alt text for accessibility
-            postDiv.appendChild(postImage);
-        }
-
-        postDiv.appendChild(postTitle);
-        postDiv.appendChild(postBody);
-
-        postsContainer.appendChild(postDiv);
-    });
-}
-
     </script>
 
 </body>
