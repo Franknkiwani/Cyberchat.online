@@ -275,7 +275,7 @@
             try {
                 const userCredential = await signInWithEmailAndPassword(auth, emailValue, passwordValue);
                 localStorage.setItem("user", JSON.stringify(userCredential.user));
-                window.location.href = "dashboard.html"; // Redirect to dashboard page
+                window.location.href = "homepage.html"; // Redirect to dashboard page
             } catch (error) {
                 loginErrorMessage.textContent = error.message;
             }
