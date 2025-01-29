@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Empty Dark Homepage</title>
+    <title>CyberChat - Homepage</title>
     <style>
         * {
             margin: 0;
@@ -12,162 +12,137 @@
         }
 
         body {
-            background-color: #121212;
-            height: 100vh;
+            font-family: Arial, sans-serif;
+            background: #f4f4f9;
+            color: #333;
             display: flex;
             flex-direction: column;
-            color: white;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
         }
 
         header {
-            background-color: #2f2f2f; /* Netherite black-like color */
             width: 100%;
-            height: 50px;
-            border-bottom: 2px solid #00ff00; /* Neon green line */
-            box-shadow: 0 0 15px #00ff00; /* Neon glow effect */
-            display: flex;
-            align-items: center;
-            padding: 0 15px;
-            justify-content: space-between;
+            background: #00b0b9;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: bold;
         }
 
-        .hamburger {
-            width: 30px;
-            height: 20px;
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            padding: 20px;
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
-            cursor: pointer;
-        }
-
-        .hamburger div {
-            width: 100%;
-            height: 4px;
-            background-color: #ffffff; /* White color for the hamburger */
-        }
-
-        .header-text {
-            font-family: 'Orbitron', sans-serif; /* Futuristic font */
-            font-size: 1.2rem; /* Smaller size */
-            font-weight: bold;
-            color: #00ffff; /* Cyan text */
-            text-shadow: 
-                0 0 5px #ffffff, 
-                0 0 15px #00ffff, 
-                0 0 20px #00ffff, 
-                0 0 30px #00ffff; /* Enhanced cyan glow */
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            text-align: center;
-            flex-grow: 1;
-        }
-
-        .profile-pic {
-            width: 35px;
-            height: 35px;
-            border-radius: 50%;
-            border: 3px solid #ffffff; /* White border */
-            object-fit: cover;
-            cursor: pointer;
-        }
-
-        .profile-menu {
-            display: none;
-            position: absolute;
-            top: 50px;
-            right: 15px;
-            background-color: #2f2f2f;
-            box-shadow: 0 0 15px #00ff00; /* Neon glow effect */
-            width: 200px;
-            border: 1px solid #00ff00; /* Neon green border */
-            border-radius: 5px;
-            padding: 10px;
-            color: white;
-        }
-
-        .profile-menu a {
-            color: #00ffff;
-            text-decoration: none;
-            padding: 10px;
-            display: block;
-            border-bottom: 1px solid #00ff00;
-        }
-
-        .profile-menu a:last-child {
-            border-bottom: none;
-        }
-
-        .content {
-            flex-grow: 1;
-            display: flex;
-            justify-content: center;
             align-items: center;
+            justify-content: center;
         }
 
-        /* Show the profile menu when hovered or clicked */
-        .profile-pic:hover + .profile-menu,
-        .profile-menu:hover {
-            display: block;
+        .profile-container {
+            margin-top: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 15px;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+        }
+
+        .profile-container img {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            margin-right: 15px;
+        }
+
+        .profile-details {
+            flex-grow: 1;
+            text-align: left;
+        }
+
+        .profile-details p {
+            margin: 5px 0;
+        }
+
+        .button {
+            background-color: #00b0b9;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1rem;
+            cursor: pointer;
+            border-radius: 5px;
+            text-align: center;
+            margin-top: 20px;
+            transition: background-color 0.3s;
+        }
+
+        .button:hover {
+            background-color: #008c8a;
+        }
+
+        .logout-btn {
+            background-color: #ff4040;
+        }
+
+        .logout-btn:hover {
+            background-color: #e53935;
         }
     </style>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap" rel="stylesheet">
 </head>
 <body>
+
     <header>
-        <div class="hamburger">
-            <div></div>
-            <div></div>
-            <div></div>
-        </div>
-        <div class="header-text">CYBERCHAT</div>
-        <div style="position: relative;">
-            <img class="profile-pic" src="https://www.w3schools.com/w3images/avatar2.png" alt="Profile Picture" onclick="toggleProfileMenu()" />
-            <div class="profile-menu" id="profileMenu">
-                <p><strong>Username:</strong> <span id="username">user123</span></p>
-                <p><strong>Email:</strong> <span id="email">user123@example.com</span></p>
-                <a href="#" onclick="changeDetails()">Change Details</a>
-                <a href="#" onclick="logout()">Logout</a>
+        CyberChat Homepage
+    </header>
+
+    <div class="container">
+        <div class="profile-container">
+            <img id="profilePic" src="https://via.placeholder.com/50" alt="Profile Picture">
+            <div class="profile-details">
+                <p id="profileUsername">Username: </p>
+                <p id="profileEmail">Email: </p>
+                <button class="button" id="changePasswordBtn">Change Password</button>
             </div>
         </div>
-    </header>
-    <div class="content"></div>
+
+        <button class="button logout-btn" id="logoutBtn">Logout</button>
+    </div>
 
     <script>
-        // Firebase authentication (make sure you have Firebase SDK setup)
-        // For Firebase setup: https://firebase.google.com/docs/web/setup
+        // Get the user data from localStorage (or Firebase if you're using it)
+        const user = JSON.parse(localStorage.getItem("user"));
 
-        function toggleProfileMenu() {
-            const menu = document.getElementById('profileMenu');
-            menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+        // Check if the user is logged in
+        if (!user) {
+            window.location.href = "login.html"; // Redirect to login if not logged in
         }
 
-        function changeDetails() {
-            // Redirect to a page where the user can change their details
-            alert('Redirecting to change details page...');
-            // Example: window.location.href = 'change_details.html';
-        }
+        // Set the profile info
+        document.getElementById("profileUsername").textContent = `Username: ${user.displayName || "N/A"}`;
+        document.getElementById("profileEmail").textContent = `Email: ${user.email}`;
 
-        function logout() {
-            // Firebase logout function
-            firebase.auth().signOut().then(() => {
-                alert('Logged out successfully!');
-                window.location.href = 'login.html'; // Redirect to login page
-            }).catch((error) => {
-                console.error('Error logging out: ', error);
-            });
-        }
+        // Logout function
+        document.getElementById("logoutBtn").addEventListener("click", () => {
+            localStorage.removeItem("user"); // Remove user from localStorage
+            window.location.href = "login.html"; // Redirect to login page
+        });
 
-        // Update profile with Firebase data (just an example)
-        firebase.auth().onAuthStateChanged(user => {
-            if (user) {
-                // Update UI with the logged-in user's data
-                document.getElementById('username').textContent = user.displayName || 'No username';
-                document.getElementById('email').textContent = user.email || 'No email';
-            } else {
-                // If no user is logged in, redirect to login page
-                window.location.href = 'login.html';
-            }
+        // Change Password function (you can implement this if needed)
+        document.getElementById("changePasswordBtn").addEventListener("click", () => {
+            alert("Change password functionality is not implemented yet.");
+            // You can add password change logic here with Firebase or other services
         });
     </script>
+
 </body>
 </html>
