@@ -1,173 +1,194 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Empty Dark Homepage</title>
+    <title>CyberChat</title>
     <style>
-        * {
+        body {
+            background-color: #1a1a1a;
+            color: white;
+            font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
         }
 
-        body {
-            background-color: #121212;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            color: white;
-        }
-
-        header {
-            background-color: #2f2f2f; /* Netherite black-like color */
+        /* Header */
+        .header {
+            position: fixed;
             width: 100%;
-            height: 50px;
-            border-bottom: 2px solid #00ff00; /* Neon green line */
-            box-shadow: 0 0 15px #00ff00; /* Neon glow effect */
+            background-color: #333;
+            padding: 10px 20px;
+            top: 0;
+            left: 0;
             display: flex;
+            justify-content: space-between;
             align-items: center;
-            padding: 0 15px;
-            justify-content: space-between;
+            border-bottom: 3px solid cyan;
+            z-index: 1000;
         }
 
+        /* CyberChat Text */
+        .header h1 {
+            font-size: 22px;
+            color: cyan;
+            text-shadow: -2px -2px 0 black, 2px -2px 0 black, -2px 2px 0 black, 2px 2px 0 black;
+            margin: 0;
+        }
+
+        /* Hamburger Menu */
         .hamburger {
-            width: 30px;
-            height: 20px;
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
             cursor: pointer;
-        }
-
-        .hamburger div {
-            width: 100%;
-            height: 4px;
-            background-color: #ffffff; /* White color for the hamburger */
-        }
-
-        .header-text {
-            font-family: 'Orbitron', sans-serif; /* Futuristic font */
-            font-size: 1.2rem; /* Smaller size */
+            font-size: 24px;
             font-weight: bold;
-            color: #00ffff; /* Cyan text */
-            text-shadow: 
-                0 0 5px #ffffff, 
-                0 0 15px #00ffff, 
-                0 0 20px #00ffff, 
-                0 0 30px #00ffff; /* Enhanced cyan glow */
+            font-family: "Orbitron", sans-serif;
+            color: white;
             letter-spacing: 2px;
-            text-transform: uppercase;
-            text-align: center;
-            flex-grow: 1;
+        }
+
+        /* Profile Picture */
+        .profile-container {
+            position: relative;
         }
 
         .profile-pic {
-            width: 35px;
-            height: 35px;
             border-radius: 50%;
-            border: 3px solid #ffffff; /* White border */
-            object-fit: cover;
+            width: 50px;
+            height: 50px;
+            border: 3px solid black;
+            outline: 3px solid red;
             cursor: pointer;
+            margin-right: 20px;
         }
 
-        .profile-menu {
-            display: none;
+        /* Sidebar Dropdown */
+        .profile-dropdown {
             position: absolute;
-            top: 50px;
-            right: 15px;
-            background-color: #2f2f2f;
-            box-shadow: 0 0 15px #00ff00; /* Neon glow effect */
-            width: 200px;
-            border: 1px solid #00ff00; /* Neon green border */
+            top: 60px;
+            right: 0;
+            background-color: #222;
+            width: 250px;
+            padding: 15px;
+            box-shadow: 0px 0px 10px rgba(0, 255, 255, 0.5);
             border-radius: 5px;
-            padding: 10px;
+            display: none;
+            flex-direction: column;
+            z-index: 10;
+        }
+
+        .profile-dropdown div {
+            margin-bottom: 10px;
+        }
+
+        .logout-btn {
+            background-color: red;
             color: white;
+            padding: 10px 20px;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            width: 100%;
+            text-align: center;
         }
 
-        .profile-menu a {
-            color: #00ffff;
-            text-decoration: none;
-            padding: 10px;
-            display: block;
-            border-bottom: 1px solid #00ff00;
+        .logout-btn:hover {
+            background-color: darkred;
         }
 
-        .profile-menu a:last-child {
-            border-bottom: none;
-        }
-
-        .content {
-            flex-grow: 1;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
-        /* Show the profile menu when hovered or clicked */
-        .profile-pic:hover + .profile-menu,
-        .profile-menu:hover {
-            display: block;
+        /* Mobile Adjustments */
+        @media (max-width: 600px) {
+            .header h1 {
+                font-size: 18px;
+            }
+            .profile-pic {
+                width: 40px;
+                height: 40px;
+            }
         }
     </style>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap" rel="stylesheet">
 </head>
+
 <body>
-    <header>
-        <div class="hamburger">
-            <div></div>
-            <div></div>
-            <div></div>
-        </div>
-        <div class="header-text">CYBERCHAT</div>
-        <div style="position: relative;">
-            <img class="profile-pic" src="https://www.w3schools.com/w3images/avatar2.png" alt="Profile Picture" onclick="toggleProfileMenu()" />
-            <div class="profile-menu" id="profileMenu">
-                <p><strong>Username:</strong> <span id="username">user123</span></p>
-                <p><strong>Email:</strong> <span id="email">user123@example.com</span></p>
-                <a href="#" onclick="changeDetails()">Change Details</a>
-                <a href="#" onclick="logout()">Logout</a>
+
+    <!-- Header Section -->
+    <div class="header">
+        <div class="hamburger">☰</div>
+        <h1>CYBERCHAT</h1>
+        <div class="profile-container">
+            <img class="profile-pic" src="https://www.w3schools.com/w3images/avatar2.png" alt="Profile Picture" id="profilePic">
+            <div class="profile-dropdown" id="profileDropdown">
+                <div id="username">Username: Loading...</div>
+                <div id="email">Email: Loading...</div>
+                <button class="logout-btn" onclick="logout()">Logout</button>
             </div>
         </div>
-    </header>
-    <div class="content"></div>
+    </div>
 
-    <script>
-        // Firebase authentication (make sure you have Firebase SDK setup)
-        // For Firebase setup: https://firebase.google.com/docs/web/setup
+    <!-- Firebase JS SDK -->
+    <script type="module">
+        // Import Firebase modules
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-analytics.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
 
-        function toggleProfileMenu() {
-            const menu = document.getElementById('profileMenu');
-            menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
-        }
+        // Firebase Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
+            authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
+            databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
+            projectId: "itzhoyoo-f9f7e",
+            storageBucket: "itzhoyoo-f9f7e.firebasestorage.app",
+            messagingSenderId: "1094792075584",
+            appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
+            measurementId: "G-LLT6F9WRKH"
+        };
 
-        function changeDetails() {
-            // Redirect to a page where the user can change their details
-            alert('Redirecting to change details page...');
-            // Example: window.location.href = 'change_details.html';
-        }
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+        const auth = getAuth(app);
 
+        // Listen for auth state changes
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                document.getElementById('username').textContent = "Username: " + (user.displayName || 'No username set');
+                document.getElementById('email').textContent = "Email: " + (user.email || 'No email set');
+                document.getElementById('profilePic').src = user.photoURL || 'https://www.w3schools.com/w3images/avatar2.png';
+            } else {
+                window.location.href = 'login.html'; // Redirect if not logged in
+            }
+        });
+
+        // Logout function
         function logout() {
-            // Firebase logout function
-            firebase.auth().signOut().then(() => {
-                alert('Logged out successfully!');
-                window.location.href = 'login.html'; // Redirect to login page
+            signOut(auth).then(() => {
+                window.location.href = 'login.html';
             }).catch((error) => {
-                console.error('Error logging out: ', error);
+                console.error('Error signing out:', error);
             });
         }
 
-        // Update profile with Firebase data (just an example)
-        firebase.auth().onAuthStateChanged(user => {
-            if (user) {
-                // Update UI with the logged-in user's data
-                document.getElementById('username').textContent = user.displayName || 'No username';
-                document.getElementById('email').textContent = user.email || 'No email';
-            } else {
-                // If no user is logged in, redirect to login page
-                window.location.href = 'login.html';
+        // Toggle profile dropdown
+        document.getElementById("profilePic").addEventListener("click", function (event) {
+            event.stopPropagation(); // Prevent immediate closing
+            let dropdown = document.getElementById("profileDropdown");
+            dropdown.style.display = dropdown.style.display === "block" ? "none" : "block";
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener("click", function (event) {
+            let dropdown = document.getElementById("profileDropdown");
+            let profilePic = document.getElementById("profilePic");
+
+            if (!dropdown.contains(event.target) && event.target !== profilePic) {
+                dropdown.style.display = "none";
             }
         });
     </script>
+
 </body>
+
 </html>
