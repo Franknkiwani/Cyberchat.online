@@ -1,194 +1,228 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CyberChat</title>
+    <title>CyberChat - Auth</title>
     <style>
         body {
-            background-color: #1a1a1a;
-            color: white;
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-        }
-
-        /* Header */
-        .header {
-            position: fixed;
-            width: 100%;
-            background-color: #333;
-            padding: 10px 20px;
-            top: 0;
-            left: 0;
+            font-family: 'Roboto', sans-serif;
+            background: #1f1f1f;
             display: flex;
-            justify-content: space-between;
+            justify-content: center;
             align-items: center;
-            border-bottom: 3px solid cyan;
-            z-index: 1000;
-        }
-
-        /* CyberChat Text */
-        .header h1 {
-            font-size: 22px;
-            color: cyan;
-            text-shadow: -2px -2px 0 black, 2px -2px 0 black, -2px 2px 0 black, 2px 2px 0 black;
+            height: 100vh;
             margin: 0;
+            color: #e6e6e6;
+            overflow: hidden;
         }
 
-        /* Hamburger Menu */
-        .hamburger {
-            display: flex;
-            flex-direction: column;
-            cursor: pointer;
-            font-size: 24px;
-            font-weight: bold;
-            font-family: "Orbitron", sans-serif;
-            color: white;
-            letter-spacing: 2px;
-        }
-
-        /* Profile Picture */
-        .profile-container {
-            position: relative;
-        }
-
-        .profile-pic {
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            border: 3px solid black;
-            outline: 3px solid red;
-            cursor: pointer;
-            margin-right: 20px;
-        }
-
-        /* Sidebar Dropdown */
-        .profile-dropdown {
-            position: absolute;
-            top: 60px;
-            right: 0;
-            background-color: #222;
-            width: 250px;
-            padding: 15px;
-            box-shadow: 0px 0px 10px rgba(0, 255, 255, 0.5);
-            border-radius: 5px;
-            display: none;
-            flex-direction: column;
-            z-index: 10;
-        }
-
-        .profile-dropdown div {
-            margin-bottom: 10px;
-        }
-
-        .logout-btn {
-            background-color: red;
-            color: white;
-            padding: 10px 20px;
-            border: none;
-            cursor: pointer;
-            border-radius: 5px;
-            width: 100%;
+        .form-container {
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 10px;
+            padding: 30px 40px;
+            width: 380px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.6);
             text-align: center;
         }
 
-        .logout-btn:hover {
-            background-color: darkred;
+        .form-container h2 {
+            font-size: 2rem;
+            color: #00b0b9;
+            margin-bottom: 20px;
         }
 
-        /* Mobile Adjustments */
-        @media (max-width: 600px) {
-            .header h1 {
-                font-size: 18px;
-            }
-            .profile-pic {
-                width: 40px;
-                height: 40px;
-            }
+        .input-field {
+            width: 100%;
+            padding: 12px;
+            margin: 12px 0;
+            background: #2b2b2b;
+            color: #e6e6e6;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        .button {
+            width: 100%;
+            padding: 15px;
+            background: #00b0b9;
+            color: #121212;
+            font-size: 1.1rem;
+            font-weight: bold;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .button:hover {
+            background: #008c8a;
+        }
+
+        .error {
+            color: #ff4040;
+            margin-top: 10px;
+            font-size: 0.9rem;
+        }
+
+        .profile-preview {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin: 10px auto;
+            display: block;
+            border: 2px solid #00b0b9;
+        }
+
+        .form-toggle {
+            margin-top: 20px;
+            cursor: pointer;
+            color: #00b0b9;
+        }
+
+        .form-toggle a {
+            text-decoration: none;
+            font-weight: bold;
         }
     </style>
 </head>
-
 <body>
 
-    <!-- Header Section -->
-    <div class="header">
-        <div class="hamburger">☰</div>
-        <h1>CYBERCHAT</h1>
-        <div class="profile-container">
-            <img class="profile-pic" src="https://www.w3schools.com/w3images/avatar2.png" alt="Profile Picture" id="profilePic">
-            <div class="profile-dropdown" id="profileDropdown">
-                <div id="username">Username: Loading...</div>
-                <div id="email">Email: Loading...</div>
-                <button class="logout-btn" onclick="logout()">Logout</button>
+    <div class="form-container">
+        <!-- Register Form -->
+        <div id="registerForm">
+            <h2>Register</h2>
+            <input type="text" id="username" class="input-field" placeholder="Username">
+            <input type="email" id="registerEmail" class="input-field" placeholder="Email">
+            <input type="password" id="registerPassword" class="input-field" placeholder="Password">
+            <input type="number" id="age" class="input-field" placeholder="Age" min="1">
+            <select id="gender" class="input-field">
+                <option value="" disabled selected>Select Gender</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+            </select>
+            <input type="file" id="profilePic" accept="image/*">
+            <img id="profilePreview" class="profile-preview" src="" style="display: none;">
+            <button id="registerBtn" class="button">Register</button>
+            <div id="registerErrorMessage" class="error"></div>
+            <div class="form-toggle">
+                <a onclick="toggleForms()">Already have an account? Login</a>
+            </div>
+        </div>
+
+        <!-- Login Form -->
+        <div id="loginForm" style="display: none;">
+            <h2>Login</h2>
+            <input type="email" id="loginEmail" class="input-field" placeholder="Email">
+            <input type="password" id="loginPassword" class="input-field" placeholder="Password">
+            <button id="loginBtn" class="button">Login</button>
+            <div id="loginErrorMessage" class="error"></div>
+            <div class="form-toggle">
+                <a onclick="toggleForms()">Don't have an account? Register</a>
             </div>
         </div>
     </div>
 
-    <!-- Firebase JS SDK -->
     <script type="module">
-        // Import Firebase modules
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
-        import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-analytics.js";
-        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
+        import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
+        import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-storage.js";
 
-        // Firebase Config
         const firebaseConfig = {
-            apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
-            authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
-            databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
-            projectId: "itzhoyoo-f9f7e",
-            storageBucket: "itzhoyoo-f9f7e.firebasestorage.app",
-            messagingSenderId: "1094792075584",
-            appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
-            measurementId: "G-LLT6F9WRKH"
-        };
+  apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
+  authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
+  databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
+  projectId: "itzhoyoo-f9f7e",
+  storageBucket: "itzhoyoo-f9f7e.firebasestorage.app",
+  messagingSenderId: "1094792075584",
+  appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
+  measurementId: "G-LLT6F9WRKH"
+};
 
-        // Initialize Firebase
         const app = initializeApp(firebaseConfig);
-        const analytics = getAnalytics(app);
         const auth = getAuth(app);
+        const db = getFirestore(app);
+        const storage = getStorage(app);
 
-        // Listen for auth state changes
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                document.getElementById('username').textContent = "Username: " + (user.displayName || 'No username set');
-                document.getElementById('email').textContent = "Email: " + (user.email || 'No email set');
-                document.getElementById('profilePic').src = user.photoURL || 'https://www.w3schools.com/w3images/avatar2.png';
-            } else {
-                window.location.href = 'login.html'; // Redirect if not logged in
+        const registerBtn = document.getElementById("registerBtn");
+        const loginBtn = document.getElementById("loginBtn");
+
+        const profilePic = document.getElementById("profilePic");
+        const profilePreview = document.getElementById("profilePreview");
+
+        profilePic.addEventListener("change", function () {
+            const file = profilePic.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    profilePreview.src = e.target.result;
+                    profilePreview.style.display = "block";
+                };
+                reader.readAsDataURL(file);
             }
         });
 
-        // Logout function
-        function logout() {
-            signOut(auth).then(() => {
-                window.location.href = 'login.html';
-            }).catch((error) => {
-                console.error('Error signing out:', error);
-            });
+        registerBtn.addEventListener("click", async () => {
+            const username = document.getElementById("username").value;
+            const email = document.getElementById("registerEmail").value;
+            const password = document.getElementById("registerPassword").value;
+            const age = document.getElementById("age").value;
+            const gender = document.getElementById("gender").value;
+
+            if (!username || !email || !password || !age || !gender) {
+                document.getElementById("registerErrorMessage").textContent = "All fields are required!";
+                return;
+            }
+
+            try {
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+
+                let profilePicURL = "";
+                if (profilePic.files.length > 0) {
+                    const file = profilePic.files[0];
+                    const storageRef = ref(storage, `profile_pics/${user.uid}`);
+                    await uploadBytes(storageRef, file);
+                    profilePicURL = await getDownloadURL(storageRef);
+                }
+
+                await setDoc(doc(db, "users", user.uid), {
+                    username,
+                    email,
+                    age,
+                    gender,
+                    profilePic: profilePicURL
+                });
+
+                localStorage.setItem("user", JSON.stringify({ username, email, age, gender, profilePic: profilePicURL }));
+                window.location.href = "dashboard.html";
+            } catch (error) {
+                document.getElementById("registerErrorMessage").textContent = error.message;
+            }
+        });
+
+        loginBtn.addEventListener("click", async () => {
+            const email = document.getElementById("loginEmail").value;
+            const password = document.getElementById("loginPassword").value;
+
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+                window.location.href = "dashboard.html";
+            } catch (error) {
+                document.getElementById("loginErrorMessage").textContent = error.message;
+            }
+        });
+
+        function toggleForms() {
+            document.getElementById("registerForm").style.display = document.getElementById("registerForm").style.display === "none" ? "block" : "none";
+            document.getElementById("loginForm").style.display = document.getElementById("loginForm").style.display === "none" ? "block" : "none";
         }
-
-        // Toggle profile dropdown
-        document.getElementById("profilePic").addEventListener("click", function (event) {
-            event.stopPropagation(); // Prevent immediate closing
-            let dropdown = document.getElementById("profileDropdown");
-            dropdown.style.display = dropdown.style.display === "block" ? "none" : "block";
-        });
-
-        // Close dropdown when clicking outside
-        document.addEventListener("click", function (event) {
-            let dropdown = document.getElementById("profileDropdown");
-            let profilePic = document.getElementById("profilePic");
-
-            if (!dropdown.contains(event.target) && event.target !== profilePic) {
-                dropdown.style.display = "none";
-            }
-        });
     </script>
 
 </body>
-
 </html>
