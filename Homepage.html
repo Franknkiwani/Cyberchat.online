@@ -7,7 +7,7 @@
     <script type="module">
         // Import Firebase
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
-        import { getDatabase, ref, push, onChildAdded, update, get } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-database.js";
+        import { getDatabase, ref, push, onChildAdded, update, remove } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-database.js";
 
         // Firebase config
         const firebaseConfig = {
@@ -25,38 +25,24 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // Ask for username only once
+        // Ask for username on page load
         let username = localStorage.getItem("username");
         if (!username) {
             username = prompt("Enter your username:");
-            if (username && username.trim() !== "") {
-                localStorage.setItem("username", username);
-            } else {
+            if (!username || username.trim() === "") {
                 username = "User" + Math.floor(Math.random() * 1000);
-                localStorage.setItem("username", username);
             }
+            localStorage.setItem("username", username);
         }
+
+        // Flags for special features
+        let neonHighlight = localStorage.getItem("neonHighlight") === "true";
+        let verifiedUser = localStorage.getItem("verifiedUser") === "true";
+        let canDeleteMessages = false;
 
         // Select Elements
         const messagesContainer = document.getElementById('messages');
         const messageInput = document.getElementById('message-input');
-        const viewCounter = document.getElementById('view-counter');
-
-        // Increment view count only once per user
-        const hasViewed = localStorage.getItem("viewed");
-        if (!hasViewed) {
-            get(ref(db, "views")).then((snapshot) => {
-                let viewCount = snapshot.exists() ? snapshot.val().count : 0;
-                viewCount++;
-                update(ref(db, "views"), { count: viewCount });
-                viewCounter.innerText = "Views: " + viewCount;
-                localStorage.setItem("viewed", "true"); // Prevents multiple counts
-            });
-        } else {
-            get(ref(db, "views")).then((snapshot) => {
-                viewCounter.innerText = "Views: " + (snapshot.exists() ? snapshot.val().count : 0);
-            });
-        }
 
         // Send Message Function
         window.sendMessage = function() {
@@ -66,7 +52,9 @@
                 push(ref(db, "messages"), {
                     username: username,
                     text: messageText,
-                    timestamp: timestamp
+                    timestamp: timestamp,
+                    neon: neonHighlight, // Stores if the user has neon highlight
+                    verified: verifiedUser // Stores if the user is verified
                 });
                 messageInput.value = "";
             }
@@ -75,24 +63,74 @@
         // Load Messages from Firebase
         onChildAdded(ref(db, "messages"), (snapshot) => {
             const messageData = snapshot.val();
-            displayMessage(snapshot.key, messageData.username, messageData.text, messageData.timestamp);
+            displayMessage(snapshot.key, messageData.username, messageData.text, messageData.timestamp, messageData.neon, messageData.verified);
         });
 
         // Display Message Function
-        function displayMessage(messageId, messageUsername, text, timestamp) {
+        function displayMessage(messageId, messageUsername, text, timestamp, isNeon, isVerified) {
             const messageDiv = document.createElement("div");
             messageDiv.classList.add("message");
             messageDiv.setAttribute("data-id", messageId);
 
+            if (isNeon) {
+                messageDiv.classList.add("neon-highlight");
+            }
+
+            let verifiedBadge = isVerified ? '<span class="verified-badge">✔</span>' : "";
+            let deleteButton = canDeleteMessages ? `<button class="delete-btn" onclick="deleteMessage('${messageId}')">🗑</button>` : "";
+
             messageDiv.innerHTML = `
-                <div class="message-user">@${messageUsername}</div>
+                <div class="message-user">@${messageUsername} ${verifiedBadge}</div>
                 <div>${text.replace(/@(\w+)/g, '<span class="mention">@$1</span>')}</div>
                 <div class="message-timestamp">${timestamp}</div>
+                ${deleteButton}
             `;
 
             messagesContainer.appendChild(messageDiv);
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
         }
+
+        // Enable Neon Highlight
+        window.enableNeonHighlight = function() {
+            let password = prompt("Enter admin password:");
+            if (password === "ITZHOYOO") {
+                neonHighlight = true;
+                localStorage.setItem("neonHighlight", "true");
+                alert("Neon highlight activated for your messages!");
+            } else {
+                alert("Incorrect password!");
+            }
+        };
+
+        // Grant Verified Badge
+        window.grantVerifiedBadge = function() {
+            let password = prompt("Enter admin password:");
+            if (password === "ITZHOYOO") {
+                verifiedUser = true;
+                localStorage.setItem("verifiedUser", "true");
+                alert("You are now verified!");
+            } else {
+                alert("Incorrect password!");
+            }
+        };
+
+        // Enable Message Deletion
+        window.enableMessageDeletion = function() {
+            let password = prompt("Enter admin password:");
+            if (password === "ITZHOYOO") {
+                canDeleteMessages = true;
+                alert("You can now delete messages!");
+                location.reload(); // Refresh to show delete buttons
+            } else {
+                alert("Incorrect password!");
+            }
+        };
+
+        // Delete Message Function
+        window.deleteMessage = function(messageId) {
+            remove(ref(db, "messages/" + messageId));
+            document.querySelector(`[data-id="${messageId}"]`).remove();
+        };
     </script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -101,49 +139,32 @@
         .hamburger { width: 30px; height: 25px; display: flex; flex-direction: column; justify-content: space-between; cursor: pointer; }
         .hamburger div { width: 100%; height: 4px; background: white; border-radius: 4px; }
         .chat-container { flex: 1; display: flex; flex-direction: column; justify-content: space-between; height: 100%; background: #1b1b1b; color: white; padding: 20px; }
-        .chat-header { background: black; padding: 10px; display: flex; justify-content: space-between; gap: 10px; border-radius: 10px; align-items: center; }
-        .messages { flex: 1; overflow-y: auto; padding: 10px; background: #1f1f1f; border-radius: 8px; display: flex; flex-direction: column; position: relative; }
-        .view-counter { position: absolute; top: 5px; right: 10px; font-size: 14px; color: yellow; }
-        .message { background: #444; padding: 12px; margin: 10px 0; border-radius: 8px; }
-        .message-user { font-weight: bold; margin-bottom: 5px; }
+        .chat-header { background: black; padding: 10px; display: flex; justify-content: center; gap: 10px; border-radius: 10px; }
+        .messages { flex: 1; overflow-y: auto; padding: 10px; background: #1f1f1f; border-radius: 8px; display: flex; flex-direction: column; }
+        .message { background: #444; padding: 12px; margin: 10px 0; border-radius: 8px; position: relative; }
+        .neon-highlight { border: 2px solid cyan; box-shadow: 0px 0px 10px cyan; }
+        .verified-badge { color: blue; font-weight: bold; margin-left: 5px; }
+        .delete-btn { background: none; border: none; color: red; cursor: pointer; font-size: 16px; float: right; }
         .message-timestamp { font-size: 12px; color: #ccc; text-align: right; }
         .mention { color: #3b9df0; }
         .input-area { display: flex; align-items: center; justify-content: space-between; padding-top: 10px; }
         input[type="text"] { width: 80%; padding: 12px; border: none; border-radius: 25px; background: #333; color: white; font-size: 16px; outline: none; }
-        button { padding: 12px 20px; border: none; border-radius: 25px; color: white; font-size: 16px; cursor: pointer; transition: all 0.3s ease; }
-        .btn-send { background-color: #3b9df0; }
-        .btn-send:hover { background-color: #3498db; }
+        button { padding: 12px 20px; border: none; border-radius: 25px; color: white; font-size: 16px; cursor: pointer; }
     </style>
 </head>
 <body>
 
-<!-- Main Header -->
-<div class="main-header">
-    <div class="hamburger">
-        <div></div>
-        <div></div>
-        <div></div>
-    </div>
-</div>
-
 <!-- Chat Room -->
 <div class="chat-container">
-    <!-- Chat Header -->
     <div class="chat-header">
-        <button class="header-btn">Text Color</button>
-        <button class="header-btn">Verify Badge</button>
-        <button class="header-btn">Delete</button>
+        <button onclick="enableNeonHighlight()">Text Color</button>
+        <button onclick="grantVerifiedBadge()">Verify Badge</button>
+        <button onclick="enableMessageDeletion()">Delete</button>
     </div>
-    
-    <!-- Messages -->
-    <div class="messages" id="messages">
-        <div id="view-counter" class="view-counter">Views: 0</div>
-    </div>
-    
-    <!-- Input Field -->
+    <div class="messages" id="messages"></div>
     <div class="input-area">
         <input type="text" id="message-input" placeholder="Type a message..." />
-        <button class="btn-send" onclick="sendMessage()">Send</button>
+        <button onclick="sendMessage()">Send</button>
     </div>
 </div>
 
