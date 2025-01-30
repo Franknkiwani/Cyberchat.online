@@ -3,146 +3,149 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CyberChat - Homepage</title>
+    <title>CyberChat</title>
+    <script type="module">
+        // Import Firebase
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
+        import { getDatabase, ref, push, onChildAdded, update, get } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-database.js";
+
+        // Firebase config
+        const firebaseConfig = {
+            apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
+            authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
+            databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
+            projectId: "itzhoyoo-f9f7e",
+            storageBucket: "itzhoyoo-f9f7e.firebasestorage.app",
+            messagingSenderId: "1094792075584",
+            appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
+            measurementId: "G-LLT6F9WRKH"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        // Ask for username only once
+        let username = localStorage.getItem("username");
+        if (!username) {
+            username = prompt("Enter your username:");
+            if (username && username.trim() !== "") {
+                localStorage.setItem("username", username);
+            } else {
+                username = "User" + Math.floor(Math.random() * 1000);
+                localStorage.setItem("username", username);
+            }
+        }
+
+        // Select Elements
+        const messagesContainer = document.getElementById('messages');
+        const messageInput = document.getElementById('message-input');
+        const viewCounter = document.getElementById('view-counter');
+
+        // Increment view count only once per user
+        const hasViewed = localStorage.getItem("viewed");
+        if (!hasViewed) {
+            get(ref(db, "views")).then((snapshot) => {
+                let viewCount = snapshot.exists() ? snapshot.val().count : 0;
+                viewCount++;
+                update(ref(db, "views"), { count: viewCount });
+                viewCounter.innerText = "Views: " + viewCount;
+                localStorage.setItem("viewed", "true"); // Prevents multiple counts
+            });
+        } else {
+            get(ref(db, "views")).then((snapshot) => {
+                viewCounter.innerText = "Views: " + (snapshot.exists() ? snapshot.val().count : 0);
+            });
+        }
+
+        // Send Message Function
+        window.sendMessage = function() {
+            const messageText = messageInput.value.trim();
+            if (messageText !== "") {
+                const timestamp = new Date().toLocaleTimeString();
+                push(ref(db, "messages"), {
+                    username: username,
+                    text: messageText,
+                    timestamp: timestamp
+                });
+                messageInput.value = "";
+            }
+        };
+
+        // Load Messages from Firebase
+        onChildAdded(ref(db, "messages"), (snapshot) => {
+            const messageData = snapshot.val();
+            displayMessage(snapshot.key, messageData.username, messageData.text, messageData.timestamp);
+        });
+
+        // Display Message Function
+        function displayMessage(messageId, messageUsername, text, timestamp) {
+            const messageDiv = document.createElement("div");
+            messageDiv.classList.add("message");
+            messageDiv.setAttribute("data-id", messageId);
+
+            messageDiv.innerHTML = `
+                <div class="message-user">@${messageUsername}</div>
+                <div>${text.replace(/@(\w+)/g, '<span class="mention">@$1</span>')}</div>
+                <div class="message-timestamp">${timestamp}</div>
+            `;
+
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+    </script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: Arial, sans-serif;
-            background: #f4f4f9;
-            color: #333;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            margin: 0;
-        }
-
-        header {
-            width: 100%;
-            background: #00b0b9;
-            color: white;
-            padding: 15px;
-            text-align: center;
-            font-size: 1.5rem;
-            font-weight: bold;
-        }
-
-        .container {
-            width: 100%;
-            max-width: 1200px;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .profile-container {
-            margin-top: 30px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 15px;
-            background: #fff;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            max-width: 500px;
-            text-align: center;
-        }
-
-        .profile-container img {
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            margin-right: 15px;
-        }
-
-        .profile-details {
-            flex-grow: 1;
-            text-align: left;
-        }
-
-        .profile-details p {
-            margin: 5px 0;
-        }
-
-        .button {
-            background-color: #00b0b9;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            font-size: 1rem;
-            cursor: pointer;
-            border-radius: 5px;
-            text-align: center;
-            margin-top: 20px;
-            transition: background-color 0.3s;
-        }
-
-        .button:hover {
-            background-color: #008c8a;
-        }
-
-        .logout-btn {
-            background-color: #ff4040;
-        }
-
-        .logout-btn:hover {
-            background-color: #e53935;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body, html { height: 100%; font-family: 'Arial', sans-serif; background: #121212; display: flex; flex-direction: column; }
+        .main-header { background: #222; padding: 15px 20px; display: flex; align-items: center; }
+        .hamburger { width: 30px; height: 25px; display: flex; flex-direction: column; justify-content: space-between; cursor: pointer; }
+        .hamburger div { width: 100%; height: 4px; background: white; border-radius: 4px; }
+        .chat-container { flex: 1; display: flex; flex-direction: column; justify-content: space-between; height: 100%; background: #1b1b1b; color: white; padding: 20px; }
+        .chat-header { background: black; padding: 10px; display: flex; justify-content: space-between; gap: 10px; border-radius: 10px; align-items: center; }
+        .messages { flex: 1; overflow-y: auto; padding: 10px; background: #1f1f1f; border-radius: 8px; display: flex; flex-direction: column; position: relative; }
+        .view-counter { position: absolute; top: 5px; right: 10px; font-size: 14px; color: yellow; }
+        .message { background: #444; padding: 12px; margin: 10px 0; border-radius: 8px; }
+        .message-user { font-weight: bold; margin-bottom: 5px; }
+        .message-timestamp { font-size: 12px; color: #ccc; text-align: right; }
+        .mention { color: #3b9df0; }
+        .input-area { display: flex; align-items: center; justify-content: space-between; padding-top: 10px; }
+        input[type="text"] { width: 80%; padding: 12px; border: none; border-radius: 25px; background: #333; color: white; font-size: 16px; outline: none; }
+        button { padding: 12px 20px; border: none; border-radius: 25px; color: white; font-size: 16px; cursor: pointer; transition: all 0.3s ease; }
+        .btn-send { background-color: #3b9df0; }
+        .btn-send:hover { background-color: #3498db; }
     </style>
 </head>
 <body>
 
-    <header>
-        CyberChat Homepage
-    </header>
-
-    <div class="container">
-        <div class="profile-container">
-            <img id="profilePic" src="https://via.placeholder.com/50" alt="Profile Picture">
-            <div class="profile-details">
-                <p id="profileUsername">Username: </p>
-                <p id="profileEmail">Email: </p>
-                <button class="button" id="changePasswordBtn">Change Password</button>
-            </div>
-        </div>
-
-        <button class="button logout-btn" id="logoutBtn">Logout</button>
+<!-- Main Header -->
+<div class="main-header">
+    <div class="hamburger">
+        <div></div>
+        <div></div>
+        <div></div>
     </div>
+</div>
 
-    <script>
-        // Get the user data from localStorage (or Firebase if you're using it)
-        const user = JSON.parse(localStorage.getItem("user"));
-
-        // Check if the user is logged in
-        if (!user) {
-            window.location.href = "login.html"; // Redirect to login if not logged in
-        }
-
-        // Set the profile info
-        document.getElementById("profileUsername").textContent = `Username: ${user.displayName || "N/A"}`;
-        document.getElementById("profileEmail").textContent = `Email: ${user.email}`;
-
-        // Logout function
-        document.getElementById("logoutBtn").addEventListener("click", () => {
-            localStorage.removeItem("user"); // Remove user from localStorage
-            window.location.href = "login.html"; // Redirect to login page
-        });
-
-        // Change Password function (you can implement this if needed)
-        document.getElementById("changePasswordBtn").addEventListener("click", () => {
-            alert("Change password functionality is not implemented yet.");
-            // You can add password change logic here with Firebase or other services
-        });
-    </script>
+<!-- Chat Room -->
+<div class="chat-container">
+    <!-- Chat Header -->
+    <div class="chat-header">
+        <button class="header-btn">Text Color</button>
+        <button class="header-btn">Verify Badge</button>
+        <button class="header-btn">Delete</button>
+    </div>
+    
+    <!-- Messages -->
+    <div class="messages" id="messages">
+        <div id="view-counter" class="view-counter">Views: 0</div>
+    </div>
+    
+    <!-- Input Field -->
+    <div class="input-area">
+        <input type="text" id="message-input" placeholder="Type a message..." />
+        <button class="btn-send" onclick="sendMessage()">Send</button>
+    </div>
+</div>
 
 </body>
 </html>
