@@ -3,159 +3,206 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Money Generator</title>
+    <title>CyberChat Register/Login</title>
     <style>
         body {
             font-family: 'Arial', sans-serif;
-            background: linear-gradient(45deg, #FF6F61, #6A1B9A);
-            margin: 0;
+            background: #0d0d0d;
+            color: #fff;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
-            color: white;
+            margin: 0;
         }
 
-        .container {
-            text-align: center;
-            background-color: rgba(0, 0, 0, 0.7);
+        .popup {
+            background: #1b1b1b;
+            border-radius: 10px;
             padding: 40px;
-            border-radius: 15px;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.2);
             width: 350px;
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+            text-align: center;
         }
 
-        h1 {
-            font-size: 32px;
-            color: #FFEB3B;
+        .popup h2 {
+            color: #00ffcc;
+            font-size: 24px;
+            margin-bottom: 20px;
         }
 
-        #moneyDisplay {
-            font-size: 48px;
-            font-weight: bold;
-            color: #4CAF50;
-            margin: 20px 0;
+        .input-container {
+            position: relative;
+            width: 100%;
+            margin-bottom: 15px;
         }
 
-        #generateBtn {
-            background-color: #FFEB3B;
-            color: #2D2D2D;
-            padding: 15px 30px;
-            border: none;
-            border-radius: 8px;
-            font-size: 20px;
-            cursor: pointer;
+        .input-container span {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #888;
+            font-size: 16px;
+        }
+
+        .input-container input {
+            width: 80%;
+            padding: 14px;
+            padding-left: 30px;
+            border-radius: 5px;
+            border: 1px solid #333;
+            background: #111;
+            color: #fff;
+            font-size: 16px;
+            outline: none;
             transition: all 0.3s ease;
         }
 
-        #generateBtn:hover {
-            background-color: #FF9800;
-        }
-
-        #message {
-            font-size: 18px;
-            margin-top: 20px;
-            color: #FF5733;
-        }
-
-        .status {
-            font-size: 16px;
-            color: #FFEB3B;
-            font-weight: bold;
-        }
-
-        .emailSection {
-            display: none;
-            margin-top: 20px;
-        }
-
-        .emailSection input {
-            padding: 10px;
-            width: 80%;
-            margin-bottom: 10px;
-            font-size: 16px;
-        }
-
-        .emailSection button {
-            padding: 10px 20px;
-            font-size: 16px;
-            background-color: #FF5733;
-            color: white;
-            border: none;
-            cursor: pointer;
-            border-radius: 5px;
-        }
-
-        .emailSection button:hover {
-            background-color: #FF4500;
-        }
-
-        /* Popup styles */
-        .popup {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            justify-content: center;
-            align-items: center;
-        }
-
-        .popup-content {
-            background-color: white;
-            padding: 20px;
-            border-radius: 10px;
-            text-align: center;
-            width: 300px;
+        .input-container input:focus {
+            border-color: #00ffcc;
         }
 
         .popup button {
-            padding: 10px 20px;
-            background-color: #FF5733;
-            color: white;
+            width: 100%;
+            padding: 14px;
+            background: #00ffcc;
             border: none;
-            cursor: pointer;
             border-radius: 5px;
+            color: #111;
+            font-size: 18px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.3s ease;
         }
 
         .popup button:hover {
-            background-color: #FF4500;
+            background: #00e6b8;
+        }
+
+        .popup .toggle-btn {
+            color: #fff;
+            display: block;
+            margin-top: 15px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: normal;
+        }
+
+        .profile-pic-container {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .profile-pic-container img {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+        }
+
+        .profile-pic-container button {
+            margin-top: 10px;
+            padding: 8px 16px;
+            background: #00ffcc;
+            border: none;
+            border-radius: 5px;
+            color: #111;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .profile-pic-container button:hover {
+            background: #00e6b8;
+        }
+
+        /* Notification styles */
+        .notification {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #00ffcc;
+            color: #111;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 18px;
+            display: none;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+            z-index: 9999;
+            animation: slideIn 0.5s ease, fadeOut 2s 3.5s forwards;
+        }
+
+        @keyframes slideIn {
+            from {
+                top: -100px;
+            }
+            to {
+                top: 20px;
+            }
+        }
+
+        @keyframes fadeOut {
+            from {
+                opacity: 1;
+            }
+            to {
+                opacity: 0;
+            }
         }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <h1>Money Generator</h1>
-        <p>Click the button to generate virtual money!</p>
-        <div id="moneyDisplay">$0.00</div>
-        <button id="generateBtn">Generate Money</button>
-        <div id="message" class="status">Ready to generate?</div>
+    <div class="popup" id="popup">
+        <h2>CyberChat</h2>
 
-        <div class="emailSection">
-            <p>Please enter your PayPal email to claim your money!</p>
-            <input type="email" id="paypalEmail" placeholder="Enter PayPal Email">
-            <button id="claimBtn">Claim Your Money</button>
-        </div>
+        <!-- Login Form -->
+        <form id="form">
+            <div class="input-container">
+                <span>@</span>
+                <input type="email" id="email" placeholder="Email" required>
+            </div>
+            <div class="input-container">
+                <input type="password" id="password" placeholder="Password" required>
+            </div>
+            <button type="submit">LOGIN</button>
+            <p class="toggle-btn" id="toggle-register">Don't have an account? Register</p>
+        </form>
+
+        <!-- Register Form -->
+        <form id="register-form" style="display: none;">
+            <div class="input-container">
+                <span>@</span>
+                <input type="text" id="register-username" placeholder="Username" required>
+            </div>
+            <div class="input-container">
+                <input type="email" id="register-email" placeholder="Email" required>
+            </div>
+            <div class="input-container">
+                <input type="password" id="register-password" placeholder="Password" required>
+            </div>
+            <div class="profile-pic-container">
+                <img id="profile-pic" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQXAG_XJZQtzTGm0FhTj9HNVeklnbkdmZkRJfoCQiCk7XtvOTKZN902ZBwI&s=10" alt="Profile Picture">
+                <button type="button" id="change-pic">Change Profile Picture</button>
+            </div>
+            <div class="input-container">
+                <input type="url" id="custom-pic" placeholder="Enter your own image URL" />
+                <button type="button" id="select-image">Select</button>
+            </div>
+            <button type="submit">REGISTER</button>
+            <p class="toggle-btn" id="toggle-login">Already have an account? Login</p>
+        </form>
     </div>
 
-    <!-- Popup for cooldown message -->
-    <div id="popup" class="popup">
-        <div class="popup-content">
-            <h2>You've already generated money recently!</h2>
-            <p>You can try again in an hour.</p>
-            <button id="closePopup">Close</button>
-        </div>
-    </div>
+    <!-- Notification Element -->
+    <div id="notification" class="notification"></div>
 
     <script type="module">
-        // Import Firebase functions
+        // Firebase setup (use your firebaseConfig here)
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
         import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-database.js";
 
-        // Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
             authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
@@ -169,79 +216,129 @@
 
         // Initialize Firebase
         const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
+        const auth = getAuth();
+        const database = getDatabase(app);
 
-        let totalMoney = 0;
-        let lastGeneratedTime = localStorage.getItem("lastGeneratedTime");
-        let isGenerating = false;
+        const profilePics = [
+            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQXAG_XJZQtzTGm0FhTj9HNVeklnbkdmZkRJfoCQiCk7XtvOTKZN902ZBwI&s=10",
+            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQSHJ-wZ0omgquoJv4tQTcwZZP4YVq-rn4dUTht0RaJmzyIm6O3P7CsxdsG&s=10",
+            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQXAG_XJZQtzTGm0FhTj9HNVeklnbkdmZkRJfoCQiCk7XtvOTKZN902ZBwI&s=10",
+            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSPSoZ5xPx0BmUme4dBeslC6bZj8iBB0rSfpPBUvYPCpXC_6AylB5NerYo&s=10",
+            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRdN_8i6yYNN09SKZRQ-clTVMlu17Y9xh76CQ&usqp=CAU",
+            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRCoyaYc5R4mi5bKTnPUvcy7yHq50k2eQxQew&usqp=CAU",
+            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRTSb1AdjFcC_4gbCOZNO2Ok-cV6tP8qMFKDztv8Go1HOgtl9c5wTpOrjM&s=10"
+        ];
 
-        document.getElementById("generateBtn").addEventListener("click", () => {
-            let currentTime = Date.now();
-            if (isGenerating) return;
+        let currentPicIndex = 0;
 
-            // Check if the user has already generated money within the last hour
-            if (lastGeneratedTime && currentTime - lastGeneratedTime < 3600000) {
-                showPopup();
-                return;
-            }
+        const profilePic = document.getElementById("profile-pic");
+        const changePicBtn = document.getElementById("change-pic");
 
-            isGenerating = true;
-            document.getElementById("message").textContent = "Generating...";
-            setTimeout(() => {
-                document.getElementById("message").textContent = "Almost there...";
-
-                setTimeout(() => {
-                    let generatedAmount = (Math.random() * (3 - 1) + 1).toFixed(2); // Random between $1 and $3
-                    totalMoney += parseFloat(generatedAmount);
-                    document.getElementById("moneyDisplay").textContent = `$${totalMoney.toFixed(2)}`;
-                    document.getElementById("message").textContent = "PayPal email required";
-
-                    // Show email input
-                    document.querySelector(".emailSection").style.display = "block";
-                    document.getElementById("generateBtn").style.display = "none";
-
-                    // Store the current time in local storage to prevent multiple generations within the hour
-                    localStorage.setItem("lastGeneratedTime", currentTime);
-                }, 1500); // "Almost there..." appears after 1.5 seconds
-            }, 2000); // "Generating..." appears for 2 seconds
-
-            setTimeout(() => {
-                isGenerating = false;
-            }, 4000); // Allow the next generation after 4 seconds
+        changePicBtn.addEventListener("click", () => {
+            currentPicIndex = (currentPicIndex + 1) % profilePics.length;
+            profilePic.src = profilePics[currentPicIndex];
         });
 
-        document.getElementById("claimBtn").addEventListener("click", () => {
-            const email = document.getElementById("paypalEmail").value;
-            if (email) {
-                // Save the PayPal email to Firebase
-                const emailRef = ref(db, 'generatedMoney/' + Date.now());
-                set(emailRef, {
+        const selectImageBtn = document.getElementById("select-image");
+        const customPicInput = document.getElementById("custom-pic");
+
+        selectImageBtn.addEventListener("click", () => {
+            const customPicUrl = customPicInput.value;
+            if (customPicUrl) {
+                profilePic.src = customPicUrl;
+            }
+        });
+
+        // Handle Register Form Submission
+        const registerForm = document.getElementById("register-form");
+        registerForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
+
+            const email = document.getElementById("register-email").value;
+            const password = document.getElementById("register-password").value;
+            const username = document.getElementById("register-username").value;
+            const profileImage = profilePic.src;
+
+            try {
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+
+                                // Save user data in Firebase
+                set(ref(database, 'users/' + user.uid), {
+                    username: username,
                     email: email,
-                    generatedAmount: totalMoney.toFixed(2)
+                    profilePicture: profileImage,
                 });
 
-                alert(`Money sent to: ${email}`);
-                resetGenerator();
-            } else {
-                alert("Please enter a valid PayPal email.");
+                // Show success notification
+                showNotification('Registration successful! Welcome to CyberChat.');
+
+                // Switch to login page after successful registration
+                setTimeout(() => {
+                    toggleForms(); // Switch to the login form
+                }, 2000);
+            } catch (error) {
+                // Show error notification
+                showNotification('Error: ' + error.message);
             }
         });
 
-        function showPopup() {
-            document.getElementById("popup").style.display = "flex";
-        }
+        // Handle Login Form Submission
+        const loginForm = document.getElementById("form");
+        loginForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
 
-        document.getElementById("closePopup").addEventListener("click", () => {
-            document.getElementById("popup").style.display = "none";
+            const email = document.getElementById("email").value;
+            const password = document.getElementById("password").value;
+
+            try {
+                const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+
+                // Show success notification
+                showNotification('Login successful! Welcome back, ' + user.displayName);
+
+                // Redirect to the main chat page or another area of the app
+                // Example: window.location.href = '/chat-dashboard';
+            } catch (error) {
+                // Show error notification
+                showNotification('Error: ' + error.message);
+            }
         });
 
-        function resetGenerator() {
-            document.getElementById("paypalEmail").value = "";
-            document.getElementById("generateBtn").style.display = "block";
-            document.querySelector(".emailSection").style.display = "none";
-            document.getElementById("moneyDisplay").textContent = "$0.00";
-            document.getElementById("message").textContent = "Ready to generate?";
+        // Toggle between register and login forms
+        const toggleRegisterBtn = document.getElementById("toggle-register");
+        const toggleLoginBtn = document.getElementById("toggle-login");
+
+        toggleRegisterBtn.addEventListener("click", toggleForms);
+        toggleLoginBtn.addEventListener("click", toggleForms);
+
+        function toggleForms() {
+            const form = document.getElementById("form");
+            const registerForm = document.getElementById("register-form");
+
+            form.style.display = (form.style.display === "none") ? "block" : "none";
+            registerForm.style.display = (registerForm.style.display === "none") ? "block" : "none";
         }
+
+        // Notification function
+        function showNotification(message) {
+            const notification = document.getElementById("notification");
+            notification.innerText = message;
+            notification.style.display = "block";
+
+            setTimeout(() => {
+                notification.style.display = "none";
+            }, 5000); // Hide after 5 seconds
+        }
+
+        // Check if user is already logged in on page load
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                showNotification('User already logged in.');
+                toggleForms(); // Optionally, auto switch to logged-in view or dashboard
+            }
+        });
     </script>
 
 </body>
