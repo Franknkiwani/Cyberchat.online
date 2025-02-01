@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -77,16 +78,18 @@
         }
 
         .popup button:hover {
-            background: #00e6b8;
+            background: white;
+            background-color: red;
         }
 
         .popup .toggle-btn {
             color: #fff;
+            background-color: red;
             display: block;
             margin-top: 15px;
             cursor: pointer;
-            font-size: 14px;
-            font-weight: normal;
+            font-size: 20px;
+            font-weight: 100px;
         }
 
         .profile-pic-container {
@@ -102,53 +105,92 @@
 
         .profile-pic-container button {
             margin-top: 10px;
-            padding: 8px 16px;
-            background: #00ffcc;
+            width: 50%;
+            padding: 1px 1px;
+            background: cyan;
             border: none;
             border-radius: 5px;
-            color: #111;
+            color: black;
             cursor: pointer;
             font-weight: bold;
         }
 
         .profile-pic-container button:hover {
-            background: #00e6b8;
+            background: red;
         }
 
-        /* Notification styles */
-        .notification {
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #00ffcc;
-            color: #111;
-            padding: 15px 30px;
-            border-radius: 10px;
-            font-size: 18px;
-            display: none;
-            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
-            z-index: 9999;
-            animation: slideIn 0.5s ease, fadeOut 2s 3.5s forwards;
-        }
+        /* Modern Cyberpunk Notification */
+.notification {
+    position: fixed;
+    top: 150px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, #00ffcc, #0066ff);
+    color: black;
+    padding: 11px 21px;
+    border-radius: 12px;
+    font-size: 18px;
+    font-weight: bold;
+    display: none;
+    box-shadow: 0 0 25px rgba(0, 255, 255, 0.6), 0 0 10px rgba(0, 102, 255, 0.5);
+    text-shadow: 1px 1px 8px rgba(255, 255, 255, 0.8);
+    z-index: 9999;
+    animation: slideIn 0.5s ease, fadeOut 3s 4s forwards;
+    backdrop-filter: blur(10px);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+}
 
-        @keyframes slideIn {
-            from {
-                top: -100px;
-            }
-            to {
-                top: 20px;
-            }
-        }
+/* Neon Glow Effect */
+.notification::before {
+    content: "";
+    position: absolute;
+    top: -3px;
+    left: -3px;
+    right: -3px;
+    bottom: -3px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, rgba(0, 255, 204, 0.8), rgba(0, 102, 255, 0.8));
+    z-index: -1;
+    filter: blur(15px);
+}
 
-        @keyframes fadeOut {
-            from {
-                opacity: 1;
-            }
-            to {
-                opacity: 0;
-            }
-        }
+/* Cute Bounce-in Animation */
+@keyframes slideIn {
+    from {
+        transform: translate(-50%, -50px);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(-50%);
+        opacity: 1;
+    }
+}
+
+/* Soft Glow Fade-out */
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+        transform: translate(-50%, -20px);
+    }
+}
+/* Prevent text selection */
+* {
+    user-select: none; /* No selecting text */
+    -webkit-user-select: none; /* Safari */
+    -moz-user-select: none; /* Firefox */
+    -ms-user-select: none; /* IE */
+}
+/* Prevent borders from moving */
+.your-element {
+    position: fixed; /* Sticks in place */
+    border: 2px solid #00ffcc; /* Neon cyber border */
+    box-shadow: 0 0 10px rgba(0, 255, 255, 0.7);
+    padding: 10px;
+}
+
     </style>
 </head>
 <body>
@@ -183,7 +225,7 @@
             </div>
             <div class="profile-pic-container">
                 <img id="profile-pic" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQXAG_XJZQtzTGm0FhTj9HNVeklnbkdmZkRJfoCQiCk7XtvOTKZN902ZBwI&s=10" alt="Profile Picture">
-                <button type="button" id="change-pic">Change Profile Picture</button>
+                <button type="button" id="change-pic">Change</button>
             </div>
             <div class="input-container">
                 <input type="url" id="custom-pic" placeholder="Enter your own image URL" />
@@ -335,10 +377,66 @@
         // Check if user is already logged in on page load
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                showNotification('User already logged in.');
+                showNotification('REGISTER.');
                 toggleForms(); // Optionally, auto switch to logged-in view or dashboard
             }
         });
+        // Handle Registration Form Submission
+registerForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const email = document.getElementById("register-email").value;
+    const password = document.getElementById("register-password").value;
+    const username = document.getElementById("register-username").value;
+    const profileImage = selectedProfilePic || document.getElementById("custom-image-url").value; // Get selected profile pic or custom URL
+
+    try {
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+
+        // Save user data in Firebase
+        await set(ref(database, 'users/' + user.uid), {
+            username: username,
+            email: email,
+            profilePicture: profileImage,
+        });
+
+        // Show success notification
+        showNotification('Registration successful! Please log in.');
+
+        // Automatically switch to login form
+        setTimeout(() => {
+            toggleForms(); // Switch to login form
+        }, 2000);
+
+    } catch (error) {
+        showNotification('Error: ' + error.message);
+    }
+});
+
+// Handle Login Form Submission
+loginForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+
+    try {
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+
+        // Show success notification
+        showNotification('Login successful! Redirecting...');
+
+        // Redirect to homepage
+        setTimeout(() => {
+            window.location.href = "homepage.html"; // Redirect to homepage
+        }, 2000);
+
+    } catch (error) {
+        showNotification('Error: ' + error.message);
+    }
+});
     </script>
 
 </body>
