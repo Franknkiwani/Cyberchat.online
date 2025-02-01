@@ -1,230 +1,196 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Firebase User List & Chat</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #0d0d0d;
-      color: white;
-    }
-    .user-list {
-      padding: 20px;
-    }
-    .user-item {
-      display: flex;
-      align-items: center;
-      padding: 10px;
-      cursor: pointer;
-      border-radius: 10px;
-      transition: 0.2s;
-    }
-    .user-item:hover {
-      background: rgba(255, 255, 255, 0.1);
-    }
-    .user-item img {
-      width: 50px;
-      height: 50px;
-      border-radius: 50%;
-      margin-right: 15px;
-    }
-    .chat-popup {
-      display: none;
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: #1a1a1a;
-      border-radius: 10px;
-      width: 350px;
-      height: 500px;
-      box-shadow: 0px 0px 15px rgba(255, 255, 255, 0.2);
-      overflow: hidden;
-    }
-    .chat-header {
-      display: flex;
-      align-items: center;
-      padding: 15px;
-      background: #292929;
-      border-bottom: 2px solid #444;
-    }
-    .chat-header img {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      margin-right: 10px;
-    }
-    .close-btn {
-      margin-left: auto;
-      background: red;
-      color: white;
-      border: none;
-      padding: 5px 10px;
-      cursor: pointer;
-      border-radius: 5px;
-    }
-    .chat-body {
-      padding: 15px;
-      height: 350px;
-      overflow-y: auto;
-    }
-    .chat-footer {
-      display: flex;
-      padding: 10px;
-      background: #292929;
-      border-top: 2px solid #444;
-    }
-    .chat-footer input {
-      flex: 1;
-      padding: 10px;
-      border: none;
-      outline: none;
-      border-radius: 5px;
-    }
-    .chat-footer button {
-      margin-left: 10px;
-      background: limegreen;
-      color: white;
-      border: none;
-      padding: 10px;
-      cursor: pointer;
-      border-radius: 5px;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Empty App</title>
+    <style>
+        body {
+            background-color: white;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        header {
+            background-color: #000000; /* Dark black */
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 20px;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .cyber {
+            color: white;
+        }
+
+        .chat {
+            color: lightgreen;
+        }
+
+        .profile-pic {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 3px solid red; /* Red edges */
+            object-fit: cover;
+            cursor: pointer;
+        }
+
+        /* Popup Styles */
+        .popup {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .popup-content {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            width: 300px;
+            text-align: center;
+        }
+
+        .popup-content h2 {
+            margin: 0 0 10px;
+        }
+
+        .popup-content button {
+            padding: 10px;
+            background-color: #ff0000;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .popup-content button:hover {
+            background-color: #cc0000;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body>
 
-  <div id="user-list" class="user-list"></div>
+<header>
+    <h1><span class="cyber">CYBER</span><span class="chat">CHAT</span></h1>
+    <img id="profilePic" src="https://via.placeholder.com/40" alt="Profile Picture" class="profile-pic">
+</header>
 
-  <!-- CHAT POPUP -->
-  <div id="chat-popup" class="chat-popup">
-    <div class="chat-header">
-      <img id="chat-profile-pic" src="" alt="User">
-      <span id="chat-username" class="chat-username"></span>
-      <button class="close-btn" onclick="closeChat()">X</button>
+<!-- Popup -->
+<div id="profilePopup" class="popup">
+    <div class="popup-content">
+        <span id="closePopup" class="close-btn">X</span>
+        <h2>User Profile</h2>
+        <p><strong>Username:</strong> <span id="username"></span></p>
+        <p><strong>Email:</strong> <span id="email"></span></p>
+        <button id="logoutBtn">Logout</button>
     </div>
-    <div class="chat-body" id="chat-body">
-      <p style="text-align:center; color:gray;">Start chatting...</p>
-    </div>
-    <div class="chat-footer">
-      <input type="text" id="chat-input" placeholder="Type a message...">
-      <button onclick="sendMessage()">Send</button>
-    </div>
-  </div>
+</div>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
-    import { getDatabase, ref, get, push, onChildAdded } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-database.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
+<script type="module">
+  // Import the functions you need from Firebase SDK
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
+  import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
+  import { getStorage, ref, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-storage.js";
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
-      authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
-      databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
-      projectId: "itzhoyoo-f9f7e",
-      storageBucket: "itzhoyoo-f9f7e.firebasestorage.app",
-      messagingSenderId: "1094792075584",
-      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
-      measurementId: "G-LLT6F9WRKH"
-    };
+  // Your Firebase configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
+    authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
+    databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
+    projectId: "itzhoyoo-f9f7e",
+    storageBucket: "itzhoyoo-f9f7e.firebasestorage.app",
+    messagingSenderId: "1094792075584",
+    appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
+    measurementId: "G-LLT6F9WRKH"
+  };
 
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-    const auth = getAuth(app);
-    let currentUser = null;
-    let selectedUser = null;
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const storage = getStorage(app);
 
-    // Check user authentication
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        currentUser = user;
+  const profilePic = document.getElementById("profilePic");
+  const profilePopup = document.getElementById("profilePopup");
+  const closePopup = document.getElementById("closePopup");
+  const usernameElement = document.getElementById("username");
+  const emailElement = document.getElementById("email");
+  const logoutBtn = document.getElementById("logoutBtn");
+
+  // Listen for authentication state changes
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      // User is signed in
+      const uid = user.uid;
+      const profilePicUrl = user.photoURL || ''; // Get photoURL from Firebase Auth
+
+      // Set the profile picture
+      if (profilePicUrl) {
+        profilePic.src = profilePicUrl;
       } else {
-        currentUser = null;
+        // If no profile pic is set, fetch from Firebase Storage (assuming it's stored there)
+        const profilePicRef = ref(storage, 'profile_pics/' + uid + '.jpg');
+        
+        getDownloadURL(profilePicRef)
+          .then((url) => {
+            profilePic.src = url;
+          })
+          .catch((error) => {
+            console.error("Error fetching profile picture: ", error);
+          });
       }
-    });
 
-    async function fetchUsers() {
-      const userListRef = ref(db, 'users/');
-      const snapshot = await get(userListRef);
-      if (snapshot.exists()) {
-        const users = snapshot.val();
-        displayUsers(users);
-      } else {
-        console.log("No users found.");
-      }
-    }
-
-    function displayUsers(users) {
-      const userListDiv = document.getElementById("user-list");
-      userListDiv.innerHTML = ""; // Clear previous users
-
-      for (let userId in users) {
-        const user = users[userId];
-        const userItem = document.createElement("div");
-        userItem.classList.add("user-item");
-        userItem.onclick = () => openChat(user);
-
-        const userImage = document.createElement("img");
-        userImage.src = user.profilePic || 'https://via.placeholder.com/50';
-        userItem.appendChild(userImage);
-
-        const username = document.createElement("span");
-        username.textContent = `@${user.username}`;
-        userItem.appendChild(username);
-
-        userListDiv.appendChild(userItem);
-      }
-    }
-
-    function openChat(user) {
-      selectedUser = user;
-      document.getElementById("chat-popup").style.display = "block";
-      document.getElementById("chat-profile-pic").src = user.profilePic;
-      document.getElementById("chat-username").textContent = `@${user.username}`;
-      document.getElementById("chat-body").innerHTML = `<p style="text-align:center; color:gray;">Chatting with @${user.username}...</p>`;
+      // Set the username and email in the popup
+      usernameElement.textContent = user.displayName || "No username set";
+      emailElement.textContent = user.email || "No email available";
       
-      loadMessages();
-    }
-
-    function closeChat() {
-      document.getElementById("chat-popup").style.display = "none";
-    }
-
-    function sendMessage() {
-      if (!currentUser) {
-        alert("You must be logged in to send messages!");
-        return;
-      }
-
-      let message = document.getElementById("chat-input").value;
-      if (message.trim() === "") return;
-      
-      const chatRef = ref(db, `chats/${currentUser.uid}_${selectedUser.username}`);
-      push(chatRef, {
-        sender: currentUser.email,
-        message: message,
-        timestamp: Date.now()
+      // Handle Logout
+      logoutBtn.addEventListener("click", () => {
+        signOut(auth).then(() => {
+          window.location.href = "accounts.html"; // Redirect to accounts.html after logout
+        }).catch((error) => {
+          console.error("Error signing out: ", error);
+        });
       });
 
-      document.getElementById("chat-input").value = "";
-    }
-
-    function loadMessages() {
-      const chatRef = ref(db, `chats/${currentUser.uid}_${selectedUser.username}`);
-      
-      onChildAdded(chatRef, (snapshot) => {
-        let msgData = snapshot.val();
-        let chatBody = document.getElementById("chat-body");
-        let newMessage = document.createElement("p");
-        newMessage.textContent = `${msgData.sender}: ${msgData.message}`;
-        newMessage.style.color = "white";
-        chatBody.appendChild(newMessage);
+      // Show the popup when the profile picture is clicked
+      profilePic.addEventListener("click", () => {
+        profilePopup.style.display = "flex";
       });
+    } else {
+      // User is signed out, set the profile pic to placeholder and hide profile info
+      profilePic.src = "https://via.placeholder.com/40";
+      usernameElement.textContent = "No user logged in";
+      emailElement.textContent = "No user logged in";
     }
+  });
 
-    fetchUsers();
-  </script>
+  // Close the popup
+  closePopup.addEventListener("click", () => {
+    profilePopup.style.display = "none";
+  });
+</script>
+
 </body>
 </html>
