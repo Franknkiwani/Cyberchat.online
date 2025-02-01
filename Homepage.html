@@ -3,194 +3,207 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Empty App</title>
+    <title>CyberChat</title>
     <style>
-        body {
-            background-color: white;
+        * {
             margin: 0;
             padding: 0;
-            font-family: Arial, sans-serif;
+            box-sizing: border-box;
         }
 
+        body {
+            background-color: #1c1c1c;
+            color: #fff;
+            font-family: 'Arial', sans-serif;
+        }
+
+        /* Header Styling */
         header {
-            background-color: #000000; /* Dark black */
+            background-color: #000;
+            color: #fff;
+            padding: 10px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 10px 20px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            box-shadow: 0 2px 10px rgba(0, 255, 255, 0.5);
         }
 
-        header h1 {
-            margin: 0;
-            font-size: 24px;
+        .hamburger-menu {
+            width: 30px;
+            height: 25px;
+            cursor: pointer;
+        }
+
+        /* Centered CyberChat Text */
+        .header-title {
+            font-size: 20px;
             font-weight: bold;
+            letter-spacing: 2px;
         }
 
-        .cyber {
-            color: white;
-        }
+        .header-title .cyber { color: #fff; }
+        .header-title .chat { color: #32cd32; }
 
-        .chat {
-            color: lightgreen;
-        }
-
+        /* Profile Picture */
         .profile-pic {
             width: 40px;
             height: 40px;
             border-radius: 50%;
-            border: 3px solid red; /* Red edges */
-            object-fit: cover;
+            border: 5px solid #32cd32;
+            box-shadow: 0 0 0 3px #00ffff;
+            background-size: cover;
+            background-position: center;
             cursor: pointer;
         }
 
-        /* Popup Styles */
-        .popup {
+        /* Profile Popup */
+        .profile-popup {
             display: none;
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            justify-content: center;
-            align-items: center;
-        }
-
-        .popup-content {
-            background: white;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #333;
             padding: 20px;
-            border-radius: 8px;
             width: 300px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 255, 255, 0.7);
             text-align: center;
+            z-index: 20;
+            opacity: 0;
+            transition: opacity 0.3s ease, transform 0.3s ease;
         }
 
-        .popup-content h2 {
-            margin: 0 0 10px;
+        .profile-popup.show {
+            display: block;
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
         }
 
-        .popup-content button {
+        .profile-popup img {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            border: 5px solid #32cd32;
+            box-shadow: 0 0 0 4px #00ffff;
+            margin-bottom: 10px;
+        }
+
+        .profile-popup .username,
+        .profile-popup .email {
+            font-size: 16px;
+            color: #fff;
+            margin-bottom: 10px;
+        }
+
+        .logout-btn {
+            background-color: #ff3333;
+            color: #fff;
             padding: 10px;
-            background-color: #ff0000;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            width: 100%;
+            border-radius: 10px;
+            text-decoration: none;
+            display: block;
+            margin-top: 15px;
         }
 
-        .popup-content button:hover {
+        .logout-btn:hover {
             background-color: #cc0000;
         }
 
-        .close-btn {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            cursor: pointer;
-        }
     </style>
 </head>
 <body>
+    <header>
+        <!-- Hamburger Menu -->
+        <div class="hamburger-menu">
+            <div></div>
+            <div></div>
+            <div></div>
+        </div>
 
-<header>
-    <h1><span class="cyber">CYBER</span><span class="chat">CHAT</span></h1>
-    <img id="profilePic" src="https://via.placeholder.com/40" alt="Profile Picture" class="profile-pic">
-</header>
+        <!-- CyberChat Text -->
+        <div class="header-title">
+            <span class="cyber">CYBER</span><span class="chat">CHAT</span>
+        </div>
 
-<!-- Popup -->
-<div id="profilePopup" class="popup">
-    <div class="popup-content">
-        <span id="closePopup" class="close-btn">X</span>
-        <h2>User Profile</h2>
-        <p><strong>Username:</strong> <span id="username"></span></p>
-        <p><strong>Email:</strong> <span id="email"></span></p>
-        <button id="logoutBtn">Logout</button>
+        <!-- Profile Picture -->
+        <div class="profile-pic" onclick="toggleProfilePopup()" id="profilePic"></div>
+    </header>
+
+    <!-- Profile Popup -->
+    <div class="profile-popup" id="profilePopup">
+        <img id="popupProfilePic" src="https://via.placeholder.com/100">
+        <div class="username" id="popupUsername">@username</div>
+        <div class="email" id="popupEmail">user@example.com</div>
+        <a href="#" class="logout-btn" onclick="logout()">Logout</a>
     </div>
-</div>
 
-<script type="module">
-  // Import the functions you need from Firebase SDK
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
-  import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
-  import { getStorage, ref, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-storage.js";
+    <script type="module">
+        // Import Firebase SDKs
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
 
-  // Your Firebase configuration
-  const firebaseConfig = {
-    apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
-    authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
-    databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
-    projectId: "itzhoyoo-f9f7e",
-    storageBucket: "itzhoyoo-f9f7e.firebasestorage.app",
-    messagingSenderId: "1094792075584",
-    appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
-    measurementId: "G-LLT6F9WRKH"
-  };
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
+            authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
+            projectId: "itzhoyoo-f9f7e",
+            storageBucket: "itzhoyoo-f9f7e.appspot.com",
+            messagingSenderId: "1094792075584",
+            appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
+            measurementId: "G-LLT6F9WRKH"
+        };
 
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const storage = getStorage(app);
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
 
-  const profilePic = document.getElementById("profilePic");
-  const profilePopup = document.getElementById("profilePopup");
-  const closePopup = document.getElementById("closePopup");
-  const usernameElement = document.getElementById("username");
-  const emailElement = document.getElementById("email");
-  const logoutBtn = document.getElementById("logoutBtn");
+        // Function to update UI with user data
+        function updateUserProfile(user) {
+            if (user) {
+                const username = user.displayName || "Anonymous";
+                const email = user.email;
+                const profilePic = user.photoURL || "https://via.placeholder.com/100";
 
-  // Listen for authentication state changes
-  onAuthStateChanged(auth, (user) => {
-    if (user) {
-      // User is signed in
-      const uid = user.uid;
-      const profilePicUrl = user.photoURL || ''; // Get photoURL from Firebase Auth
+                // Update profile picture in header
+                document.getElementById("profilePic").style.backgroundImage = `url(${profilePic})`;
 
-      // Set the profile picture
-      if (profilePicUrl) {
-        profilePic.src = profilePicUrl;
-      } else {
-        // If no profile pic is set, fetch from Firebase Storage (assuming it's stored there)
-        const profilePicRef = ref(storage, 'profile_pics/' + uid + '.jpg');
-        
-        getDownloadURL(profilePicRef)
-          .then((url) => {
-            profilePic.src = url;
-          })
-          .catch((error) => {
-            console.error("Error fetching profile picture: ", error);
-          });
-      }
+                // Update profile popup
+                document.getElementById("popupProfilePic").src = profilePic;
+                document.getElementById("popupUsername").textContent = "@" + username;
+                document.getElementById("popupEmail").textContent = email;
+            }
+        }
 
-      // Set the username and email in the popup
-      usernameElement.textContent = user.displayName || "No username set";
-      emailElement.textContent = user.email || "No email available";
-      
-      // Handle Logout
-      logoutBtn.addEventListener("click", () => {
-        signOut(auth).then(() => {
-          window.location.href = "accounts.html"; // Redirect to accounts.html after logout
-        }).catch((error) => {
-          console.error("Error signing out: ", error);
+        // Listen for user authentication state change
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                updateUserProfile(user);
+            } else {
+                console.log("No user logged in.");
+            }
         });
-      });
 
-      // Show the popup when the profile picture is clicked
-      profilePic.addEventListener("click", () => {
-        profilePopup.style.display = "flex";
-      });
-    } else {
-      // User is signed out, set the profile pic to placeholder and hide profile info
-      profilePic.src = "https://via.placeholder.com/40";
-      usernameElement.textContent = "No user logged in";
-      emailElement.textContent = "No user logged in";
-    }
-  });
+        // Logout function
+        window.logout = function() {
+            signOut(auth).then(() => {
+                alert("Logged out successfully!");
+                window.location.reload();
+            }).catch((error) => {
+                console.error("Logout Error: ", error);
+            });
+        };
+    </script>
 
-  // Close the popup
-  closePopup.addEventListener("click", () => {
-    profilePopup.style.display = "none";
-  });
-</script>
-
+    <script>
+        // Toggle Profile Popup
+        function toggleProfilePopup() {
+            var popup = document.getElementById('profilePopup');
+            popup.classList.toggle('show');
+        }
+    </script>
 </body>
 </html>
