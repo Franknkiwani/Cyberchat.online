@@ -3,429 +3,163 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CyberChat</title>
+    <title>My App</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"></script>
     <style>
-        * {
+        body {
+            font-family: 'Orbitron', sans-serif;
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
+            background-color: #0a0a0a;
+            text-align: center;
+            color: white;
         }
-        body {
-            font-family: 'Arial', sans-serif;
-            background-color: #1a1a1a;
-            color: #fff;
-        }
-        header {
+
+        .header {
             display: flex;
-            justify-content: space-between;
             align-items: center;
+            justify-content: space-between;
+            background: #111;
             padding: 10px 20px;
-            background-color: #333;
-        }
-        header h1 {
-            font-size: 18px;
+            font-size: 22px;
+            font-weight: bold;
+            text-transform: uppercase;
             letter-spacing: 2px;
+            text-shadow: 0 0 10px #00ff00, 0 0 20px #00ff00, 0 0 30px #00ff00;
+            position: relative;
         }
-        .register-btn {
-            background-color: #28a745;
-            color: #fff;
+
+        .typing {
+            flex-grow: 1;
+            text-align: center;
             font-size: 12px;
-            padding: 8px 20px;
+            white-space: nowrap;
+            border-right: 2px solid white;
+            padding-right: 5px;
+            display: inline-block;
+        }
+
+        .register-btn {
+            padding: 10px 20px;
+            background: linear-gradient(135deg, #1e90ff, #00ff00);
             border: none;
-            border-radius: 25px;
+            color: white;
+            font-size: 15px;
+            font-weight: bold;
+            border-radius: 20px;
             cursor: pointer;
-            transition: background-color 0.3s ease;
+            box-shadow: 0px 5px 15px rgba(0, 255, 0, 0.3);
+            transition: all 0.3s ease;
+            text-transform: uppercase;
         }
         .register-btn:hover {
-            background-color: #218838;
+            background: linear-gradient(135deg, #00ff00, #1e90ff);
+            transform: scale(1.05);
         }
-        .hero-section {
-            background-image: url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTnVoeX3nspxsTaRpO_rZzQne2rj6WuBfdgTA&usqp=CAU');
-            background-size: cover;
-            background-position: center;
-            height: 400px;
+
+        .hero {
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
+            justify-content: center;
+            height: 40vh;
             text-align: center;
-            padding: 20px;
+            background: radial-gradient(circle, rgba(0, 255, 0, 0.1) 0%, rgba(0, 0, 0, 1) 80%);
+            box-shadow: 0px 0px 50px rgba(0, 255, 0, 0.2);
+            margin: 20px;
+            border-radius: 15px;
+            padding: 40px;
         }
-        .hero-content {
-            border: 2px solid cyan;
-            border-radius: 25px;
-            padding: 20px;
-            background-color: black;
+        .hero h1 {
+            font-size: 20px;
+            color: cyan;
+            text-shadow: 0 0 15px #00ff00, 0 0 30px #00ff00;
+            margin-bottom: 10px;
         }
-        .hero-section h2 {
+        .hero p {
             font-size: 15px;
             color: white;
-            font-weight: 700;
-            text-transform: uppercase;
-            font-family: 'Verdana', sans-serif;
+            max-width: 600px;
         }
-        .cta {
-            font-size: 12px;
-            color: lightgreen;
-            margin-top: 10px;
-        }
-
-        /* Testimonial Section */
-        .testimonial-section {
-            padding: 40px 20px;
-            text-align: center;
-            background: linear-gradient(135deg, #ff00c1, #00ffff, #ff6600);
-            background-size: 300% 300%;
-            animation: gradientAnimation 10s ease infinite;
-            position: relative;
-            overflow: hidden;
-        }
-        @keyframes gradientAnimation {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-        .testimonial-slider {
-            display: flex;
-            transition: transform 0.5s ease-in-out;
-            will-change: transform;
-        }
-        .testimonial-container {
-            width: 100%;
-            overflow: hidden;
-        }
-        .testimonial-content {
-            background-color: rgba(0, 0, 0, 0.7);
-            border-radius: 15px;
-            padding: 30px;
-            min-width: 100%;
-            text-align: center;
-        }
-        .profile-image {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            margin-bottom: 15px;
-        }
-        .name {
-            font-size: 16px;
-            color: #ffcc00;
-            font-weight: 700;
-            margin-top: 10px;
-            font-family: 'Verdana', sans-serif;
-            letter-spacing: 1px;
-        }
-        .star-rating {
-            font-size: 18px;
-            color: gold;
-            margin: 10px 0;
-        }
-        .followers-count {
-            font-size: 14px;
-            color: #ddd;
-            margin-bottom: 20px;
-        }
-        .testimonial-text {
-            font-size: 14px;
-            color: #fff;
-            font-style: italic;
-        }
-
-        /* Arrows */
-        .arrow {
-            position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
-            background-color: rgba(0, 0, 0, 0.5);
-            border: none;
-            border-radius: 50%;
-            color: white;
+        .cta-btn {
+            margin-top: 20px;
+            padding: 15px 30px;
             font-size: 20px;
-            width: 40px;
-            height: 40px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            font-weight: bold;
+            text-transform: uppercase;
+            border: none;
+            border-radius: 100px;
             cursor: pointer;
-            transition: background-color 0.3s;
+            background: linear-gradient(135deg, #ff00ff, #00ffff);
+            color: white;
+            box-shadow: 0px 5px 20px rgba(0, 255, 255, 0.3);
+            transition: all 0.3s ease;
         }
-        .arrow:hover {
-            background-color: rgba(255, 255, 255, 0.5);
-            color: black;
+        .cta-btn:hover {
+            background: linear-gradient(135deg, #00ffff, #ff00ff);
+            transform: scale(1.1);
         }
-        .arrow-left {
-            left: 10px;
-        }
-        .arrow-right {
-            right: 10px;
-        }
-
-        footer {
-            background-color: #333;
-            text-align: center;
-            padding: 10px;
-            font-size: 12px;
-        }
-        .features-section {
-    padding: 50px 20px;
-    text-align: center;
-    background: linear-gradient(135deg, #111, #222);
-    color: #fff;
-}
-
-.features-section h2 {
-    font-size: 24px;
-    font-weight: 700;
-    color: cyan;
-    margin-bottom: 30px;
-}
-
-.features-section h2 span {
-    color: #ff00c1;
-}
-
-.features-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 20px;
-}
-
-.feature {
-    background-color: rgba(0, 0, 0, 0.8);
-    border: 2px solid cyan;
-    border-radius: 15px;
-    padding: 20px;
-    transition: transform 0.3s, box-shadow 0.3s;
-}
-
-.feature:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 15px rgba(0, 255, 255, 0.2);
-}
-
-.feature h3 {
-    font-size: 18px;
-    font-weight: 700;
-    margin-bottom: 10px;
-    color: lightgreen;
-}
-
-.feature p {
-    font-size: 14px;
-    color: #ddd;
-    line-height: 1.6;
-}
-.stats-section {
-    padding: 50px 20px;
-    text-align: center;
-    background: linear-gradient(135deg, #2a2a2a, #121212);
-    color: #fff;
-    margin-top: 30px;
-}
-
-.stats-section h2 {
-    font-size: 24px;
-    font-weight: 700;
-    color: cyan;
-    margin-bottom: 30px;
-}
-
-.stats-container {
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 20px;
-}
-
-.stat {
-    background-color: rgba(0, 0, 0, 0.8);
-    border: 2px solid #ff00c1;
-    border-radius: 15px;
-    padding: 20px 30px;
-    text-align: center;
-    width: 250px;
-    transition: transform 0.3s, box-shadow 0.3s;
-}
-
-.stat:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 15px rgba(255, 0, 193, 0.3);
-}
-
-.stat h3 {
-    font-size: 30px;
-    font-weight: 700;
-    color: lightgreen;
-    margin-bottom: 10px;
-}
-
-.stat p {
-    font-size: 16px;
-    color: #ddd;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-}
-.join-now-section {
-    text-align: center;
-    padding: 40px 20px;
-    background: linear-gradient(135deg, #111, #222);
-}
-
-.join-now-btn {
-    background: linear-gradient(135deg, cyan, #ff00c1);
-    color: #fff;
-    font-size: 18px;
-    font-weight: 700;
-    padding: 15px 40px;
-    border: none;
-    border-radius: 30px;
-    cursor: pointer;
-    box-shadow: 0 5px 15px rgba(0, 255, 255, 0.3);
-    transition: transform 0.3s, box-shadow 0.3s;
-}
-
-.join-now-btn:hover {
-    transform: scale(1.1);
-    box-shadow: 0 10px 20px rgba(255, 0, 193, 0.4);
-}
-/* Disable text selection globally */
-* {
-    -webkit-user-select: none;  /* WebKit-based browsers like Safari */
-    -moz-user-select: none;     /* Firefox */
-    -ms-user-select: none;      /* Internet Explorer/Edge */
-    user-select: none;          /* Standard syntax */
-}
-
-/* Optionally, disable right-click context menu */
-body {
-    -webkit-touch-callout: none; /* WebKit browsers */
-    -webkit-user-select: none;   /* Prevent selection in WebKit browsers */
-    user-select: none;           /* Prevent selection in other browsers */
-}
-
 
     </style>
 </head>
 <body>
 
-    <header>
-        <h1>CyberChat</h1>
-        <button class="register-btn" onclick="location.href='/accounts.html'">Register</button>
-    </header>
-
-    <section class="hero-section">
-        <div class="hero-content">
-            <h2>WELCOME TO CyberChat</h2>
-            <p class="cta">Join the future of chat. Chat, share, and explore!</p>
-        </div>
-    </section>
-
-    <!-- Testimonial Section -->
-    <section class="testimonial-section">
-        <div class="testimonial-container">
-            <div class="testimonial-slider" id="slider">
-                <!-- Testimonial 1 -->
-                <div class="testimonial-content">
-                    <img class="profile-image" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRTSb1AdjFcC_4gbCOZNO2Ok-cV6tP8qMFKDztv8Go1HOgtl9c5wTpOrjM&s=10" alt="User Profile">
-                    <div class="name">GamerXx123</div>
-                    <div class="star-rating">★★★★★</div>
-                    <div class="followers-count">Followers: 1250</div>
-                    <p class="testimonial-text">
-                        "CyberChat has revolutionized how I communicate with friends. Highly recommended!"
-                    </p>
-                </div>
-                <!-- Testimonial 2 -->
-                <div class="testimonial-content">
-                    <img class="profile-image" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRTSb1AdjFcC_4gbCOZNO2Ok-cV6tP8qMFKDztv8Go1HOgtl9c5wTpOrjM&s=10" alt="User Profile">
-                    <div class="name">GamerAlphaX</div>
-                    <div class="star-rating">★★★★☆</div>
-                    <div class="followers-count">Followers: 880</div>
-                    <p class="testimonial-text">
-                        "Best chatting app for gamers. Smooth interface and great features!"
-                    </p>
-                </div>
-                <!-- Testimonial 3 -->
-                <div class="testimonial-content">
-                    <img class="profile-image" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRTSb1AdjFcC_4gbCOZNO2Ok-cV6tP8qMFKDztv8Go1HOgtl9c5wTpOrjM&s=10" alt="User Profile">
-                    <div class="name">TechnoKnight77</div>
-                    <div class="star-rating">★★★★★</div>
-                    <div class="followers-count">Followers: 1420</div>
-                    <p class="testimonial-text">
-                        "Awesome app for staying connected while gaming!"
-                    </p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Arrows -->
-        <button class="arrow arrow-left" id="arrowLeft">&#9664;</button>
-        <button class="arrow arrow-right" id="arrowRight">&#9654;</button>
-    </section>
-<section class="features-section">
-    <h2>Why Choose <span>CyberChat?</span></h2>
-    <div class="features-container">
-        <div class="feature">
-            <h3>Real-Time Messaging</h3>
-            <p>Connect instantly with friends and communities through fast, real-time messaging.</p>
-        </div>
-        <div class="feature">
-            <h3>Social Media & Sharing</h3>
-            <p>Share your moments, interact with posts, and grow your online presence effortlessly.</p>
-        </div>
-        <div class="feature">
-            <h3>Gamers Marketplace</h3>
-            <p>Buy, sell, and trade your favorite gaming items all in one platform.</p>
-        </div>
-        <div class="feature">
-            <h3>Make Money Online</h3>
-            <p>Earn while you chat! Monetize your activities by participating in CyberChat’s rewards program.</p>
-        </div>
+    <div class="header">
+        <div class="typing" id="typing"></div>
+        <button class="register-btn" onclick="location.href='register.html'">REGISTER</button>
     </div>
-    <section class="stats-section">
-    <h2>CyberChat 2025 stats</h2>
-    <div class="stats-container">
-        <div class="stat">
-            <h3>10,000+</h3>
-            <p>Monthly Users</p>
-        </div>
-        <div class="stat">
-            <h3>1,000,000+</h3>
-            <p>Messages Sent</p>
-        </div>
-        <div class="stat">
-            <h3>$15,000+</h3>
-            <p>Money Paid</p>
-        </div>
+
+    <div class="hero">
+        <h1>WELCOME TO CYBERCHAT</h1>
+        <p>The ultimate chat platform for gamers, creators, and cyber enthusiasts. Connect, chat, and trade in a futuristic world.</p>
+        <button class="cta-btn" onclick="checkUser()">Get Started</button>
     </div>
-    </button>
-</section>
-
-</section>
-
-</section>
-
-    <footer>
-        <p>&copy; 2025 CyberChat. All rights reserved.</p>
-    </footer>
 
     <script>
-        const slider = document.getElementById('slider');
-        const arrowLeft = document.getElementById('arrowLeft');
-        const arrowRight = document.getElementById('arrowRight');
-        let currentIndex = 0;
+        // Typing Effect
+        const text = "CYBERCHAT.ONLINE";
+        let index = 0;
+        const typingElement = document.getElementById("typing");
 
-        arrowLeft.addEventListener('click', () => {
-            currentIndex = (currentIndex === 0) ? 2 : currentIndex - 1; // Wrap around
-            updateSlider();
-        });
+        function type() {
+            if (index < text.length) {
+                typingElement.textContent += text[index];
+                index++;
+                setTimeout(type, 150);
+            } else {
+                setTimeout(() => {
+                    typingElement.textContent = "";
+                    index = 0;
+                    type();
+                }, 1500);
+            }
+        }
 
-        arrowRight.addEventListener('click', () => {
-            currentIndex = (currentIndex === 2) ? 0 : currentIndex + 1; // Wrap around
-            updateSlider();
-        });
+        type();
 
-        function updateSlider() {
-            slider.style.transform = `translateX(-${currentIndex * 100}%)`;
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_AUTH_DOMAIN",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_STORAGE_BUCKET",
+            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+
+        function checkUser() {
+            auth.onAuthStateChanged(user => {
+                if (user) {
+                    window.location.href = "homepage.html"; // If user is registered
+                } else {
+                    window.location.href = "accounts.html"; // If not, redirect to register
+                }
+            });
         }
     </script>
 
