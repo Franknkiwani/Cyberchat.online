@@ -3,131 +3,157 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My App</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
+    <title>Money Generator</title>
     <style>
         body {
-            font-family: 'Orbitron', sans-serif;
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(45deg, #FF6F61, #6A1B9A);
             margin: 0;
-            padding: 0;
-            background-color: #0a0a0a;
-            text-align: center;
-            color: white;
-        }
-        .header {
             display: flex;
-            justify-content: space-between;
+            justify-content: center;
             align-items: center;
-            background: #111;
-            padding: 10px 20px;
-            font-size: 22px;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            text-shadow: 0 0 10px #00ff00, 0 0 20px #00ff00, 0 0 30px #00ff00;
-            position: relative;
-        }
-        .typing {
-            font-size: 12px;
-            white-space: nowrap;
-            border-right: 2px solid white;
-            padding-right: 5px;
-            display: inline-block;
-        }
-        .register-btn {
-            padding: 10px 20px;
-            background: linear-gradient(135deg, #1e90ff, #00ff00);
-            border: none;
+            height: 100vh;
             color: white;
-            font-size: 15px;
-            font-weight: bold;
-            border-radius: 20px;
-            cursor: pointer;
-            box-shadow: 0px 5px 15px rgba(0, 255, 0, 0.3);
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-        }
-        .register-btn:hover {
-            background: linear-gradient(135deg, #00ff00, #1e90ff);
-            transform: scale(1.05);
         }
 
-        /* Neon Line at the Bottom */
-        .neon-line {
-            position: absolute;
-            bottom: 0;
+        .container {
+            text-align: center;
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 40px;
+            border-radius: 15px;
+            width: 350px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            font-size: 32px;
+            color: #FFEB3B;
+        }
+
+        #moneyDisplay {
+            font-size: 48px;
+            font-weight: bold;
+            color: #4CAF50;
+            margin: 20px 0;
+        }
+
+        #generateBtn {
+            background-color: #FFEB3B;
+            color: #2D2D2D;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        #generateBtn:hover {
+            background-color: #FF9800;
+        }
+
+        #message {
+            font-size: 18px;
+            margin-top: 20px;
+            color: #FF5733;
+        }
+
+        .status {
+            font-size: 16px;
+            color: #FFEB3B;
+            font-weight: bold;
+        }
+
+        .emailSection {
+            display: none;
+            margin-top: 20px;
+        }
+
+        .emailSection input {
+            padding: 10px;
+            width: 80%;
+            margin-bottom: 10px;
+            font-size: 16px;
+        }
+
+        .emailSection button {
+            padding: 10px 20px;
+            font-size: 16px;
+            background-color: #FF5733;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .emailSection button:hover {
+            background-color: #FF4500;
+        }
+
+        /* Popup styles */
+        .popup {
+            display: none;
+            position: fixed;
+            top: 0;
             left: 0;
             width: 100%;
-            height: 3px;
-            background: lightgreen;
-            box-shadow: 0 0 10px #00ff00, 0 0 20px #00ff00, 0 0 30px #00ff00;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
         }
 
-        /* Hero Section */
-        .hero {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 40vh;
+        .popup-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
             text-align: center;
-            background: radial-gradient(circle, rgba(0, 255, 0, 0.1) 0%, rgba(0, 0, 0, 1) 80%);
-            box-shadow: 0px 0px 50px rgba(0, 255, 0, 0.2);
-            margin: 20px;
-            border-radius: 15px;
-            padding: 40px;
+            width: 300px;
         }
-        .hero h1 {
-            font-size: 20px;
-            color: cyan;
-            text-shadow: 0 0 15px #00ff00, 0 0 30px #00ff00;
-            margin-bottom: 10px;
-        }
-        .hero p {
-            font-size: 15px;
+
+        .popup button {
+            padding: 10px 20px;
+            background-color: #FF5733;
             color: white;
-            max-width: 600px;
-        }
-        .hero .cta-btn {
-            margin-top: 20px;
-            padding: 15px 30px;
-            font-size: 20px;
-            font-weight: bold;
-            text-transform: uppercase;
             border: none;
-            border-radius: 100px;
             cursor: pointer;
-            background: linear-gradient(135deg, #ff00ff, #00ffff);
-            color: white;
-            box-shadow: 0px 5px 20px rgba(0, 255, 255, 0.3);
-            transition: all 0.3s ease;
+            border-radius: 5px;
         }
-        .hero .cta-btn:hover {
-            background: linear-gradient(135deg, #00ffff, #ff00ff);
-            transform: scale(1.1);
+
+        .popup button:hover {
+            background-color: #FF4500;
         }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <div class="typing" id="typing"></div>
-        <button class="register-btn" onclick="window.location.href='accounts.html'">REGISTER</button>
-        <div class="neon-line"></div>
+    <div class="container">
+        <h1>Money Generator</h1>
+        <p>Click the button to generate virtual money!</p>
+        <div id="moneyDisplay">$0.00</div>
+        <button id="generateBtn">Generate Money</button>
+        <div id="message" class="status">Ready to generate?</div>
+
+        <div class="emailSection">
+            <p>Please enter your PayPal email to claim your money!</p>
+            <input type="email" id="paypalEmail" placeholder="Enter PayPal Email">
+            <button id="claimBtn">Claim Your Money</button>
+        </div>
     </div>
 
-    <!-- Hero Section -->
-    <div class="hero">
-        <h1>WELCOME TO CYBERCHAT</h1>
-        <p>The ultimate chat platform for gamers, creators, and cyber enthusiasts. Connect, chat, and trade in a futuristic world.</p>
-        <button class="cta-btn" onclick="checkUser()">Get Started</button>
+    <!-- Popup for cooldown message -->
+    <div id="popup" class="popup">
+        <div class="popup-content">
+            <h2>You've already generated money recently!</h2>
+            <p>You can try again in an hour.</p>
+            <button id="closePopup">Close</button>
+        </div>
     </div>
 
-    <!-- Firebase setup -->
     <script type="module">
-        // Import Firebase modules
+        // Import Firebase functions
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
-        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
+        import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-database.js";
 
         // Firebase configuration
         const firebaseConfig = {
@@ -135,7 +161,7 @@
             authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
             databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
             projectId: "itzhoyoo-f9f7e",
-            storageBucket: "itzhoyoo-f9f7e.appspot.com",
+            storageBucket: "itzhoyoo-f9f7e.firebasestorage.app",
             messagingSenderId: "1094792075584",
             appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
             measurementId: "G-LLT6F9WRKH"
@@ -143,33 +169,79 @@
 
         // Initialize Firebase
         const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
+        const db = getDatabase(app);
 
-        // Function to check if the user is registered
-        window.checkUser = function () {
-            onAuthStateChanged(auth, (user) => {
-                if (user) {
-                    window.location.href = "homepage.html"; // User is logged in
-                } else {
-                    window.location.href = "accounts.html"; // No user, redirect to register
-                }
-            });
-        };
+        let totalMoney = 0;
+        let lastGeneratedTime = localStorage.getItem("lastGeneratedTime");
+        let isGenerating = false;
 
-        // Typing effect for text
-        const text = "cyberchat.online";
-        let index = 0;
-        const typingElement = document.getElementById('typing');
+        document.getElementById("generateBtn").addEventListener("click", () => {
+            let currentTime = Date.now();
+            if (isGenerating) return;
 
-        function type() {
-            if (index < text.length) {
-                typingElement.textContent += text[index];
-                index++;
-                setTimeout(type, 150); // adjust typing speed here
+            // Check if the user has already generated money within the last hour
+            if (lastGeneratedTime && currentTime - lastGeneratedTime < 3600000) {
+                showPopup();
+                return;
             }
+
+            isGenerating = true;
+            document.getElementById("message").textContent = "Generating...";
+            setTimeout(() => {
+                document.getElementById("message").textContent = "Almost there...";
+
+                setTimeout(() => {
+                    let generatedAmount = (Math.random() * (3 - 1) + 1).toFixed(2); // Random between $1 and $3
+                    totalMoney += parseFloat(generatedAmount);
+                    document.getElementById("moneyDisplay").textContent = `$${totalMoney.toFixed(2)}`;
+                    document.getElementById("message").textContent = "PayPal email required";
+
+                    // Show email input
+                    document.querySelector(".emailSection").style.display = "block";
+                    document.getElementById("generateBtn").style.display = "none";
+
+                    // Store the current time in local storage to prevent multiple generations within the hour
+                    localStorage.setItem("lastGeneratedTime", currentTime);
+                }, 1500); // "Almost there..." appears after 1.5 seconds
+            }, 2000); // "Generating..." appears for 2 seconds
+
+            setTimeout(() => {
+                isGenerating = false;
+            }, 4000); // Allow the next generation after 4 seconds
+        });
+
+        document.getElementById("claimBtn").addEventListener("click", () => {
+            const email = document.getElementById("paypalEmail").value;
+            if (email) {
+                // Save the PayPal email to Firebase
+                const emailRef = ref(db, 'generatedMoney/' + Date.now());
+                set(emailRef, {
+                    email: email,
+                    generatedAmount: totalMoney.toFixed(2)
+                });
+
+                alert(`Money sent to: ${email}`);
+                resetGenerator();
+            } else {
+                alert("Please enter a valid PayPal email.");
+            }
+        });
+
+        function showPopup() {
+            document.getElementById("popup").style.display = "flex";
         }
 
-        type();
+        document.getElementById("closePopup").addEventListener("click", () => {
+            document.getElementById("popup").style.display = "none";
+        });
+
+        function resetGenerator() {
+            document.getElementById("paypalEmail").value = "";
+            document.getElementById("generateBtn").style.display = "block";
+            document.querySelector(".emailSection").style.display = "none";
+            document.getElementById("moneyDisplay").textContent = "$0.00";
+            document.getElementById("message").textContent = "Ready to generate?";
+        }
     </script>
 
 </body>
