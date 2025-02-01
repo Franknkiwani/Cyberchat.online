@@ -5,8 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My App</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"></script>
     <style>
         body {
             font-family: 'Orbitron', sans-serif;
@@ -16,11 +14,10 @@
             text-align: center;
             color: white;
         }
-
         .header {
             display: flex;
-            align-items: center;
             justify-content: space-between;
+            align-items: center;
             background: #111;
             padding: 10px 20px;
             font-size: 22px;
@@ -30,17 +27,13 @@
             text-shadow: 0 0 10px #00ff00, 0 0 20px #00ff00, 0 0 30px #00ff00;
             position: relative;
         }
-
         .typing {
-            flex-grow: 1;
-            text-align: center;
             font-size: 12px;
             white-space: nowrap;
             border-right: 2px solid white;
             padding-right: 5px;
             display: inline-block;
         }
-
         .register-btn {
             padding: 10px 20px;
             background: linear-gradient(135deg, #1e90ff, #00ff00);
@@ -59,6 +52,18 @@
             transform: scale(1.05);
         }
 
+        /* Neon Line at the Bottom */
+        .neon-line {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: lightgreen;
+            box-shadow: 0 0 10px #00ff00, 0 0 20px #00ff00, 0 0 30px #00ff00;
+        }
+
+        /* Hero Section */
         .hero {
             display: flex;
             flex-direction: column;
@@ -83,7 +88,7 @@
             color: white;
             max-width: 600px;
         }
-        .cta-btn {
+        .hero .cta-btn {
             margin-top: 20px;
             padding: 15px 30px;
             font-size: 20px;
@@ -97,70 +102,74 @@
             box-shadow: 0px 5px 20px rgba(0, 255, 255, 0.3);
             transition: all 0.3s ease;
         }
-        .cta-btn:hover {
+        .hero .cta-btn:hover {
             background: linear-gradient(135deg, #00ffff, #ff00ff);
             transform: scale(1.1);
         }
-
     </style>
 </head>
 <body>
 
     <div class="header">
         <div class="typing" id="typing"></div>
-        <button class="register-btn" onclick="location.href='register.html'">REGISTER</button>
+        <button class="register-btn" onclick="window.location.href='accounts.html'">REGISTER</button>
+        <div class="neon-line"></div>
     </div>
 
+    <!-- Hero Section -->
     <div class="hero">
         <h1>WELCOME TO CYBERCHAT</h1>
         <p>The ultimate chat platform for gamers, creators, and cyber enthusiasts. Connect, chat, and trade in a futuristic world.</p>
         <button class="cta-btn" onclick="checkUser()">Get Started</button>
     </div>
 
-    <script>
-        // Typing Effect
-        const text = "CYBERCHAT.ONLINE";
+    <!-- Firebase setup -->
+    <script type="module">
+        // Import Firebase modules
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
+            authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
+            databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
+            projectId: "itzhoyoo-f9f7e",
+            storageBucket: "itzhoyoo-f9f7e.appspot.com",
+            messagingSenderId: "1094792075584",
+            appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
+            measurementId: "G-LLT6F9WRKH"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        // Function to check if the user is registered
+        window.checkUser = function () {
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    window.location.href = "homepage.html"; // User is logged in
+                } else {
+                    window.location.href = "accounts.html"; // No user, redirect to register
+                }
+            });
+        };
+
+        // Typing effect for text
+        const text = "cyberchat.online";
         let index = 0;
-        const typingElement = document.getElementById("typing");
+        const typingElement = document.getElementById('typing');
 
         function type() {
             if (index < text.length) {
                 typingElement.textContent += text[index];
                 index++;
-                setTimeout(type, 150);
-            } else {
-                setTimeout(() => {
-                    typingElement.textContent = "";
-                    index = 0;
-                    type();
-                }, 1500);
+                setTimeout(type, 150); // adjust typing speed here
             }
         }
 
         type();
-
-        // Firebase Configuration
-        const firebaseConfig = {
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_AUTH_DOMAIN",
-            projectId: "YOUR_PROJECT_ID",
-            storageBucket: "YOUR_STORAGE_BUCKET",
-            messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-            appId: "YOUR_APP_ID"
-        };
-
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-
-        function checkUser() {
-            auth.onAuthStateChanged(user => {
-                if (user) {
-                    window.location.href = "homepage.html"; // If user is registered
-                } else {
-                    window.location.href = "accounts.html"; // If not, redirect to register
-                }
-            });
-        }
     </script>
 
 </body>
