@@ -1,443 +1,246 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CyberChat Register/Login</title>
-    <style>
-        body {
-            font-family: 'Arial', sans-serif;
-            background: #0d0d0d;
-            color: #fff;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-
-        .popup {
-            background: #1b1b1b;
-            border-radius: 10px;
-            padding: 40px;
-            box-shadow: 0 0 15px rgba(0, 255, 255, 0.2);
-            width: 350px;
-            text-align: center;
-        }
-
-        .popup h2 {
-            color: #00ffcc;
-            font-size: 24px;
-            margin-bottom: 20px;
-        }
-
-        .input-container {
-            position: relative;
-            width: 100%;
-            margin-bottom: 15px;
-        }
-
-        .input-container span {
-            position: absolute;
-            left: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #888;
-            font-size: 16px;
-        }
-
-        .input-container input {
-            width: 80%;
-            padding: 14px;
-            padding-left: 30px;
-            border-radius: 5px;
-            border: 1px solid #333;
-            background: #111;
-            color: #fff;
-            font-size: 16px;
-            outline: none;
-            transition: all 0.3s ease;
-        }
-
-        .input-container input:focus {
-            border-color: #00ffcc;
-        }
-
-        .popup button {
-            width: 100%;
-            padding: 14px;
-            background: #00ffcc;
-            border: none;
-            border-radius: 5px;
-            color: #111;
-            font-size: 18px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: background 0.3s ease;
-        }
-
-        .popup button:hover {
-            background: white;
-            background-color: red;
-        }
-
-        .popup .toggle-btn {
-            color: #fff;
-            background-color: red;
-            display: block;
-            margin-top: 15px;
-            cursor: pointer;
-            font-size: 20px;
-            font-weight: 100px;
-        }
-
-        .profile-pic-container {
-            margin-top: 20px;
-            text-align: center;
-        }
-
-        .profile-pic-container img {
-            width: 100px;
-            height: 100px;
-            border-radius: 50%;
-        }
-
-        .profile-pic-container button {
-            margin-top: 10px;
-            width: 50%;
-            padding: 1px 1px;
-            background: cyan;
-            border: none;
-            border-radius: 5px;
-            color: black;
-            cursor: pointer;
-            font-weight: bold;
-        }
-
-        .profile-pic-container button:hover {
-            background: red;
-        }
-
-        /* Modern Cyberpunk Notification */
-.notification {
-    position: fixed;
-    top: 150px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: linear-gradient(135deg, #00ffcc, #0066ff);
-    color: black;
-    padding: 11px 21px;
-    border-radius: 12px;
-    font-size: 18px;
-    font-weight: bold;
-    display: none;
-    box-shadow: 0 0 25px rgba(0, 255, 255, 0.6), 0 0 10px rgba(0, 102, 255, 0.5);
-    text-shadow: 1px 1px 8px rgba(255, 255, 255, 0.8);
-    z-index: 9999;
-    animation: slideIn 0.5s ease, fadeOut 3s 4s forwards;
-    backdrop-filter: blur(10px);
-    border: 2px solid rgba(255, 255, 255, 0.2);
-}
-
-/* Neon Glow Effect */
-.notification::before {
-    content: "";
-    position: absolute;
-    top: -3px;
-    left: -3px;
-    right: -3px;
-    bottom: -3px;
-    border-radius: 14px;
-    background: linear-gradient(135deg, rgba(0, 255, 204, 0.8), rgba(0, 102, 255, 0.8));
-    z-index: -1;
-    filter: blur(15px);
-}
-
-/* Cute Bounce-in Animation */
-@keyframes slideIn {
-    from {
-        transform: translate(-50%, -50px);
-        opacity: 0;
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blue Gradient App</title>
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      background: linear-gradient(to bottom right, #00c6ff, #0072ff);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: 'Arial', sans-serif;
+      flex-direction: column;
     }
-    to {
-        transform: translateX(-50%);
-        opacity: 1;
-    }
-}
 
-/* Soft Glow Fade-out */
-@keyframes fadeOut {
-    from {
-        opacity: 1;
+    header {
+      width: 100%;
+      background-color: black;
+      color: white;
+      padding: 10px;
+      box-sizing: border-box;
+      position: fixed;
+      top: 0;
+      left: 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-weight: bold;
+      z-index: 1;
     }
-    to {
-        opacity: 0;
-        transform: translate(-50%, -20px);
-    }
-}
-/* Prevent text selection */
-* {
-    user-select: none; /* No selecting text */
-    -webkit-user-select: none; /* Safari */
-    -moz-user-select: none; /* Firefox */
-    -ms-user-select: none; /* IE */
-}
-/* Prevent borders from moving */
-.your-element {
-    position: fixed; /* Sticks in place */
-    border: 2px solid #00ffcc; /* Neon cyber border */
-    box-shadow: 0 0 10px rgba(0, 255, 255, 0.7);
-    padding: 10px;
-}
 
-    </style>
+    header span {
+      font-size: 1.2rem;
+      display: flex;
+      gap: 5px;
+    }
+
+    header span .cyber {
+      color: white;
+    }
+
+    header span .chat {
+      color: lightgreen;
+    }
+
+    .profile-pic {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 3px solid #00ffcc; /* Light cyan edges */
+      background-image: url('https://via.placeholder.com/40'); /* Placeholder image */
+      background-size: cover;
+      background-position: center;
+    }
+
+    .auth-container {
+      background-color: rgba(0, 0, 0, 0.7);
+      padding: 30px;
+      width: 80%;
+      max-width: 400px;
+      margin-top: 80px;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      text-align: center;
+      transition: all 0.3s ease-in-out;
+    }
+
+    .auth-container h2 {
+      color: white;
+      margin-bottom: 20px;
+      font-size: 1.5rem;
+    }
+
+    .auth-container input {
+      width: 80%;
+      padding: 12px;
+      margin: 10px 0;
+      border: 1px solid #00ffcc;
+      border-radius: 5px;
+      background-color: transparent;
+      color: white;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+    }
+
+    .auth-container input:focus {
+      outline: none;
+      border: 1px solid #ff00ff;
+      box-shadow: 0 0 10px #ff00ff;
+    }
+
+    .auth-container button {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      background-color: #00ffcc;
+      color: black;
+      font-size: 1rem;
+      font-weight: bold;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .auth-container button:hover {
+      background-color: #00cc99;
+      box-shadow: 0 0 15px 5px #00ffcc;
+    }
+
+    .auth-container .switch {
+      margin-top: 15px;
+      color: white;
+      font-size: 0.9rem;
+    }
+
+    .auth-container .switch a {
+      color: #00ffcc;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .auth-container .switch a:hover {
+      text-decoration: underline;
+    }
+
+    .auth-container .login-form,
+    .auth-container .signup-form {
+      display: none;
+    }
+
+    .auth-container .active {
+      display: block;
+    }
+
+    .auth-container .neon-border {
+      border: 2px solid;
+      border-image: linear-gradient(45deg, #00ffcc, #ff00ff, #00c6ff, #ffcc00);
+      border-image-slice: 1;
+      padding: 10px;
+      transition: border 0.5s ease;
+    }
+
+    .auth-container .neon-border:hover {
+      border-image: linear-gradient(45deg, #ff00ff, #00ffcc, #ffcc00, #00c6ff);
+    }
+
+    /* Google Button Style */
+    .google-login-btn {
+      width: 90%;
+      padding: 12px;
+      border: none;
+      background-color: #4285f4;
+      color: white;
+      font-size: 1rem;
+      font-weight: bold;
+      border-radius: 5px;
+      cursor: pointer;
+      margin-top: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      transition: background-color 0.3s ease;
+    }
+
+    .google-login-btn:hover {
+      background-color: #357ae8;
+    }
+
+    .google-login-btn img {
+      width: 20px;
+      margin-right: 10px;
+    }
+
+    /* Neon Black border for image URL field */
+    .image-url-field {
+      border: 1px solid #333;
+      border-radius: 5px;
+      background-color: transparent;
+      color: white;
+      padding: 12px;
+      width: 80%;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+    }
+
+    .image-url-field:focus {
+      outline: none;
+      border: 1px solid #ff00ff;
+      box-shadow: 0 0 10px #ff00ff;
+    }
+  </style>
 </head>
 <body>
+  <header>
+    <span><span class="cyber">CYBER</span><span class="chat">CHAT</span> ACCOUNTS</span>
+    <div class="profile-pic"></div>
+  </header>
 
-    <div class="popup" id="popup">
-        <h2>CyberChat</h2>
-
-        <!-- Login Form -->
-        <form id="form">
-            <div class="input-container">
-                <span>@</span>
-                <input type="email" id="email" placeholder="Email" required>
-            </div>
-            <div class="input-container">
-                <input type="password" id="password" placeholder="Password" required>
-            </div>
-            <button type="submit">LOGIN</button>
-            <p class="toggle-btn" id="toggle-register">Don't have an account? Register</p>
-        </form>
-
-        <!-- Register Form -->
-        <form id="register-form" style="display: none;">
-            <div class="input-container">
-                <span>@</span>
-                <input type="text" id="register-username" placeholder="Username" required>
-            </div>
-            <div class="input-container">
-                <input type="email" id="register-email" placeholder="Email" required>
-            </div>
-            <div class="input-container">
-                <input type="password" id="register-password" placeholder="Password" required>
-            </div>
-            <div class="profile-pic-container">
-                <img id="profile-pic" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQXAG_XJZQtzTGm0FhTj9HNVeklnbkdmZkRJfoCQiCk7XtvOTKZN902ZBwI&s=10" alt="Profile Picture">
-                <button type="button" id="change-pic">Change</button>
-            </div>
-            <div class="input-container">
-                <input type="url" id="custom-pic" placeholder="Enter your own image URL" />
-                <button type="button" id="select-image">Select</button>
-            </div>
-            <button type="submit">REGISTER</button>
-            <p class="toggle-btn" id="toggle-login">Already have an account? Login</p>
-        </form>
+  <div class="auth-container neon-border">
+    <h2>Sign Up / Login</h2>
+    <div class="login-form active">
+      <input type="email" placeholder="Email Address" />
+      <input type="password" placeholder="Password" />
+      <button>Login</button>
+      <div class="switch">
+        <p>Don't have an account? <a href="#" onclick="switchForm('signup')">Sign up</a></p>
+      </div>
+      <div class="google-login-btn">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/4/4e/Google_2015_logo.svg" alt="Google Logo" />
+        Login with Google
+      </div>
     </div>
 
-    <!-- Notification Element -->
-    <div id="notification" class="notification"></div>
+    <div class="signup-form">
+      <input type="text" placeholder="Username" />
+      <input type="email" placeholder="Email Address" />
+      <input type="password" placeholder="Password" />
+      <input type="password" placeholder="Confirm Password" />
+      <input type="text" class="image-url-field" placeholder="Enter Image URL" />
+      <button>Sign Up</button>
+      <div class="switch">
+        <p>Already have an account? <a href="#" onclick="switchForm('login')">Log in</a></p>
+      </div>
+      <div class="google-login-btn">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/4/4e/Google_2015_logo.svg" alt="Google Logo" />
+        Login with Google
+      </div>
+    </div>
+  </div>
 
-    <script type="module">
-        // Firebase setup (use your firebaseConfig here)
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
-        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
-        import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-database.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
-            authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
-            databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
-            projectId: "itzhoyoo-f9f7e",
-            storageBucket: "itzhoyoo-f9f7e.firebasestorage.app",
-            messagingSenderId: "1094792075584",
-            appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
-            measurementId: "G-LLT6F9WRKH"
-        };
-
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth();
-        const database = getDatabase(app);
-
-        const profilePics = [
-            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQXAG_XJZQtzTGm0FhTj9HNVeklnbkdmZkRJfoCQiCk7XtvOTKZN902ZBwI&s=10",
-            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQSHJ-wZ0omgquoJv4tQTcwZZP4YVq-rn4dUTht0RaJmzyIm6O3P7CsxdsG&s=10",
-            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQXAG_XJZQtzTGm0FhTj9HNVeklnbkdmZkRJfoCQiCk7XtvOTKZN902ZBwI&s=10",
-            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSPSoZ5xPx0BmUme4dBeslC6bZj8iBB0rSfpPBUvYPCpXC_6AylB5NerYo&s=10",
-            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRdN_8i6yYNN09SKZRQ-clTVMlu17Y9xh76CQ&usqp=CAU",
-            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRCoyaYc5R4mi5bKTnPUvcy7yHq50k2eQxQew&usqp=CAU",
-            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRTSb1AdjFcC_4gbCOZNO2Ok-cV6tP8qMFKDztv8Go1HOgtl9c5wTpOrjM&s=10"
-        ];
-
-        let currentPicIndex = 0;
-
-        const profilePic = document.getElementById("profile-pic");
-        const changePicBtn = document.getElementById("change-pic");
-
-        changePicBtn.addEventListener("click", () => {
-            currentPicIndex = (currentPicIndex + 1) % profilePics.length;
-            profilePic.src = profilePics[currentPicIndex];
-        });
-
-        const selectImageBtn = document.getElementById("select-image");
-        const customPicInput = document.getElementById("custom-pic");
-
-        selectImageBtn.addEventListener("click", () => {
-            const customPicUrl = customPicInput.value;
-            if (customPicUrl) {
-                profilePic.src = customPicUrl;
-            }
-        });
-
-        // Handle Register Form Submission
-        const registerForm = document.getElementById("register-form");
-        registerForm.addEventListener("submit", async (e) => {
-            e.preventDefault();
-
-            const email = document.getElementById("register-email").value;
-            const password = document.getElementById("register-password").value;
-            const username = document.getElementById("register-username").value;
-            const profileImage = profilePic.src;
-
-            try {
-                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-                const user = userCredential.user;
-
-                                // Save user data in Firebase
-                set(ref(database, 'users/' + user.uid), {
-                    username: username,
-                    email: email,
-                    profilePicture: profileImage,
-                });
-
-                // Show success notification
-                showNotification('Registration successful! Welcome to CyberChat.');
-
-                // Switch to login page after successful registration
-                setTimeout(() => {
-                    toggleForms(); // Switch to the login form
-                }, 2000);
-            } catch (error) {
-                // Show error notification
-                showNotification('Error: ' + error.message);
-            }
-        });
-
-        // Handle Login Form Submission
-        const loginForm = document.getElementById("form");
-        loginForm.addEventListener("submit", async (e) => {
-            e.preventDefault();
-
-            const email = document.getElementById("email").value;
-            const password = document.getElementById("password").value;
-
-            try {
-                const userCredential = await signInWithEmailAndPassword(auth, email, password);
-                const user = userCredential.user;
-
-                // Show success notification
-                showNotification('Login successful! Welcome back, ' + user.displayName);
-
-                // Redirect to the main chat page or another area of the app
-                // Example: window.location.href = '/chat-dashboard';
-            } catch (error) {
-                // Show error notification
-                showNotification('Error: ' + error.message);
-            }
-        });
-
-        // Toggle between register and login forms
-        const toggleRegisterBtn = document.getElementById("toggle-register");
-        const toggleLoginBtn = document.getElementById("toggle-login");
-
-        toggleRegisterBtn.addEventListener("click", toggleForms);
-        toggleLoginBtn.addEventListener("click", toggleForms);
-
-        function toggleForms() {
-            const form = document.getElementById("form");
-            const registerForm = document.getElementById("register-form");
-
-            form.style.display = (form.style.display === "none") ? "block" : "none";
-            registerForm.style.display = (registerForm.style.display === "none") ? "block" : "none";
-        }
-
-        // Notification function
-        function showNotification(message) {
-            const notification = document.getElementById("notification");
-            notification.innerText = message;
-            notification.style.display = "block";
-
-            setTimeout(() => {
-                notification.style.display = "none";
-            }, 5000); // Hide after 5 seconds
-        }
-
-        // Check if user is already logged in on page load
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                showNotification('REGISTER.');
-                toggleForms(); // Optionally, auto switch to logged-in view or dashboard
-            }
-        });
-        // Handle Registration Form Submission
-registerForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-
-    const email = document.getElementById("register-email").value;
-    const password = document.getElementById("register-password").value;
-    const username = document.getElementById("register-username").value;
-    const profileImage = selectedProfilePic || document.getElementById("custom-image-url").value; // Get selected profile pic or custom URL
-
-    try {
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        const user = userCredential.user;
-
-        // Save user data in Firebase
-        await set(ref(database, 'users/' + user.uid), {
-            username: username,
-            email: email,
-            profilePicture: profileImage,
-        });
-
-        // Show success notification
-        showNotification('Registration successful! Please log in.');
-
-        // Automatically switch to login form
-        setTimeout(() => {
-            toggleForms(); // Switch to login form
-        }, 2000);
-
-    } catch (error) {
-        showNotification('Error: ' + error.message);
+  <script>
+    function switchForm(formType) {
+      if (formType === 'login') {
+        document.querySelector('.login-form').classList.add('active');
+        document.querySelector('.signup-form').classList.remove('active');
+      } else if (formType === 'signup') {
+        document.querySelector('.signup-form').classList.add('active');
+        document.querySelector('.login-form').classList.remove('active');
+      }
     }
-});
-
-// Handle Login Form Submission
-loginForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-
-    const email = document.getElementById("email").value;
-    const password = document.getElementById("password").value;
-
-    try {
-        const userCredential = await signInWithEmailAndPassword(auth, email, password);
-        const user = userCredential.user;
-
-        // Show success notification
-        showNotification('Login successful! Redirecting...');
-
-        // Redirect to homepage
-        setTimeout(() => {
-            window.location.href = "homepage.html"; // Redirect to homepage
-        }, 2000);
-
-    } catch (error) {
-        showNotification('Error: ' + error.message);
-    }
-});
-    </script>
-
+  </script>
 </body>
-</html>
+</ht
