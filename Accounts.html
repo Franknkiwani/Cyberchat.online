@@ -93,7 +93,7 @@
                 signInWithEmailAndPassword(auth, email, password)
                     .then(() => {
                         showNotification("Login successful!", "success");
-                        window.location.href = "chat.html"; // Redirect to chat page
+                        window.location.href = "homepage"; // Redirect to chat page
                     })
                     .catch(error => showNotification(error.message, "error"));
             }
