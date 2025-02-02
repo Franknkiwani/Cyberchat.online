@@ -3,205 +3,146 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CyberChat | Login & Register</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron&family=Exo+2:wght@600&display=swap" rel="stylesheet">
+    <title>CyberChat Auth</title>
+    <script type="module">
+        // Import Firebase
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
+        import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-firestore.js";
+
+        // Firebase Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
+            authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
+            databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
+            projectId: "itzhoyoo-f9f7e",
+            storageBucket: "itzhoyoo-f9f7e.appspot.com",
+            messagingSenderId: "1094792075584",
+            appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
+            measurementId: "G-LLT6F9WRKH"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        let isRegister = false;
+
+        // Toggle Login/Register
+        function toggleForm() {
+            isRegister = !isRegister;
+            document.getElementById("form-title").innerText = isRegister ? "Register" : "Login";
+            document.querySelector(".switch").innerText = isRegister ? "Already have an account? Login" : "Don't have an account? Register";
+            document.querySelector(".extra-fields").style.display = isRegister ? "block" : "none";
+        }
+
+        // Show custom pop-up notifications
+        function showNotification(message, type = "success") {
+            const notification = document.createElement("div");
+            notification.className = `notification ${type}`;
+            notification.innerText = message;
+            document.body.appendChild(notification);
+            setTimeout(() => { notification.remove(); }, 3000);
+        }
+
+        // Set Random Profile Pic
+        function setRandomProfile() {
+            const randomPics = [
+                "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQSHJ-wZ0omgquoJv4tQTcwZZP4YVq-rn4dUTht0RaJmzyIm6O3P7CsxdsG&s=10",
+                "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRTSb1AdjFcC_4gbCOZNO2Ok-cV6tP8qMFKDztv8Go1HOgtl9c5wTpOrjM&s=10"
+            ];
+            document.getElementById("profile-pic").value = randomPics[Math.floor(Math.random() * randomPics.length)];
+        }
+
+        // Auth Action (Register/Login)
+        window.authAction = function () {
+            const email = document.getElementById("email").value.trim();
+            const password = document.getElementById("password").value.trim();
+
+            if (!email || !password) {
+                showNotification("All fields are required!", "error");
+                return;
+            }
+
+            if (isRegister) {
+                const username = document.getElementById("username").value.trim();
+                const profilePic = document.getElementById("profile-pic").value.trim();
+
+                if (!username || !profilePic) {
+                    showNotification("All fields are required!", "error");
+                    return;
+                }
+
+                createUserWithEmailAndPassword(auth, email, password)
+                    .then(userCredential => {
+                        const user = userCredential.user;
+                        return setDoc(doc(db, "users", user.uid), {
+                            username: username,
+                            profilePic: profilePic,
+                            email: email
+                        });
+                    })
+                    .then(() => {
+                        showNotification("Registration successful!", "success");
+                        toggleForm();
+                    })
+                    .catch(error => showNotification(error.message, "error"));
+            } else {
+                signInWithEmailAndPassword(auth, email, password)
+                    .then(() => {
+                        showNotification("Login successful!", "success");
+                        window.location.href = "chat.html"; // Redirect to chat page
+                    })
+                    .catch(error => showNotification(error.message, "error"));
+            }
+        };
+
+        // Expose functions to global scope
+        window.toggleForm = toggleForm;
+        window.setRandomProfile = setRandomProfile;
+    </script>
+
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Exo 2', sans-serif;
-        }
-        body {
-            background: radial-gradient(circle, #000814, #001d3d);
-            color: #00FFFF;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
-        .container {
-            width: 380px;
-            padding: 30px;
-            background: rgba(0, 0, 0, 0.8);
-            border-radius: 12px;
-            backdrop-filter: blur(10px);
-            box-shadow: 0 0 20px rgba(0, 255, 255, 0.6);
-            text-align: center;
-            position: relative;
-            overflow: hidden;
-        }
-        h1 {
-            font-size: 2.3rem;
-            margin-bottom: 15px;
-            background: linear-gradient(90deg, #00FFFF, #FF00FF);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            animation: typing 2.5s steps(20) infinite alternate;
-        }
-        @keyframes typing {
-            0% { opacity: 0.5; }
-            100% { opacity: 1; }
-        }
-        input {
-            width: 100%;
-            padding: 12px;
-            margin: 10px 0;
-            border: 2px solid #FF00FF; /* Always visible neon border */
-            border-radius: 8px;
-            background: rgba(0, 0, 0, 0.6);
-            color: #00FFFF;
-            font-size: 1rem;
-            transition: 0.3s;
-            box-shadow: 0 0 10px #FF00FF; /* Always glowing */
-        }
-        input:focus {
-            outline: none;
-            border-color: #00FFFF;
-            box-shadow: 0 0 15px #00FFFF;
-        }
-        .profile-input-container {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .learn-btn {
-            background: none;
-            border: 2px solid #00FFFF;
-            color: #00FFFF;
-            padding: 6px 12px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            transition: 0.3s;
-        }
-        .learn-btn:hover {
-            background: #00FFFF;
-            color: #000;
-        }
-        button {
-            width: 100%;
-            padding: 12px;
-            background: linear-gradient(45deg, #00FFFF, #FF00FF);
-            border: none;
-            border-radius: 8px;
-            font-size: 1.2rem;
-            cursor: pointer;
-            color: #000;
-            font-weight: bold;
-            transition: 0.3s;
-        }
-        button:hover {
-            background: linear-gradient(45deg, #FF00FF, #00FFFF);
-            transform: scale(1.05);
-        }
-        .links {
-            margin-top: 15px;
-        }
-        .links a {
-            color: #00FFFF;
-            text-decoration: none;
-            transition: 0.3s;
-        }
-        .links a:hover {
-            color: #FF00FF;
-        }
-        /* Learn Popup */
-        .popup {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 300px;
-            background: rgba(0, 0, 0, 0.9);
-            padding: 20px;
-            border-radius: 12px;
-            text-align: center;
-            box-shadow: 0 0 20px #00FFFF;
-            display: none;
-            z-index: 999;
-        }
-        .popup p {
-            color: #00FFFF;
-            font-size: 0.95rem;
-            margin-bottom: 10px;
-        }
-        .popup button {
-            width: 80px;
-            padding: 8px;
-            font-size: 0.9rem;
-            margin-top: 10px;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Arial', sans-serif; }
+        body { background: #080808; display: flex; justify-content: center; align-items: center; height: 100vh; color: white; }
+        .container { background: rgba(20, 20, 20, 0.9); padding: 30px; width: 380px; text-align: center; border-radius: 12px; box-shadow: 0px 0px 15px rgba(255, 0, 150, 0.7); backdrop-filter: blur(10px); }
+        h2 { margin-bottom: 15px; font-size: 22px; color: #ff0099; }
+        input { width: 100%; padding: 12px; margin: 8px 0; border: none; outline: none; background: rgba(255, 255, 255, 0.1); color: white; border-radius: 5px; font-size: 14px; }
+        .input-wrapper { display: flex; align-items: center; justify-content: space-between; }
+        .btn, .small-btn { cursor: pointer; padding: 10px; border-radius: 5px; font-size: 14px; transition: 0.3s; border: none; color: white; }
+        .btn { width: 100%; background: linear-gradient(45deg, #ff0099, #ff4d4d); }
+        .btn:hover { background: linear-gradient(45deg, #ff4d4d, #ff0099); }
+        .small-btn { width: 48%; background: #ff0099; font-size: 12px; padding: 8px; }
+        .small-btn:hover { background: #ff4d4d; }
+        .switch { margin-top: 15px; font-size: 14px; cursor: pointer; color: #ff0099; }
+        .switch:hover { text-decoration: underline; }
+        .extra-fields { display: none; }
+        
+        /* Notifications */
+        .notification { position: fixed; top: 20px; right: 20px; padding: 12px; color: white; border-radius: 5px; font-size: 14px; animation: fadeIn 0.3s ease-in-out; }
+        .success { background: #2ecc71; }
+        .error { background: #e74c3c; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h1>CYBERCHAT</h1>
-    
-    <!-- Register Form -->
-    <form id="register-form">
-        <input type="text" id="register-username" placeholder="Username" required>
-        <input type="email" id="register-email" placeholder="Email" required>
-        <input type="password" id="register-password" placeholder="Password" required>
-        
-        <div class="profile-input-container">
-            <input type="url" id="register-profile" placeholder="Profile Image URL" required>
-            <button type="button" class="learn-btn" onclick="showPopup()">LEARN?</button>
+    <div class="container">
+        <h2 id="form-title">Login</h2>
+        <input type="email" id="email" placeholder="Email" required>
+        <input type="password" id="password" placeholder="Password" required>
+        <div class="extra-fields">
+            <input id="username" type="text" placeholder="Username" required>
+            <div class="input-wrapper">
+                <input id="profile-pic" type="text" placeholder="Profile Picture URL" required>
+            </div>
+            <button class="small-btn" onclick="window.open('https://imgbb.com/', '_blank')">Custom</button>
+            <button class="small-btn" onclick="setRandomProfile()">Random</button>
         </div>
-
-        <button type="submit">Register</button>
-    </form>
-
-    <div class="links">
-        <p>Already have an account? <a href="javascript:void(0);" onclick="toggleForm()">Login</a></p>
+        <button class="btn" onclick="authAction()">Continue</button>
+        <div class="switch" onclick="toggleForm()">Don't have an account? Register</div>
     </div>
-</div>
-
-<!-- Learn Popup -->
-<div id="popup" class="popup">
-    <p>💡 A **Profile Image URL** is a direct link to your image.  
-    You can upload a picture to **Imgur, PostImage, or Discord**, then copy the image address.</p>
-    <button onclick="hidePopup()">OK</button>
-</div>
-
-<script>
-    let isRegister = true;
-
-    function toggleForm() {
-        isRegister = !isRegister;
-        if (!isRegister) {
-            document.querySelector('h1').textContent = 'Login';
-            document.querySelector('form').innerHTML = `
-                <input type="email" id="login-email" placeholder="Email" required>
-                <input type="password" id="login-password" placeholder="Password" required>
-                <button type="submit">Login</button>
-            `;
-            document.querySelector('.links p').innerHTML = `Don't have an account? <a href="javascript:void(0);" onclick="toggleForm()">Register</a>`;
-        } else {
-            document.querySelector('h1').textContent = 'CYBERCHAT';
-            document.querySelector('form').innerHTML = `
-                <input type="text" id="register-username" placeholder="Username" required>
-                <input type="email" id="register-email" placeholder="Email" required>
-                <input type="password" id="register-password" placeholder="Password" required>
-                <div class="profile-input-container">
-                    <input type="url" id="register-profile" placeholder="Profile Image URL" required>
-                    <button type="button" class="learn-btn" onclick="showPopup()">LEARN?</button>
-                </div>
-                <button type="submit">Register</button>
-            `;
-            document.querySelector('.links p').innerHTML = `Already have an account? <a href="javascript:void(0);" onclick="toggleForm()">Login</a>`;
-        }
-    }
-
-    function showPopup() {
-        document.getElementById('popup').style.display = 'block';
-    }
-
-    function hidePopup() {
-        document.getElementById('popup').style.display = 'none';
-    }
-</script>
 
 </body>
 </html>
