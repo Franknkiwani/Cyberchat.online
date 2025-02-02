@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -59,6 +60,8 @@
 
         .btn:focus {
             outline: none;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 1);
+            background-color: #00bcd4;
         }
 
         @keyframes changeBorderColor {
@@ -86,7 +89,8 @@
 
         .hero-image {
             width: 100%;
-            height: 200px;
+            height: auto; /* Preserve the image's aspect ratio */
+            max-height: 200px; /* Restrict the height to avoid large images */
             object-fit: cover;
             border-radius: 10px;
         }
@@ -130,6 +134,7 @@
 
         .cta-btn:focus {
             outline: none;
+            box-shadow: 0 0 10px rgba(0, 255, 255, 1);
         }
 
         /* Profile Containers Section */
@@ -191,183 +196,214 @@
             background-color: #00bcd4;
             box-shadow: 0 0 15px rgba(0, 255, 255, 1);
         }
-        /* Ratings Section */
-.ratings-container {
-    width: 90%;
-    background-color: lightgreen;
-    margin: 40px auto;
-    padding: 30px;
-    border-radius: 10px;
-    border: 3px solid #ccc;
-    box-sizing: border-box;
-    text-align: center;
-    color: black;
-}
 
-.ratings-title {
-    font-size: 20px;
-    font-weight: bold;
-    color: black; /* Neon cyan */
-    margin-bottom: 10px;
-}
+        /* FAQ Section */
+        .faq-container {
+            width: 70%;
+            background-color: #222;
+            margin: 40px auto;
+            padding: 30px;
+            border: 3px solid #ccc;
+            border-radius: 210px;
+            text-align: center;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
 
-.ratings-stars {
-    font-size: 30px;
-    color: #ffcc00; /* Gold color for stars */
-    margin-bottom: 10px;
-}
+        .faq-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #00bcd4;
+            margin-bottom: 20px;
+        }
 
-.star {
-    transition: transform 0.2s ease;
-}
+        .faq-item {
+            width: 100%;
+            margin-bottom: 20px;
+        }
 
-.star:hover {
-    transform: scale(1.2); /* Slight zoom effect on hover */
-}
+        .faq-question {
+            font-size: 18px;
+            font-weight: bold;
+            color: white;
+            margin-bottom: 10px;
+        }
 
-.ratings-description {
-    font-size: 14px;
-    color: black;
-    margin-bottom: 20px;
-}
+        .faq-answer {
+            font-size: 14px;
+            color: white;
+            margin-left: 10px;
+        }
+       
+ /*Cyber-AI Section */
+        .cyber-ai-container {
+            width: 88%;
+            background-color: #222;
+            color: white;
+            padding: 50px 20px;
+            text-align: center;
+            position: relative;
+        }
 
-.cta-btn {
-    background-color: purple;
-    color: black;
-    border: 2px solid neon;
-    padding: 12px 30px;
-    font-size: 18px;
-    cursor: pointer;
-    border-radius: 5px;
-    transition: all 0.3s ease;
-    width: 100%;
-    text-align: center;
-}
+        .cyber-ai-header {
+            font-size: 20px;
+            font-weight: bold;
+            color: #00bcd4;
+            margin-bottom: 20px;
+        }
 
-.cta-btn:hover {
-    background-color: #00bcd4;
-    box-shadow: 0 0 15px rgba(0, 255, 255, 1);
-}
-/* Testimonials Section */
-.testimonials-container {
-    height: 100px;
-    width: 80%;
-    background-color: #333;
-    margin: 40px auto;
-    padding: 30px;
-    border-radius: 10px;
-    border: 3px solid #ccc;
-    box-sizing: border-box;
-    color: white;
-    text-align: center;
-}
+        .cyber-ai-content {
+            font-size: 18px;
+            font-weight: 400;
+            margin-top: 20px;
+            color: white;
+            opacity: 0;
+            animation: fadeInUp 1.5s forwards;
+        }
 
-.testimonials-title {
-    font-size: 4px;
-    font-weight: bold;
-    color: #ffcc00;
-    margin-bottom: 20px;
-}
+        /* Animations for smooth scroll */
+        @keyframes fadeInUp {
+            0% {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+            100% {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
 
-.testimonial {
-    margin-bottom: 20px;
-}
+        /* Scrolling effect */
+        .cyber-ai-container.fade-in {
+            animation: fadeInUp 2s ease-out forwards;
+        }
 
-.testimonial-text {
-    font-size: 16px;
-    font-style: italic;
-    color: #bbb;
-}
-.read reveals {
-    background-color: green;
-}
-.testimonial-button {
-    font-size: 14px;
-    font-weight: bold;
-    color: white;
-}
-/* FAQ Section */
-.faq-container {
-    width: 80%;
-    background-color: #222;
-    margin: 40px auto;
-    padding: 30px;
-    border: 3px solid #ccc;
-    border-radius: 210px;
-    text-align: center; /* Center the content */
-    color: white;
-    display: flex;
-    flex-direction: column;
-    align-items: center; /* Center the items */
-    justify-content: center;
-}
+        /* Custom scrolling styles */
+        .scroll-container {
+            width: 80%;
+            margin: 0 auto;
+            overflow: hidden;
+            height: 300px;
+            position: relative;
+            border-radius: 15px;
+        }
 
-.faq-title {
-    font-size: 24px;
-    font-weight: bold;
-    color: #00bcd4; /* Neon cyan */
-    margin-bottom: 20px;
-}
+        .scroll-content {
+            display: flex;
+            animation: scrollAnimation 10s infinite linear;
+        }
 
-.faq-item {
-    width: 100%; /* Make each item take full width for better alignment */
-    margin-bottom: 20px;
-}
+        .scroll-item {
+            font-size: 20px;
+            margin: 10px 40px;
+            display: inline-block;
+        }
 
-.faq-question {
-    font-size: 18px;
-    font-weight: bold;
-    color: white;
-    margin-bottom: 10px; /* Space between question and answer */
-}
+        @keyframes scrollAnimation {
+            0% {
+                transform: translateX(100%);
+            }
+            100% {
+                transform: translateX(-100%);
+            }
+        }
 
-.faq-answer {
-    font-size: 14px;
-    color: white;
-    margin-left: 10px; /* Space for better readability */
-}
-/* Poll Section */
-.poll-container {
-    width: 80%;
-    background-color: #333;
-    margin: 40px auto;
-    padding: 30px;
-    border-radius: 10px;
-    text-align: left;
-    color: white;
-}
+        .cyber-ai-header {
+            font-size: 20px;
+            font-weight: bold;
+            color: #00ffcc;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 0 0 5px rgba(0, 255, 255, 1);
+            margin-bottom: 20px;
+            animation: neonPulse 1.5s infinite alternate;
+        }
 
-.poll-title {
-    font-size: 24px;
-    font-weight: bold;
-    color: #00bcd4; /* Neon cyan */
-    margin-bottom: 20px;
-}
+        /* Glowing Animation */
+        @keyframes neonPulse {
+            0% {
+                text-shadow: 0 0 20px rgba(0, 255, 255, 1), 0 0 30px rgba(0, 255, 255, 1), 0 0 40px rgba(0, 255, 255, 1);
+            }
+            100% {
+                text-shadow: 0 0 10px rgba(0, 255, 255, 0.5), 0 0 20px rgba(0, 255, 255, 0.7), 0 0 30px rgba(0, 255, 255, 1);
+            }
+        }
 
-.poll-form {
-    font-size: 18px;
-}
+        .cyber-ai-content {
+            font-size: 22px;
+            font-weight: 400;
+            color: #aaa;
+            margin-top: 30px;
+            opacity: 0;
+            animation: fadeInUp 1s forwards;
+        }
 
-.poll-form input {
-    margin-right: 10px;
-}
-.testimonials-container button {
-    background-color: red;
-    color: white;
-    border: 2px solid darkred;
-    padding: 1px 2px;
-    font-size: 16px;
-    cursor: pointer;
-    border-radius: 5px;
-    transition: all 0.3s ease;
-    box-shadow: 0 0 10px rgba(255, 0, 0, 0.7);
-}
+        /* Smooth fade-in animation */
+        @keyframes fadeInUp {
+            0% {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+            100% {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
 
-.testimonials-container button:hover {
-    background-color: darkred;
-    box-shadow: 0 0 15px rgba(255, 0, 0, 1);
-}
+        .cyber-ai-content p {
+            margin: 15px 0;
+            line-height: 1.5;
+        }
 
+        /* Scrolling Info */
+        .scroll-container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 30px auto;
+            overflow: hidden;
+            height: 100px;
+            position: relative;
+            border-radius: 10px;
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        .scroll-content {
+            display: flex;
+            animation: scrollAnimation 10s infinite linear;
+        }
+
+        .scroll-item {
+            font-size: 20px;
+            margin: 0 50px;
+            display: inline-block;
+            color: #00ffcc;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 0 0 8px rgba(0, 255, 255, 1);
+        }
+
+        /* Pixelated scrolling effect */
+        @keyframes scrollAnimation {
+            0% {
+                transform: translateX(100%);
+            }
+            100% {
+                transform: translateX(-100%);
+            }
+        }
+
+        /* Cyber-AI hover effect */
+        .cyber-ai-container:hover {
+            box-shadow: 0 0 40px rgba(0, 255, 255, 0.5);
+        }
+
+        .cyber-ai-container:hover .cyber-ai-header {
+            animation: neonPulse 1s infinite alternate;
+        }
     </style>
 </head>
 <body>
@@ -375,7 +411,7 @@
         <div class="cyberchat">
             <span class="cyber">CYBER</span><span class="chat">CHAT</span>
         </div>
-        <button class="btn" onclick="redirectToLoading()">LOGIN</button>
+        <button class="btn" aria-label="Login Button" onclick="redirectToLoading()">LOGIN</button>
     </header>
 
     <!-- Hero Section -->
@@ -384,63 +420,56 @@
         <div class="hero-content">
             <h1 class="hero-title">CYBERCHAT.ONLINE</h1>
             <p class="hero-description">WHERE RICH KIDS HANGOUT</p>
-        <button class="cta-btn" onclick="redirectToLoading()">GET STARTED</button>
+            <button class="cta-btn" aria-label="Get Started Button" onclick="redirectToLoading()">GET STARTED</button>
         </div>
     </div>
-    </div>
-</div>
+        </div>
+          </div>
+            </div>
+<!-- Cyber-AI Section -->
+    <div class="cyber-ai-container" id="cyber-ai">
+        <h2 class="cyber-ai-header">Meet Cyberchat-AI</h2>
+        <div class="cyber-ai-content">
+            <p>Over $100,000 paid to our users in the past month!</p>
+            <p>Join 100,000+ active users each month sharing experiences and making money!</p>
+            <p>We are the future of online collaboration—secure, fast, and futuristic!</p>
+            <p>More amazing features coming soon—stay tuned!</p>
+        </div>
 
+        <!-- Scrolling Info -->
+        <div class="scroll-container">
+            <div class="scroll-content">
+                <div class="scroll-item">JOIN CYBERCHAT</div>
+                <div class="scroll-item">BECOME A MILLIONAIRE </div>
+                
+                <div class="scroll-item"></div>
+            </div>
+        </div>
     </div>
     <!-- FAQ Section -->
-<div class="faq-container">
-    <h2 class="faq-title">Frequently Asked Questions</h2>
-    <div class="faq-item">
-        <h3 class="faq-question">How do I sign up for CyberChat?</h3>
-        <p class="faq-answer">You can sign up using your email and create a profile. It's quick and easy!</p>
-    </div>
-    <div class="faq-item">
-        <h3 class="faq-question">Is there a mobile app for CyberChat?</h3>
-        <p class="faq-answer">Currently, CyberChat is only available as a web app. We're working on a mobile version!</p>
+    <div class="faq-container">
+        <h2 class="faq-title">Asked Questions</h2>
+        <div class="faq-item">
+            <h3 class="faq-question">How do I sign up for CyberChat?</h3>
+            <p class="faq-answer">You can sign up using your email and create a profile. It's quick and easy!</p>
         </div>
-         <!-- Ratings Section -->
-<div class="ratings-container">
-    <h2 class="ratings-title">Ratings & Reviews</h2>
-    <div class="ratings-stars">
-        <span class="star">&#9733;</span> <!-- Star symbol -->
-        <span class="star">&#9733;</span>
-        <span class="star">&#9733;</span>
-        <span class="star">&#9733;</span>
-        <span class="star">&#9733;</span>
-    </div>
-    <p class="ratings-description">10,000+ REVEALS</p>
-     <p class="ratings-description">Our users love CyberChat! Join the fun.</p>
-    <!-- Testimonials Section -->
-<div class="testimonials-container">
-    <h2 class="testimonials-title"></h2>
-    <div class="testimonial">
-    <button>READ REVELS</button>
-</div>
- </div>
-    </div>
-</div>
-<!-- Poll Section -->
-<div class="poll-container">
-    <h2 class="poll-title">What feature do you want next?</h2>
-    <form class="poll-form">
-        <input type="radio" id="feature1" name="feature" value="Feature 1">
-        <label for="feature1">Dark Mode</label><br>
-        <input type="radio" id="feature2" name="feature" value="Feature 2">
-        <label for="feature2">In-App Games</label><br>
-        <input type="radio" id="feature3" name="feature" value="Feature 3">
-        <label for="feature3">More Stickers</label><br>
-        <button type="submit" class="cta-btn">Submit</button>
-    </form>
-</div>
-<script>
-    function redirectToLoading() {
-        window.location.href = "loading.html";
-    }
-</script>
+        <div class="faq-item">
+            <h3 class="faq-question">Is there a mobile app for CyberChat?</h3>
+            <p class="faq-answer">Currently, CyberChat is only available as a web app. We're working on a mobile version!</p>
+    <script>
+        function redirectToLoading() {
+            window.location.href = "loading.html";
+        }
+          // Trigger fade-in animation as user scrolls
+        window.addEventListener("scroll", () => {
+            const aiSection = document.getElementById("cyber-ai");
+            const aiSectionPosition = aiSection.getBoundingClientRect().top;
+            const screenPosition = window.innerHeight;
 
+            if (aiSectionPosition < screenPosition) {
+                aiSection.classList.add("fade-in");
+            }
+        });
+    </script>
 </body>
 </html>
