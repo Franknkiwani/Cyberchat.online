@@ -31,21 +31,28 @@
             box-shadow: 0 2px 10px rgba(0, 255, 255, 0.5);
         }
 
-        .hamburger-menu {
+        /* Logo and App Name */
+        .logo {
             width: 30px;
-            height: 25px;
-            cursor: pointer;
+            height: 30px;
+            background-image: url('https://via.placeholder.com/30'); /* Replace with your logo URL */
+            background-size: cover;
+            background-position: center;
         }
 
-        /* Centered CyberChat Text */
         .header-title {
-            font-size: 20px;
+            font-size: 24px;
             font-weight: bold;
-            letter-spacing: 2px;
+            margin-left: 10px;
         }
 
-        .header-title .cyber { color: #fff; }
-        .header-title .chat { color: #32cd32; }
+        .header-title .cyber {
+            color: #fff;
+        }
+
+        .header-title .chat {
+            color: #32cd32; /* Light green color */
+        }
 
         /* Profile Picture */
         .profile-pic {
@@ -57,6 +64,76 @@
             background-size: cover;
             background-position: center;
             cursor: pointer;
+        }
+
+        /* Chat Area Styling */
+        .chat-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            height: 80vh;
+            padding: 20px;
+            overflow-y: auto;
+            border-top: 2px solid #32cd32;
+        }
+
+        .message {
+            background-color: #333;
+            margin-bottom: 10px;
+            padding: 15px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0, 255, 255, 0.5);
+        }
+
+        .message img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        .message .content {
+            color: #fff;
+        }
+
+        .message .username {
+            font-weight: bold;
+            color: #32cd32;
+        }
+
+        /* Message Input Area */
+        .input-container {
+            display: flex;
+            justify-content: space-between;
+            padding: 20px;
+            background-color: #222;
+        }
+
+        .input-container input {
+            width: 85%;
+            padding: 10px;
+            background-color: #444;
+            border: none;
+            border-radius: 10px;
+            color: #fff;
+            font-size: 16px;
+            margin-right: 10px;
+        }
+
+        .input-container button {
+            padding: 12px;
+            background-color: #32cd32;
+            border: none;
+            border-radius: 10px;
+            color: #fff;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .input-container button:hover {
+            background-color: #28a745;
         }
 
         /* Profile Popup */
@@ -131,12 +208,8 @@
 </head>
 <body>
     <header>
-        <!-- Hamburger Menu -->
-        <div class="hamburger-menu">
-            <div></div>
-            <div></div>
-            <div></div>
-        </div>
+        <!-- Logo -->
+        <div class="logo"></div>
 
         <!-- CyberChat Text -->
         <div class="header-title">
@@ -146,6 +219,17 @@
         <!-- Profile Picture -->
         <div class="profile-pic" onclick="toggleProfilePopup()" id="profilePic"></div>
     </header>
+
+    <!-- Chat Container -->
+    <div class="chat-container" id="chatContainer">
+        <!-- Messages will be displayed here -->
+    </div>
+
+    <!-- Message Input -->
+    <div class="input-container">
+        <input type="text" id="messageInput" placeholder="Type a message..." />
+        <button onclick="sendMessage()">Send</button>
+    </div>
 
     <!-- Profile Popup -->
     <div class="profile-popup" id="profilePopup">
@@ -157,12 +241,12 @@
     </div>
 
     <script type="module">
-        // Import Firebase SDKs
+        // Firebase SDK imports
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
-        import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-database.js";
+        import { getDatabase, ref, set, push, onValue } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-database.js";
 
-        // Firebase Configuration
+        // Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
             authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
@@ -178,10 +262,9 @@
         const auth = getAuth(app);
         const db = getDatabase(app);
 
-        // Function to update UI with user data from Realtime Database
+        // Update the profile UI after user logs in
         function updateUserProfile(user) {
             if (user) {
-                // Fetch user data from Realtime Database
                 const userRef = ref(db, 'users/' + user.uid);
                 get(userRef).then((snapshot) => {
                     if (snapshot.exists()) {
@@ -204,32 +287,72 @@
             }
         }
 
-        // Listen for user authentication state change
+        // Listen for user authentication state
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 updateUserProfile(user);
             } else {
-                console.log("No user logged in.");
+                // Redirect to login page
+                alert("Please log in to access the chat.");
+                window.location.href = "/login.html"; // Modify the redirect URL if needed
             }
         });
 
-        // Logout function and redirect to accounts.html
-        window.logout = function() {
+        // Toggle profile popup visibility
+        function toggleProfilePopup() {
+            const popup = document.getElementById("profilePopup");
+            popup.classList.toggle("show");
+        }
+
+        // Logout function
+        function logout() {
             signOut(auth).then(() => {
                 alert("Logged out successfully!");
-                window.location.href = 'accounts.html';  // Redirect to accounts.html
+                window.location.href = "/login.html"; // Redirect after logout
             }).catch((error) => {
-                console.error("Logout Error: ", error);
+                console.error("Logout failed: ", error);
             });
-        };
-    </script>
-
-    <script>
-        // Toggle Profile Popup
-        function toggleProfilePopup() {
-            var popup = document.getElementById('profilePopup');
-            popup.classList.toggle('show');
         }
+
+        // Send a message
+        function sendMessage() {
+            const messageInput = document.getElementById("messageInput");
+            const messageText = messageInput.value.trim();
+            if (messageText) {
+                const user = auth.currentUser;
+                const messagesRef = ref(db, 'messages/');
+                const newMessageRef = push(messagesRef);
+                set(newMessageRef, {
+                    text: messageText,
+                    userId: user.uid,
+                    username: user.displayName,
+                    timestamp: new Date().toISOString()
+                }).then(() => {
+                    messageInput.value = '';
+                }).catch((error) => {
+                    console.error("Error sending message: ", error);
+                });
+            }
+        }
+
+        // Fetch and display messages
+        onValue(ref(db, 'messages/'), (snapshot) => {
+            const chatContainer = document.getElementById("chatContainer");
+            chatContainer.innerHTML = '';
+            snapshot.forEach((childSnapshot) => {
+                const messageData = childSnapshot.val();
+                const messageElement = document.createElement('div');
+                messageElement.classList.add('message');
+                messageElement.innerHTML = `
+                    <img src="https://via.placeholder.com/40" alt="User">
+                    <div class="content">
+                        <span class="username">${messageData.username}</span><br>
+                        ${messageData.text}
+                    </div>
+                `;
+                chatContainer.appendChild(messageElement);
+            });
+        });
     </script>
 </body>
 </html>
