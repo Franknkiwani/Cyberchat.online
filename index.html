@@ -403,6 +403,67 @@
         .cyber-ai-container:hover .cyber-ai-header {
             animation: neonPulse 1s infinite alternate;
         }
+               .showcase {
+                   padding: 50px 20px;
+            text-align: center;
+            position: relative;
+            position: relative;
+            width: 100%;
+            max-width: 290px;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+            padding: 30px;
+            text-align: center;
+            overflow: hidden;
+        }
+
+        .showcase h2 {
+            font-size: 1.5rem;
+            text-transform: uppercase;
+            color: #0ff;
+            text-shadow: 0 0 10px rgba(0, 255, 255, 0.8);
+        }
+
+        .profile-container {
+            position: relative;
+            width: 100%;
+            height: 250px;
+            overflow: hidden;
+        }
+
+        .profile {
+            position: absolute;
+            width: 100%;
+            transition: opacity 1s ease-in-out;
+            opacity: 0;
+            transform: scale(0.9);
+        }
+
+        .profile.active {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .profile img {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            border: 3px solid #0ff;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.8);
+        }
+
+        .profile h3 {
+            margin-top: 10px;
+            font-size: 1.3rem;
+            color: #ff007f;
+            text-shadow: 0 0 10px rgba(255, 0, 127, 0.8);
+        }
+
+        .profile p {
+            font-size: 1rem;
+            opacity: 0.8;
+        }
     </style>
 </head>
 <body>
@@ -445,6 +506,41 @@
             </div>
         </div>
     </div>
+    <section class="showcase">
+        <h2>🔥 CyberChat🔥</h2>
+        <div class="profile-container">
+            <div class="profile active">
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSo5BdOT5Itv1NZvQ9ziN45HUJRB5klAMf-br4y_pyNyBAbCBvcGC7pGzc&s=10" alt="Gamer">
+                <h3>CyberWolf</h3>
+                <p>Elite Sniper | 10M XP</p>
+            </div>
+            <div class="profile">
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRSI6qfZ-wwiLJQAvf6NGirSO_cfrXKIwFcWg&usqp=CAU" alt="Gamer">
+                <h3>NeonShadow</h3>
+                <p>Speedrunner | 5M XP</p>
+            </div>
+            <div class="profile">
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSSy6PHYHcweXJSlEeXKUqLa8yFcKyRYZ4F_w&usqp=CAU" alt="Gamer">
+                <h3>PixelNinja</h3>
+                <p>Stealth Expert | 7M XP</p>
+            </div>
+            <div class="profile">
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQSHJ-wZ0omgquoJv4tQTcwZZP4YVq-rn4dUTht0RaJmzyIm6O3P7CsxdsG&s=10" alt="Gamer">
+                <h3>DriftKing</h3>
+                <p>Racing Pro | 12M XP</p>
+            </div>
+            <div class="profile">
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRTSb1AdjFcC_4gbCOZNO2Ok-cV6tP8qMFKDztv8Go1HOgtl9c5wTpOrjM&s=10" alt="Gamer">
+                <h3>ShadowFox</h3>
+                <p>Battle Royale Master | 8M XP</p>
+            </div>
+            <div class="profile">
+                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSPSoZ5xPx0BmUme4dBeslC6bZj8iBB0rSfpPBUvYPCpXC_6AylB5NerYo&s=10" alt="Gamer">
+                <h3>CyberHawk</h3>
+                <p>Tech Hacker | 6M XP</p>
+            </div>
+        </div>
+    </section>
     <!-- FAQ Section -->
     <div class="faq-container">
         <h2 class="faq-title">Asked Questions</h2>
@@ -469,6 +565,16 @@
                 aiSection.classList.add("fade-in");
             }
         });
+        let currentIndex = 0;
+        const profiles = document.querySelectorAll(".profile");
+
+        function showNextProfile() {
+            profiles[currentIndex].classList.remove("active");
+            currentIndex = (currentIndex + 1) % profiles.length;
+            profiles[currentIndex].classList.add("active");
+        }
+
+        setInterval(showNextProfile, 3000);
     </script>
 </body>
 </html>
