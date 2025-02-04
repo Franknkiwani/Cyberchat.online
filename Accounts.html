@@ -93,7 +93,7 @@
                 signInWithEmailAndPassword(auth, email, password)
                     .then(() => {
                         showNotification("Login successful!", "success");
-                        window.location.href = "homepage";
+                        window.location.href = "upgrade/account";
                     })
                     .catch(error => showNotification(error.message, "error"));
             }
