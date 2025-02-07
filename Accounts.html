@@ -3,18 +3,152 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CyberChat Auth</title>
-    <script type="module">
-        // Import Firebase
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-app.js";
-        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-auth.js";
-        import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/11.2.0/firebase-database.js";
+    <title>TaskShare</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+        body {
+            background: #f4f4f4;
+            color: #333;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 400px;
+        }
+        h1 {
+            font-size: 2em;
+            margin-bottom: 10px;
+        }
+        p {
+            font-size: 1.1em;
+            color: #666;
+            margin-bottom: 20px;
+        }
+        .btn {
+            width: 100%;
+            padding: 12px;
+            font-size: 1.2em;
+            font-weight: bold;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: 0.3s;
+            margin: 5px 0;
+        }
+        .btn-primary {
+            background: #007BFF;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #0056b3;
+        }
+        .btn-google {
+            background: white;
+            color: #333;
+            border: 1px solid #ddd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .btn-google img {
+            width: 20px;
+            margin-right: 10px;
+        }
+        .btn-google:hover {
+            background: #f8f9fa;
+        }
+        .toggle-form {
+            margin-top: 10px;
+            font-size: 0.9em;
+            color: #007BFF;
+            cursor: pointer;
+        }
+        .toggle-form:hover {
+            text-decoration: underline;
+        }
+        .input-group {
+            text-align: left;
+            margin: 10px 0;
+        }
+        .input-group label {
+            font-size: 1em;
+            color: #666;
+        }
+        .input-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1em;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
 
-        // Firebase Config
+    <div class="container">
+        <h1>TaskShare</h1>
+        <p>Organize & share tasks easily.</p>
+        
+        <div id="loginForm">
+            <div class="input-group">
+                <label>Email</label>
+                <input type="email" id="loginEmail" placeholder="Enter your email">
+            </div>
+            <div class="input-group">
+                <label>Password</label>
+                <input type="password" id="loginPassword" placeholder="Enter your password">
+            </div>
+            <button class="btn btn-primary" onclick="login()">Login</button>
+            <button class="btn btn-google" onclick="googleLogin()">
+                <img src="https://img.icons8.com/color/48/000000/google-logo.png"/> Login with Google
+            </button>
+            <p class="toggle-form" onclick="toggleForms()">New here? Register</p>
+        </div>
+
+        <div id="registerForm" style="display: none;">
+            <div class="input-group">
+                <label>Full Name</label>
+                <input type="text" id="registerName" placeholder="Enter your name">
+            </div>
+            <div class="input-group">
+                <label>Email</label>
+                <input type="email" id="registerEmail" placeholder="Enter your email">
+            </div>
+            <div class="input-group">
+                <label>Password</label>
+                <input type="password" id="registerPassword" placeholder="Create a password">
+            </div>
+            <button class="btn btn-primary" onclick="register()">Register</button>
+            <p class="toggle-form" onclick="toggleForms()">Already have an account? Login</p>
+        </div>
+    </div>
+
+    <script type="module">
+        // Firebase SDK imports
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.3.0/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } 
+        from "https://www.gstatic.com/firebasejs/11.3.0/firebase-auth.js";
+
+        // Firebase Configuration
         const firebaseConfig = {
             apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
             authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
-            databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",  // Realtime Database URL
+            databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
             projectId: "itzhoyoo-f9f7e",
             storageBucket: "itzhoyoo-f9f7e.appspot.com",
             messagingSenderId: "1094792075584",
@@ -25,125 +159,64 @@
         // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
-        const database = getDatabase(app);
+        const provider = new GoogleAuthProvider();
 
-        let isRegister = false;
+        // Login function
+        function login() {
+            const email = document.getElementById("loginEmail").value;
+            const password = document.getElementById("loginPassword").value;
 
-        // Toggle Login/Register
-        function toggleForm() {
-            isRegister = !isRegister;
-            document.getElementById("form-title").innerText = isRegister ? "Register" : "Login";
-            document.querySelector(".switch").innerText = isRegister ? "Already have an account? Login" : "Don't have an account? Register";
-            document.querySelector(".extra-fields").style.display = isRegister ? "block" : "none";
+            signInWithEmailAndPassword(auth, email, password)
+                .then((userCredential) => {
+                    alert("Login Successful!");
+                    console.log(userCredential.user);
+                })
+                .catch((error) => {
+                    alert(error.message);
+                });
         }
 
-        // Show custom pop-up notifications
-        function showNotification(message, type = "success") {
-            const notification = document.createElement("div");
-            notification.className = `notification ${type}`;
-            notification.innerText = message;
-            document.body.appendChild(notification);
-            setTimeout(() => { notification.remove(); }, 3000);
+        // Register function
+        function register() {
+            const email = document.getElementById("registerEmail").value;
+            const password = document.getElementById("registerPassword").value;
+
+            createUserWithEmailAndPassword(auth, email, password)
+                .then((userCredential) => {
+                    alert("Registration Successful!");
+                    console.log(userCredential.user);
+                })
+                .catch((error) => {
+                    alert(error.message);
+                });
         }
 
-        // Set Random Profile
-        function setRandomProfile() {
-            const randomPics = [
-                "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQSHJ-wZ0omgquoJv4tQTcwZZP4YVq-rn4dUTht0RaJmzyIm6O3P7CsxdsG&s=10",
-                "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRTSb1AdjFcC_4gbCOZNO2Ok-cV6tP8qMFKDztv8Go1HOgtl9c5wTpOrjM&s=10"
-            ];
-            document.getElementById("profile-pic").value = randomPics[Math.floor(Math.random() * randomPics.length)];
+        // Google Login
+        function googleLogin() {
+            signInWithPopup(auth, provider)
+                .then((result) => {
+                    alert("Google Login Successful!");
+                    console.log(result.user);
+                })
+                .catch((error) => {
+                    alert(error.message);
+                });
         }
 
-        // Auth Action (Register/Login)
-        window.authAction = function () {
-            const email = document.getElementById("email").value.trim();
-            const password = document.getElementById("password").value.trim();
+        // Toggle login & register forms
+        function toggleForms() {
+            let login = document.getElementById("loginForm");
+            let register = document.getElementById("registerForm");
+            login.style.display = login.style.display === "none" ? "block" : "none";
+            register.style.display = register.style.display === "none" ? "block" : "none";
+        }
 
-            if (!email || !password) {
-                showNotification("All fields are required!", "error");
-                return;
-            }
-
-            if (isRegister) {
-                const username = document.getElementById("username").value.trim();
-                const profilePic = document.getElementById("profile-pic").value.trim();
-
-                if (!username || !profilePic) {
-                    showNotification("All fields are required!", "error");
-                    return;
-                }
-
-                createUserWithEmailAndPassword(auth, email, password)
-                    .then(userCredential => {
-                        const user = userCredential.user;
-                        // Save user data to Realtime Database
-                        set(ref(database, 'users/' + user.uid), {
-                            username: username,
-                            profilePic: profilePic,
-                            email: email
-                        });
-                    })
-                    .then(() => {
-                        showNotification("Registration successful!", "success");
-                        toggleForm();
-                    })
-                    .catch(error => showNotification(error.message, "error"));
-            } else {
-                signInWithEmailAndPassword(auth, email, password)
-                    .then(() => {
-                        showNotification("Login successful!", "success");
-                        window.location.href = "upgrade";
-                    })
-                    .catch(error => showNotification(error.message, "error"));
-            }
-        };
-
-        // Expose functions to global scope
-        window.toggleForm = toggleForm;
-        window.setRandomProfile = setRandomProfile;
+        // Expose functions globally
+        window.login = login;
+        window.register = register;
+        window.googleLogin = googleLogin;
+        window.toggleForms = toggleForms;
     </script>
-
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Arial', sans-serif; }
-        body { background: #080808; display: flex; justify-content: center; align-items: center; height: 100vh; color: white; }
-        .container { background: rgba(20, 20, 20, 0.9); padding: 30px; width: 380px; text-align: center; border-radius: 12px; box-shadow: 0px 0px 15px rgba(255, 0, 150, 0.7); backdrop-filter: blur(10px); }
-        h2 { margin-bottom: 15px; font-size: 22px; color: #ff0099; }
-        input { width: 100%; padding: 12px; margin: 8px 0; border: none; outline: none; background: rgba(255, 255, 255, 0.1); color: white; border-radius: 5px; font-size: 14px; }
-        .input-wrapper { display: flex; align-items: center; justify-content: space-between; }
-        .btn, .small-btn { cursor: pointer; padding: 10px; border-radius: 5px; font-size: 14px; transition: 0.3s; border: none; color: white; }
-        .btn { width: 100%; background: linear-gradient(45deg, #ff0099, #ff4d4d); }
-        .btn:hover { background: linear-gradient(45deg, #ff4d4d, #ff0099); }
-        .small-btn { width: 48%; background: #ff0099; font-size: 12px; padding: 8px; }
-        .small-btn:hover { background: #ff4d4d; }
-        .switch { margin-top: 15px; font-size: 14px; cursor: pointer; color: #ff0099; }
-        .switch:hover { text-decoration: underline; }
-        .extra-fields { display: none; }
-        
-        /* Notifications */
-        .notification { position: fixed; top: 20px; right: 20px; padding: 12px; color: white; border-radius: 5px; font-size: 14px; animation: fadeIn 0.3s ease-in-out; }
-        .success { background: #2ecc71; }
-        .error { background: #e74c3c; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-    </style>
-</head>
-<body>
-
-    <div class="container">
-        <h2 id="form-title">Login</h2>
-        <input type="email" id="email" placeholder="Email" required>
-        <input type="password" id="password" placeholder="Password" required>
-        <div class="extra-fields">
-            <input id="username" type="text" placeholder="Username" required>
-            <div class="input-wrapper">
-                <input id="profile-pic" type="text" placeholder="Profile Picture URL" required>
-            </div>
-            <button class="small-btn" onclick="window.open('https://imgbb.com/', '_blank')">Custom</button>
-            <button class="small-btn" onclick="setRandomProfile()">Random</button>
-        </div>
-        <button class="btn" onclick="authAction()">Continue</button>
-        <div class="switch" onclick="toggleForm()">Don't have an account? Register</div>
-    </div>
 
 </body>
 </html>
