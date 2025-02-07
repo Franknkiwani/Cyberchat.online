@@ -3,123 +3,220 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Buy Premium Prizes</title>
+    <title>TaskShare</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #0d0d0d;
-            color: white;
-            text-align: center;
+        * {
             margin: 0;
             padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', sans-serif;
+        }
+        body {
+            background: #f4f4f4;
+            color: #333;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
         }
         .container {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            flex-wrap: wrap;
-            margin-top: 50px;
-        }
-        .plan {
-            background: #1a1a1a;
+            background: white;
+            padding: 30px;
             border-radius: 10px;
-            padding: 20px;
-            width: 280px;
-            box-shadow: 0 0 10px rgba(0, 255, 255, 0.6);
-            transition: transform 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            width: 90%;
+            max-width: 400px;
         }
-        .plan:hover {
-            transform: scale(1.05);
-            box-shadow: 0 0 15px rgba(0, 255, 255, 0.9);
-        }
-        .title {
-            font-size: 22px;
-            font-weight: bold;
+        h1 {
+            font-size: 2em;
             margin-bottom: 10px;
         }
-        .price {
-            font-size: 28px;
-            font-weight: bold;
-            color: cyan;
-            margin-bottom: 15px;
-        }
-        .desc {
-            font-size: 14px;
+        p {
+            font-size: 1.1em;
+            color: #666;
             margin-bottom: 20px;
-            color: #ccc;
         }
-        .buy-btn {
-            background: cyan;
-            color: #0d0d0d;
-            padding: 10px 20px;
-            border: none;
-            font-size: 16px;
+        .btn {
+            width: 100%;
+            padding: 12px;
+            font-size: 1.2em;
             font-weight: bold;
-            cursor: pointer;
+            border: none;
             border-radius: 5px;
-            transition: background 0.3s ease;
+            cursor: pointer;
+            transition: 0.3s;
+            margin: 5px 0;
         }
-        .buy-btn:hover {
-            background: #00b3b3;
+        .btn-primary {
+            background: #007BFF;
+            color: white;
+        }
+        .btn-primary:hover {
+            background: #0056b3;
+        }
+        .btn-google {
+            background: white;
+            color: #333;
+            border: 1px solid #ddd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .btn-google img {
+            width: 20px;
+            margin-right: 10px;
+        }
+        .btn-google:hover {
+            background: #f8f9fa;
+        }
+        .toggle-form {
+            margin-top: 10px;
+            font-size: 0.9em;
+            color: #007BFF;
+            cursor: pointer;
+        }
+        .toggle-form:hover {
+            text-decoration: underline;
+        }
+        .input-group {
+            text-align: left;
+            margin: 10px 0;
+        }
+        .input-group label {
+            font-size: 1em;
+            color: #666;
+        }
+        .input-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1em;
+            margin-top: 5px;
         }
     </style>
 </head>
 <body>
 
-    <h1 style="color: cyan;">BECOME PREMIUM</h1>
-    <p style="color: gray;">Choose your plan and get exclusive perks!</p>
-
     <div class="container">
-        <div class="plan">
-            <div class="title">FREE PLAN</div>
-            <div class="price">$0.00</div>
-            <div class="desc">✔ no perks <br> ✔ limited support <br> ✔ 100% Ads</div>
-         <form action="homepage.html" method="get">
-<button class="buy-btn">MY PLAN</button>
-</form>
-        </div>
-        <div class="plan">
-            <div class="title">Basic Package</div>
-            <div class="price">$8.99</div>
-            <div class="desc">✔ Basic Perks <br> ✔ 24/7 Support <br> ✔ No Ads</div>
-            <form action="https://www.paypal.com/cgi-bin/webscr" method="post">
-<input type="hidden" name="cmd" value="_xclick">
-<input type="hidden" name="business" value="cashmarco2000@gmail.com">
-<input type="hidden" name="item_name" value="Ultimate Package">
-<input type="hidden" name="amount" value="8.99">
-<input type="hidden" name="currency_code" value="USD">
-<button class="buy-btn">BUY PLAN</button>
-</form>
+        <h1>TaskShare</h1>
+        <p>Organize & share tasks easily.</p>
+        
+        <div id="loginForm">
+            <div class="input-group">
+                <label>Email</label>
+                <input type="email" id="loginEmail" placeholder="Enter your email">
+            </div>
+            <div class="input-group">
+                <label>Password</label>
+                <input type="password" id="loginPassword" placeholder="Enter your password">
+            </div>
+            <button class="btn btn-primary" onclick="login()">Login</button>
+            <button class="btn btn-google" onclick="googleLogin()">
+                <img src="https://img.icons8.com/color/48/000000/google-logo.png"/> Login with Google
+            </button>
+            <p class="toggle-form" onclick="toggleForms()">New here? Register</p>
         </div>
 
-        <div class="plan">
-            <div class="title">Pro Package</div>
-            <div class="price">$14.99</div>
-            <div class="desc">✔ All Basic Perks <br> ✔ Premium Badge <br> ✔ Early Access</div>
-               <form action="https://www.paypal.com/cgi-bin/webscr" method="post">
-<input type="hidden" name="cmd" value="_xclick">
-<input type="hidden" name="business" value="cashmarco2000@gmail.com">
-<input type="hidden" name="item_name" value="Ultimate Package">
-<input type="hidden" name="amount" value="8.99">
-<input type="hidden" name="currency_code" value="USD">
-<button class="buy-btn">UPGRADE NOW</button>
-</form>
-        </div>
-
-        <div class="plan">
-            <div class="title">Ultimate Package</div>
-            <div class="price">$19.99</div>
-            <div class="desc">✔ All Pro Perks <br> ✔ Exclusive Items <br> ✔ VIP Status</div>
-           <form action="https://www.paypal.com/cgi-bin/webscr" method="post">
-<input type="hidden" name="cmd" value="_xclick">
-<input type="hidden" name="business" value="cashmarco2000@gmail.com">
-<input type="hidden" name="item_name" value="Ultimate Package">
-<input type="hidden" name="amount" value="8.99">
-<input type="hidden" name="currency_code" value="USD">
-<button class="buy-btn">UPGRADE NOW</button>
-</form>
+        <div id="registerForm" style="display: none;">
+            <div class="input-group">
+                <label>Full Name</label>
+                <input type="text" id="registerName" placeholder="Enter your name">
+            </div>
+            <div class="input-group">
+                <label>Email</label>
+                <input type="email" id="registerEmail" placeholder="Enter your email">
+            </div>
+            <div class="input-group">
+                <label>Password</label>
+                <input type="password" id="registerPassword" placeholder="Create a password">
+            </div>
+            <button class="btn btn-primary" onclick="register()">Register</button>
+            <p class="toggle-form" onclick="toggleForms()">Already have an account? Login</p>
         </div>
     </div>
+
+    <script type="module">
+        // Firebase SDK imports
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.3.0/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } 
+        from "https://www.gstatic.com/firebasejs/11.3.0/firebase-auth.js";
+
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
+            authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
+            databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
+            projectId: "itzhoyoo-f9f7e",
+            storageBucket: "itzhoyoo-f9f7e.appspot.com",
+            messagingSenderId: "1094792075584",
+            appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
+            measurementId: "G-LLT6F9WRKH"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const provider = new GoogleAuthProvider();
+
+        // Login function
+        function login() {
+            const email = document.getElementById("loginEmail").value;
+            const password = document.getElementById("loginPassword").value;
+
+            signInWithEmailAndPassword(auth, email, password)
+                .then((userCredential) => {
+                    alert("Login Successful!");
+                    console.log(userCredential.user);
+                })
+                .catch((error) => {
+                    alert(error.message);
+                });
+        }
+
+        // Register function
+        function register() {
+            const email = document.getElementById("registerEmail").value;
+            const password = document.getElementById("registerPassword").value;
+
+            createUserWithEmailAndPassword(auth, email, password)
+                .then((userCredential) => {
+                    alert("Registration Successful!");
+                    console.log(userCredential.user);
+                })
+                .catch((error) => {
+                    alert(error.message);
+                });
+        }
+
+        // Google Login
+        function googleLogin() {
+            signInWithPopup(auth, provider)
+                .then((result) => {
+                    alert("Google Login Successful!");
+                    console.log(result.user);
+                })
+                .catch((error) => {
+                    alert(error.message);
+                });
+        }
+
+        // Toggle login & register forms
+        function toggleForms() {
+            let login = document.getElementById("loginForm");
+            let register = document.getElementById("registerForm");
+            login.style.display = login.style.display === "none" ? "block" : "none";
+            register.style.display = register.style.display === "none" ? "block" : "none";
+        }
+
+        // Expose functions globally
+        window.login = login;
+        window.register = register;
+        window.googleLogin = googleLogin;
+        window.toggleForms = toggleForms;
+    </script>
 
 </body>
 </html>
