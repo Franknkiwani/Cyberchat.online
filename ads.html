@@ -3,128 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Create Ad Campaign</title>
-  <style>
-    :root {
-      --glass-bg: rgba(0, 0, 0, 0.5);
-      --border-glow: 0 0 20px rgba(255, 0, 150, 0.8);
-      --primary: #ff0080;
-      --red: #ff0000;
-      --cyan: #00ffff;
-      --black: #000;
-    }
-
-    body {
-      margin: 0;
-      padding: 0;
-      font-family: 'Arial', sans-serif;
-      background-color: #121212;
-      overflow-x: hidden;
-    }
-
-    .container {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      color: white;
-    }
-
-    .form {
-      background-color: var(--glass-bg);
-      border: 2px solid var(--primary);
-      border-radius: 10px;
-      box-shadow: var(--border-glow);
-      padding: 20px;
-      width: 300px;
-    }
-
-    h2 {
-      text-align: center;
-      margin-bottom: 20px;
-    }
-
-    .form-group {
-      margin-bottom: 15px;
-    }
-
-    label {
-      font-size: 14px;
-    }
-
-    input, textarea {
-      width: 100%;
-      padding: 10px;
-      border: 2px solid var(--primary);
-      border-radius: 5px;
-      background-color: #222;
-      color: white;
-      font-size: 14px;
-    }
-
-    button {
-      background-color: var(--primary);
-      color: white;
-      border: none;
-      border-radius: 5px;
-      padding: 10px;
-      width: 100%;
-      font-size: 16px;
-      cursor: pointer;
-      transition: 0.3s ease;
-    }
-
-    button:hover {
-      background-color: #e6007a;
-    }
-
-    .error {
-      color: var(--red);
-      font-size: 14px;
-      text-align: center;
-    }
-
-    .success {
-      color: var(--cyan);
-      font-size: 14px;
-      text-align: center;
-    }
-  </style>
-</head>
-<body>
-
-  <div class="container">
-    <div class="form">
-      <h2>Create Ad Campaign</h2>
-      <div class="error" id="errorMessage" style="display: none;">Please fill in all fields.</div>
-      <div class="success" id="successMessage" style="display: none;">Ad created successfully!</div>
-
-      <div class="form-group">
-        <label for="adTitle">Ad Title</label>
-        <input type="text" id="adTitle" placeholder="Enter ad title" required>
-      </div>
-
-      <div class="form-group">
-        <label for="adDescription">Ad Description</label>
-        <textarea id="adDescription" placeholder="Enter ad description" required></textarea>
-      </div>
-
-      <div class="form-group">
-        <label for="adUrl">Ad URL</label>
-        <input type="url" id="adUrl" placeholder="Enter ad URL" required>
-      </div>
-
-      <button id="submitAd">Submit Ad</button>
-    </div>
-  </div>
-
+  <title>CYBERCHAT ADS</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script type="module">
-    // Import the functions you need from the SDKs you need
+    // Firebase Initialization
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-    import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
-    import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-analytics.js";
+    import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
 
-    // Firebase configuration
+    // Your Firebase config
     const firebaseConfig = {
       apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
       authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
@@ -138,65 +25,243 @@
 
     // Initialize Firebase
     const app = initializeApp(firebaseConfig);
-    const analytics = getAnalytics(app);
+    const db = getDatabase(app);
+    const auth = getAuth(app);
 
-    // Reference to the Firebase Realtime Database
-    const db = getDatabase();
+    let user = null;
+    let userAdData = null;
 
-    // Get DOM elements
-    const adTitleInput = document.getElementById('adTitle');
-    const adDescriptionInput = document.getElementById('adDescription');
-    const adUrlInput = document.getElementById('adUrl');
-    const submitButton = document.getElementById('submitAd');
-    const errorMessage = document.getElementById('errorMessage');
-    const successMessage = document.getElementById('successMessage');
-
-    // Submit ad function
-    function submitAd() {
-      const title = adTitleInput.value.trim();
-      const description = adDescriptionInput.value.trim();
-      const url = adUrlInput.value.trim();
-
-      // Validate inputs
-      if (!title || !description || !url) {
-        errorMessage.style.display = 'block';
-        successMessage.style.display = 'none';
-        return;
+    // Check if the user is logged in
+    onAuthStateChanged(auth, (currentUser) => {
+      if (currentUser) {
+        user = currentUser;
+        loadAdData(currentUser.uid);
+      } else {
+        setTimeout(() => {
+          alert("Redirecting to login page. Please wait...");
+          window.location.href = "login.html";
+        }, 3000);
       }
+    });
 
-      // Hide error message if all fields are filled
-      errorMessage.style.display = 'none';
-
-      // Generate a unique ID for the ad (you can also use other strategies for unique IDs)
-      const newAdId = new Date().toISOString();
-
-      // Reference to the Firebase path where we will save the ad data
-      const adRef = ref(db, 'adscampaigns/' + newAdId);
-
-      // Set ad data in Firebase
-      set(adRef, {
-        title: title,
-        description: description,
-        url: url,
-        createdAt: new Date().toISOString()
-      })
-      .then(() => {
-        // Show success message
-        successMessage.style.display = 'block';
-        adTitleInput.value = '';
-        adDescriptionInput.value = '';
-        adUrlInput.value = '';
-      })
-      .catch((error) => {
-        // Handle errors
-        errorMessage.style.display = 'block';
-        successMessage.style.display = 'none';
-        console.error("Error saving ad:", error);
+    // Load ad views and clicks from Firebase
+    function loadAdData(userId) {
+      const adRef = ref(db, 'users/' + userId + '/ads');
+      get(adRef).then((snapshot) => {
+        if (snapshot.exists()) {
+          userAdData = snapshot.val();
+          updateStats(userAdData.views, userAdData.clicks);
+          updateChart(userAdData.views, userAdData.clicks);
+        }
       });
     }
 
-    // Event listener for submit button
-    submitButton.addEventListener('click', submitAd);
+    // Update stats on the page
+    function updateStats(views, clicks) {
+      document.getElementById('adViews').innerText = views || 0;
+      document.getElementById('adClicks').innerText = clicks || 0;
+    }
+
+    // Update the chart with new data
+    function updateChart(views, clicks) {
+      const ctx = document.getElementById('adsChart').getContext('2d');
+      const adsChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: ['12 AM', '3 AM', '6 AM', '9 AM', '12 PM', '3 PM', '6 PM', '9 PM'],
+          datasets: [
+            {
+              label: 'Views',
+              data: [views, views, views, views, views, views, views, views],
+              borderColor: '#0ff',
+              borderWidth: 2,
+              fill: false,
+              pointBackgroundColor: '#0ff',
+              tension: 0.4
+            },
+            {
+              label: 'Clicks',
+              data: [clicks, clicks, clicks, clicks, clicks, clicks, clicks, clicks],
+              borderColor: '#00ff00',
+              borderWidth: 2,
+              fill: false,
+              pointBackgroundColor: '#00ff00',
+              tension: 0.4
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: {
+              grid: {
+                color: 'rgba(255, 255, 255, 0.1)'
+              },
+              ticks: {
+                color: '#fff'
+              }
+            },
+            y: {
+              grid: {
+                color: 'rgba(255, 255, 255, 0.1)'
+              },
+              ticks: {
+                color: '#fff'
+              }
+            }
+          },
+          plugins: {
+            legend: {
+              labels: {
+                color: '#fff'
+              }
+            }
+          }
+        }
+      });
+    }
   </script>
+  <style>
+    :root {
+      --glass-bg: rgba(10, 10, 10, 0.6);
+      --border-glow: #5d5d5d;
+      --primary: #e0e0e0;
+      --accent: #0ff;
+      --green-glow: #00ff00;
+      --neon-glow: #0ff;
+    }
+
+    body {
+      font-family: 'Arial', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #121212;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 20px;
+      background: var(--glass-bg);
+      border-bottom: 2px solid var(--border-glow);
+      backdrop-filter: blur(12px);
+      box-shadow: 0 4px 10px rgba(0, 255, 255, 0.2);
+    }
+
+    .app-name {
+      font-size: 18px;
+      color: var(--primary);
+      font-weight: bold;
+      text-align: left;
+    }
+
+    .profile-container {
+      display: flex;
+      align-items: center;
+      color: var(--primary);
+      cursor: pointer;
+      position: relative;
+    }
+
+    .profile-container img {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      margin-right: 10px;
+      border: 2px solid var(--accent);
+      transition: transform 0.2s ease-in-out;
+    }
+
+    .profile-container:hover img {
+      transform: scale(1.1);
+    }
+
+    .profile-text {
+      font-size: 14px;
+    }
+
+    /* Stats Container */
+    .stats-container {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      padding: 15px;
+      margin: 20px auto;
+      max-width: 600px;
+    }
+
+    .stat-box {
+      background: var(--glass-bg);
+      border: 2px solid var(--border-glow);
+      padding: 15px;
+      border-radius: 10px;
+      text-align: center;
+      flex: 1;
+      color: var(--primary);
+      box-shadow: 0 4px 12px rgba(0, 255, 255, 0.2);
+    }
+
+    .stat-number {
+      font-size: 22px;
+      font-weight: bold;
+      color: var(--accent);
+    }
+
+    .stat-title {
+      font-size: 12px;
+      margin-top: 6px;
+      text-transform: uppercase;
+      opacity: 0.8;
+    }
+
+    /* Chart Container */
+    .chart-container {
+      background: var(--glass-bg);
+      border: 2px solid var(--border-glow);
+      border-radius: 12px;
+      padding: 15px;
+      max-width: 600px;
+      margin: 20px auto;
+      box-shadow: 0 4px 10px rgba(0, 255, 255, 0.2);
+    }
+
+    .chart-title {
+      font-size: 16px;
+      color: var(--primary);
+      text-align: center;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="app-name">CYBERCHAT ADS</div>
+    <div class="profile-container">
+      <img src="https://via.placeholder.com/30" alt="Profile Picture">
+      <div class="profile-text" onclick="window.location.href='adsaccount.html'">Profile</div>
+    </div>
+  </header>
+
+  <!-- Stats Section -->
+  <div class="stats-container">
+    <div class="stat-box">
+      <div class="stat-number" id="adViews">0</div>
+      <div class="stat-title">Ad Views</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-number" id="adClicks">0</div>
+      <div class="stat-title">Ad Clicks</div>
+    </div>
+  </div>
+
+  <!-- Chart Section -->
+  <div class="chart-container">
+    <div class="chart-title">Ad Performance</div>
+    <canvas id="adsChart"></canvas>
+  </div>
+
 </body>
 </html>
