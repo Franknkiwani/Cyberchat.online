@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Ad Campaign</title>
+  <style>
+    :root {
+      --glass-bg: rgba(0, 0, 0, 0.5);
+      --border-glow: 0 0 20px rgba(255, 0, 150, 0.8);
+      --primary: #ff0080;
+      --red: #ff0000;
+      --cyan: #00ffff;
+      --black: #000;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Arial', sans-serif;
+      background-color: #121212;
+      overflow-x: hidden;
+    }
+
+    .container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      color: white;
+    }
+
+    .form {
+      background-color: var(--glass-bg);
+      border: 2px solid var(--primary);
+      border-radius: 10px;
+      box-shadow: var(--border-glow);
+      padding: 20px;
+      width: 300px;
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    label {
+      font-size: 14px;
+    }
+
+    input, textarea {
+      width: 100%;
+      padding: 10px;
+      border: 2px solid var(--primary);
+      border-radius: 5px;
+      background-color: #222;
+      color: white;
+      font-size: 14px;
+    }
+
+    button {
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 5px;
+      padding: 10px;
+      width: 100%;
+      font-size: 16px;
+      cursor: pointer;
+      transition: 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #e6007a;
+    }
+
+    .error {
+      color: var(--red);
+      font-size: 14px;
+      text-align: center;
+    }
+
+    .success {
+      color: var(--cyan);
+      font-size: 14px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="form">
+      <h2>Create Ad Campaign</h2>
+      <div class="error" id="errorMessage" style="display: none;">Please fill in all fields.</div>
+      <div class="success" id="successMessage" style="display: none;">Ad created successfully!</div>
+
+      <div class="form-group">
+        <label for="adTitle">Ad Title</label>
+        <input type="text" id="adTitle" placeholder="Enter ad title" required>
+      </div>
+
+      <div class="form-group">
+        <label for="adDescription">Ad Description</label>
+        <textarea id="adDescription" placeholder="Enter ad description" required></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="adUrl">Ad URL</label>
+        <input type="url" id="adUrl" placeholder="Enter ad URL" required>
+      </div>
+
+      <button id="submitAd">Submit Ad</button>
+    </div>
+  </div>
+
+  <script type="module">
+    // Initialize Firebase (Make sure Firebase SDK is already imported and configured)
+    import { getDatabase, ref, set } from 'https://www.gstatic.com/firebasejs/9.4.1/firebase-database.js';
+
+    // Reference to the Firebase Realtime Database
+    const db = getDatabase();
+
+    // Get DOM elements
+    const adTitleInput = document.getElementById('adTitle');
+    const adDescriptionInput = document.getElementById('adDescription');
+    const adUrlInput = document.getElementById('adUrl');
+    const submitButton = document.getElementById('submitAd');
+    const errorMessage = document.getElementById('errorMessage');
+    const successMessage = document.getElementById('successMessage');
+
+    // Submit ad function
+    function submitAd() {
+      const title = adTitleInput.value.trim();
+      const description = adDescriptionInput.value.trim();
+      const url = adUrlInput.value.trim();
+
+      // Validate inputs
+      if (!title || !description || !url) {
+        errorMessage.style.display = 'block';
+        successMessage.style.display = 'none';
+        return;
+      }
+
+      // Hide error message if all fields are filled
+      errorMessage.style.display = 'none';
+
+      // Generate a unique ID for the ad (you can also use other strategies for unique IDs)
+      const newAdId = new Date().toISOString();
+
+      // Reference to the Firebase path where we will save the ad data
+      const adRef = ref(db, 'adscampaigns/' + newAdId);
+
+      // Set ad data in Firebase
+      set(adRef, {
+        title: title,
+        description: description,
+        url: url,
+        createdAt: new Date().toISOString()
+      })
+      .then(() => {
+        // Show success message
+        successMessage.style.display = 'block';
+        adTitleInput.value = '';
+        adDescriptionInput.value = '';
+        adUrlInput.value = '';
+      })
+      .catch((error) => {
+        // Handle errors
+        errorMessage.style.display = 'block';
+        successMessage.style.display = 'none';
+        console.error("Error saving ad:", error);
+      });
+    }
+
+    // Event listener for submit button
+    submitButton.addEventListener('click', submitAd);
+  </script>
+</body>
+</html>
