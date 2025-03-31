@@ -1,583 +1,240 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Empty White App</title>
-    <style>
-        body {
-            margin: 0;
-            padding: 0;
-            background-color: black;
-            font-family: Arial, sans-serif;
-            -webkit-user-select: none;
-            user-select: none;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Popup Ad</title>
+  <style>
+    :root {
+      --glass-bg: rgba(0, 0, 0, 0.5);
+      --border-glow: 0 0 20px rgba(255, 0, 150, 0.8);
+      --primary: #ff0080;
+      --sponsored-bg: rgba(255, 0, 150, 0.7);
+      --red: #ff0000;
+      --cyan: #00ffff;
+      --black: #000;
+    }
 
-        header {
-            background-color: black;
-            color: white;
-            padding: 10px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-        }
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Arial', sans-serif;
+      background-color: #121212;
+      overflow: hidden;
+    }
 
-        .cyberchat {
-            font-weight: bold;
-            font-size: 24px;
-        }
+    .popup {
+      display: block;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: var(--glass-bg);
+      border: 2px solid var(--primary);
+      border-radius: 10px;
+      box-shadow: var(--border-glow);
+      padding: 20px;
+      z-index: 9999;
+      width: 80%;
+      max-width: 600px;
+      height: auto;
+      animation: fadeIn 0.5s ease;
+    }
 
-        .cyber {
-            color: white;
-        }
+    .sponsored {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background-color: var(--sponsored-bg);
+      padding: 3px 10px;
+      border-radius: 5px;
+      font-weight: bold;
+      color: white;
+      font-size: 12px;
+    }
 
-        .chat {
-            color: lightgreen;
-        }
+    .popup-close {
+      background-color: var(--red);
+      color: white;
+      font-size: 12px;
+      font-weight: bold;
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      padding: 3px 10px;
+      border-radius: 5px;
+      cursor: not-allowed;
+      border: none;
+      transition: 0.3s ease;
+    }
 
-        .btn {
-            background-color: cyan;
-            color: black;
-            border: 2px solid neon;
-            padding: 8px 16px;
-            font-size: 16px;
-            cursor: pointer;
-            border-radius: 5px;
-            transition: all 0.3s ease;
-            outline: none;
-            box-shadow: 0 0 10px rgba(0, 255, 255, 0.7);
-        }
+    .popup-close.enabled {
+      background-color: var(--cyan);
+      color: var(--black);
+      cursor: pointer;
+    }
 
-        .btn:hover {
-            background-color: #00bcd4;
-            box-shadow: 0 0 15px rgba(0, 255, 255, 1);
-        }
+    .popup-close.enabled:hover {
+      background-color: lightcyan;
+    }
 
-        .btn:focus {
-            outline: none;
-            box-shadow: 0 0 10px rgba(0, 255, 255, 1);
-            background-color: #00bcd4;
-        }
+    .popup-content {
+      color: white;
+      font-size: 16px;
+      margin-top: 30px;
+      text-align: center;
+    }
 
-        @keyframes changeBorderColor {
-            0% { border-color: cyan; }
-            25% { border-color: magenta; }
-            50% { border-color: yellow; }
-            75% { border-color: lime; }
-            100% { border-color: cyan; }
-        }
+    .popup-iframe {
+      width: 100%;
+      height: 250px;
+      border: none;
+      border-radius: 10px;
+      margin-top: 10px;
+    }
 
-        .btn {
-            animation: changeBorderColor 1s infinite;
-        }
+    .popup-description {
+      color: white;
+      font-size: 14px;
+      margin: 10px 0;
+    }
 
-        /* Hero Section */
-        .hero-container {
-            width: 80%;
-            background-color: black;
-            margin: 30px auto;
-            border: 3px solid #ccc;
-            border-radius: 10px;
-            padding: 20px;
-            box-sizing: border-box;
-        }
+    .popup-button {
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 5px;
+      padding: 10px 20px;
+      cursor: pointer;
+      font-size: 16px;
+      transition: 0.3s ease;
+      width: 100%;
+      margin-top: 10px;
+    }
 
-        .hero-image {
-            width: 100%;
-            height: auto; /* Preserve the image's aspect ratio */
-            max-height: 200px; /* Restrict the height to avoid large images */
-            object-fit: cover;
-            border-radius: 10px;
-        }
+    .popup-button:hover {
+      background-color: #e6007a;
+    }
 
-        .hero-content {
-            text-align: center;
-            margin-top: 20px;
-        }
+    .blur-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.8);
+      z-index: 9999;
+      display: none;
+      justify-content: center;
+      align-items: center;
+      font-size: 24px;
+      color: white;
+      font-weight: bold;
+    }
 
-        .hero-title {
-            font-size: 15px;
-            font-weight: bold;
-            color: white;
-        }
-
-        .hero-description {
-            font-size: 12px;
-            color: white;
-            margin-top: 10px;
-        }
-
-        .cta-btn {
-            background-color: purple;
-            color: white;
-            border: 2px solid neon;
-            padding: 12px 30px;
-            font-size: 18px;
-            cursor: pointer;
-            border-radius: 5px;
-            transition: all 0.3s ease;
-            margin-top: 20px;
-            display: inline-block;
-            width: 100%;
-            text-align: center;
-        }
-
-        .cta-btn:hover {
-            background-color: #00bcd4;
-            box-shadow: 0 0 15px rgba(0, 255, 255, 1);
-        }
-
-        .cta-btn:focus {
-            outline: none;
-            box-shadow: 0 0 10px rgba(0, 255, 255, 1);
-        }
-
-        /* Profile Containers Section */
-        .profiles-container {
-            display: flex;
-            justify-content: space-between;
-            width: 80%;
-            margin: 40px auto;
-        }
-
-        .profile-card {
-            background-color: #1a1a1a;
-            color: white;
-            width: 30%;
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-
-        .profile-card:hover {
-            transform: translateY(-10px);
-            box-shadow: 0 0 25px rgba(0, 255, 255, 0.7);
-        }
-
-        .profile-image {
-            width: 100%;
-            height: 150px;
-            object-fit: cover;
-            border-radius: 10px;
-        }
-
-        .profile-name {
-            font-size: 18px;
-            font-weight: bold;
-            margin-top: 15px;
-        }
-
-        .profile-bio {
-            font-size: 14px;
-            color: #ddd;
-            margin-top: 10px;
-        }
-
-        .view-profile-btn {
-            background-color: cyan;
-            color: black;
-            padding: 8px 16px;
-            font-size: 14px;
-            cursor: pointer;
-            border-radius: 5px;
-            margin-top: 15px;
-            transition: all 0.3s ease;
-            border: none;
-            outline: none;
-        }
-
-        .view-profile-btn:hover {
-            background-color: #00bcd4;
-            box-shadow: 0 0 15px rgba(0, 255, 255, 1);
-        }
-
-        /* FAQ Section */
-        .faq-container {
-            width: 70%;
-            background-color: #222;
-            margin: 40px auto;
-            padding: 30px;
-            border: 3px solid #ccc;
-            border-radius: 210px;
-            text-align: center;
-            color: white;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .faq-title {
-            font-size: 24px;
-            font-weight: bold;
-            color: #00bcd4;
-            margin-bottom: 20px;
-        }
-
-        .faq-item {
-            width: 100%;
-            margin-bottom: 20px;
-        }
-
-        .faq-question {
-            font-size: 18px;
-            font-weight: bold;
-            color: white;
-            margin-bottom: 10px;
-        }
-
-        .faq-answer {
-            font-size: 14px;
-            color: white;
-            margin-left: 10px;
-        }
-       
- /*Cyber-AI Section */
-        .cyber-ai-container {
-            width: 88%;
-            background-color: #222;
-            color: white;
-            padding: 50px 20px;
-            text-align: center;
-            position: relative;
-        }
-
-        .cyber-ai-header {
-            font-size: 20px;
-            font-weight: bold;
-            color: #00bcd4;
-            margin-bottom: 20px;
-        }
-
-        .cyber-ai-content {
-            font-size: 18px;
-            font-weight: 400;
-            margin-top: 20px;
-            color: white;
-            opacity: 0;
-            animation: fadeInUp 1.5s forwards;
-        }
-
-        /* Animations for smooth scroll */
-        @keyframes fadeInUp {
-            0% {
-                transform: translateY(50px);
-                opacity: 0;
-            }
-            100% {
-                transform: translateY(0);
-                opacity: 1;
-            }
-        }
-
-        /* Scrolling effect */
-        .cyber-ai-container.fade-in {
-            animation: fadeInUp 2s ease-out forwards;
-        }
-
-        /* Custom scrolling styles */
-        .scroll-container {
-            width: 80%;
-            margin: 0 auto;
-            overflow: hidden;
-            height: 300px;
-            position: relative;
-            border-radius: 15px;
-        }
-
-        .scroll-content {
-            display: flex;
-            animation: scrollAnimation 10s infinite linear;
-        }
-
-        .scroll-item {
-            font-size: 20px;
-            margin: 10px 40px;
-            display: inline-block;
-        }
-
-        @keyframes scrollAnimation {
-            0% {
-                transform: translateX(100%);
-            }
-            100% {
-                transform: translateX(-100%);
-            }
-        }
-
-        .cyber-ai-header {
-            font-size: 20px;
-            font-weight: bold;
-            color: #00ffcc;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            text-shadow: 0 0 5px rgba(0, 255, 255, 1);
-            margin-bottom: 20px;
-            animation: neonPulse 1.5s infinite alternate;
-        }
-
-        /* Glowing Animation */
-        @keyframes neonPulse {
-            0% {
-                text-shadow: 0 0 20px rgba(0, 255, 255, 1), 0 0 30px rgba(0, 255, 255, 1), 0 0 40px rgba(0, 255, 255, 1);
-            }
-            100% {
-                text-shadow: 0 0 10px rgba(0, 255, 255, 0.5), 0 0 20px rgba(0, 255, 255, 0.7), 0 0 30px rgba(0, 255, 255, 1);
-            }
-        }
-
-        .cyber-ai-content {
-            font-size: 22px;
-            font-weight: 400;
-            color: #aaa;
-            margin-top: 30px;
-            opacity: 0;
-            animation: fadeInUp 1s forwards;
-        }
-
-        /* Smooth fade-in animation */
-        @keyframes fadeInUp {
-            0% {
-                transform: translateY(50px);
-                opacity: 0;
-            }
-            100% {
-                transform: translateY(0);
-                opacity: 1;
-            }
-        }
-
-        .cyber-ai-content p {
-            margin: 15px 0;
-            line-height: 1.5;
-        }
-
-        /* Scrolling Info */
-        .scroll-container {
-            width: 100%;
-            max-width: 1200px;
-            margin: 30px auto;
-            overflow: hidden;
-            height: 100px;
-            position: relative;
-            border-radius: 10px;
-            background: rgba(0, 0, 0, 0.5);
-        }
-
-        .scroll-content {
-            display: flex;
-            animation: scrollAnimation 10s infinite linear;
-        }
-
-        .scroll-item {
-            font-size: 20px;
-            margin: 0 50px;
-            display: inline-block;
-            color: #00ffcc;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            text-shadow: 0 0 8px rgba(0, 255, 255, 1);
-        }
-
-        /* Pixelated scrolling effect */
-        @keyframes scrollAnimation {
-            0% {
-                transform: translateX(100%);
-            }
-            100% {
-                transform: translateX(-100%);
-            }
-        }
-
-        /* Cyber-AI hover effect */
-        .cyber-ai-container:hover {
-            box-shadow: 0 0 40px rgba(0, 255, 255, 0.5);
-        }
-
-        .cyber-ai-container:hover .cyber-ai-header {
-            animation: neonPulse 1s infinite alternate;
-        }
-               .showcase {
-                   margin: 30px auto;
-            border: 3px solid #ccc;
-            border-radius: 10px;
-                   padding: 50px 20px;
-            text-align: center;
-            position: relative;
-            position: relative;
-            width: 70%;
-            max-width: 290px;
-            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
-            border-radius: 15px;
-            box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
-            padding: 30px;
-            text-align: center;
-            overflow: hidden;
-        }
-
-        .showcase h2 {
-            font-size: 1.5rem;
-            text-transform: uppercase;
-            color: #0ff;
-            text-shadow: 0 0 10px rgba(0, 255, 255, 0.8);
-        }
-
-        .profile-container {
-            position: relative;
-            width: 100%;
-            height: 250px;
-            overflow: hidden;
-        }
-
-        .profile {
-            position: absolute;
-            width: 100%;
-            transition: opacity 1s ease-in-out;
-            opacity: 0;
-            transform: scale(0.9);
-        }
-
-        .profile.active {
-            opacity: 1;
-            transform: scale(1);
-        }
-
-        .profile img {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            border: 3px solid #0ff;
-            box-shadow: 0 0 15px rgba(0, 255, 255, 0.8);
-        }
-
-        .profile h3 {
-            margin-top: 10px;
-            font-size: 1.3rem;
-            color: #ff007f;
-            text-shadow: 0 0 10px rgba(255, 0, 127, 0.8);
-        }
-
-        .profile p {
-            font-size: 1rem;
-            opacity: 0.8;
-        }
-    </style>
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+  </style>
 </head>
 <body>
-    <header>
-        <div class="cyberchat">
-            <span class="cyber">CYBER</span><span class="chat">CHAT</span>
-        </div>
-        <button class="btn" aria-label="Login Button" onclick="redirectToLoading()">LOGIN</button>
-    </header>
 
-    <!-- Hero Section -->
-    <div class="hero-container">
-        <img src="https://imgcdn.stablediffusionweb.com/2024/10/29/4af3b105-c274-4d6b-bc48-8728c8c65048.jpg" alt="Hero Image" class="hero-image">
-        <div class="hero-content">
-            <h1 class="hero-title">CYBERCHAT.ONLINE</h1>
-            <p class="hero-description">WHERE RICH KIDS HANGOUT</p>
-            <button class="cta-btn" aria-label="Get Started Button" onclick="redirectToLoading()">GET STARTED</button>
-        </div>
+  <div class="popup" id="popupAd">
+    <div class="sponsored">Sponsored</div>
+    <button class="popup-close" id="closeButton" disabled>Skip Ad in <span id="countdownTimer">10</span>s</button>
+    <div class="popup-content">
+      <h3 id="adTitle">Preview the Link</h3>
+      <p id="adDescription" class="popup-description"></p>
     </div>
-        </div>
-          </div>
-            </div>
-<!-- Cyber-AI Section -->
-    <div class="cyber-ai-container" id="cyber-ai">
-        <h2 class="cyber-ai-header">Meet Cyberchat-AI</h2>
-        <div class="cyber-ai-content">
-            <p>Over $100,000 paid to our users in the past month!</p>
-            <p>Join 100,000+ active users each month sharing experiences and making money!</p>
-            <p>We are the future of online collaboration—secure, fast, and futuristic!</p>
-            <p>More amazing features coming soon—stay tuned!</p>
-        </div>
+    <iframe id="popupIframe" class="popup-iframe" src=""></iframe>
+    <button class="popup-button" id="visitAdButton" onclick="visitAd()">Visit Ad</button>
+  </div>
 
-        <!-- Scrolling Info -->
-        <div class="scroll-container">
-            <div class="scroll-content">
-                <div class="scroll-item">JOIN CYBERCHAT</div>
-                <div class="scroll-item">BECOME A MILLIONAIRE </div>
-                
-                <div class="scroll-item"></div>
-            </div>
-        </div>
-    </div>
-    <section class="showcase">
-        <h2>🔥 CyberChat🔥</h2>
-        <div class="profile-container">
-            <div class="profile active">
-                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSo5BdOT5Itv1NZvQ9ziN45HUJRB5klAMf-br4y_pyNyBAbCBvcGC7pGzc&s=10" alt="Gamer">
-                <h3>CyberWolf</h3>
-                <p>Elite Sniper | 10M XP</p>
-            </div>
-            <div class="profile">
-                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRSI6qfZ-wwiLJQAvf6NGirSO_cfrXKIwFcWg&usqp=CAU" alt="Gamer">
-                <h3>NeonShadow</h3>
-                <p>Speedrunner | 5M XP</p>
-            </div>
-            <div class="profile">
-                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSSy6PHYHcweXJSlEeXKUqLa8yFcKyRYZ4F_w&usqp=CAU" alt="Gamer">
-                <h3>PixelNinja</h3>
-                <p>Stealth Expert | 7M XP</p>
-            </div>
-            <div class="profile">
-                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQSHJ-wZ0omgquoJv4tQTcwZZP4YVq-rn4dUTht0RaJmzyIm6O3P7CsxdsG&s=10" alt="Gamer">
-                <h3>DriftKing</h3>
-                <p>Racing Pro | 12M XP</p>
-            </div>
-            <div class="profile">
-                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRTSb1AdjFcC_4gbCOZNO2Ok-cV6tP8qMFKDztv8Go1HOgtl9c5wTpOrjM&s=10" alt="Gamer">
-                <h3>ShadowFox</h3>
-                <p>Battle Royale Master | 8M XP</p>
-            </div>
-            <div class="profile">
-                <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSPSoZ5xPx0BmUme4dBeslC6bZj8iBB0rSfpPBUvYPCpXC_6AylB5NerYo&s=10" alt="Gamer">
-                <h3>CyberHawk</h3>
-                <p>Tech Hacker | 6M XP</p>
-            </div>
-        </div>
-    </section>
-    <!-- FAQ Section -->
-    <div class="faq-container">
-        <h2 class="faq-title">Asked Questions</h2>
-        <div class="faq-item">
-            <h3 class="faq-question">How do I sign up for CyberChat?</h3>
-            <p class="faq-answer">You can sign up using your email and create a profile. It's quick and easy!</p>
-        </div>
-        <div class="faq-item">
-            <h3 class="faq-question">Is there a mobile app for CyberChat?</h3>
-            <p class="faq-answer">Currently, CyberChat is only available as a web app. We're working on a mobile version!</p>
-    <script>
-        function redirectToLoading() {
-            window.location.href = "loading";
-        }
-          // Trigger fade-in animation as user scrolls
-        window.addEventListener("scroll", () => {
-            const aiSection = document.getElementById("cyber-ai");
-            const aiSectionPosition = aiSection.getBoundingClientRect().top;
-            const screenPosition = window.innerHeight;
+  <div id="blurScreen" class="blur-screen">
+    Closing Ad...
+  </div>
 
-            if (aiSectionPosition < screenPosition) {
-                aiSection.classList.add("fade-in");
+  <script type="module">
+    // Initialize Firebase (Make sure Firebase SDK is already imported and configured)
+    import { getDatabase, ref, get } from 'https://www.gstatic.com/firebasejs/9.4.1/firebase-database.js';
+
+    // Reference to the Firebase Realtime Database
+    const db = getDatabase();
+
+    // Fetch ad campaign data from Firebase
+    function fetchAdData() {
+      const adRef = ref(db, 'adscampaigns'); // Path to your ad campaigns in Firebase
+      get(adRef)
+        .then((snapshot) => {
+          if (snapshot.exists()) {
+            const adDetails = snapshot.val();
+            
+            // Check if data is in array format and select a random ad
+            if (Array.isArray(adDetails)) {
+              const randomIndex = Math.floor(Math.random() * adDetails.length);
+              const ad = adDetails[randomIndex];
+
+              // Update the page with the ad data
+              document.getElementById('popupIframe').src = ad.url;
+              document.getElementById('adTitle').textContent = ad.title;
+              document.getElementById('adDescription').textContent = ad.description;
+            } else {
+              console.error("Expected an array of ads but got:", adDetails);
+              document.getElementById('adTitle').textContent = "No Ads Available";
+              document.getElementById('adDescription').textContent = "Please try again later.";
             }
+          } else {
+            console.error("No ad data found in Firebase.");
+            document.getElementById('adTitle').textContent = "No Ads Available";
+            document.getElementById('adDescription').textContent = "Please try again later.";
+          }
+        })
+        .catch((error) => {
+          console.error("Error fetching ad data: ", error);
+          document.getElementById('adTitle').textContent = "Error Loading Ads";
+          document.getElementById('adDescription').textContent = "Please try again later.";
         });
-        let currentIndex = 0;
-        const profiles = document.querySelectorAll(".profile");
+    }
 
-        function showNextProfile() {
-            profiles[currentIndex].classList.remove("active");
-            currentIndex = (currentIndex + 1) % profiles.length;
-            profiles[currentIndex].classList.add("active");
+    // Start countdown once ad data is fetched
+    function startCountdown() {
+      let countdownTime = 10;
+      const timerElement = document.getElementById('countdownTimer');
+      const closeButton = document.getElementById('closeButton');
+
+      const countdownInterval = setInterval(() => {
+        countdownTime--;
+        timerElement.textContent = countdownTime;
+
+        if (countdownTime <= 0) {
+          clearInterval(countdownInterval);
+          closeButton.disabled = false;
+          closeButton.classList.add('enabled');
+          closeButton.textContent = 'Skip Ad';
+          closeButton.onclick = closeAd;
         }
+      }, 1000);
+    }
 
-        setInterval(showNextProfile, 3000);
-    </script>
+    // Close ad and redirect after countdown
+    function closeAd() {
+      document.getElementById('blurScreen').style.display = 'flex';
+      setTimeout(() => {
+        window.location.href = 'index.html';
+      }, 3000);
+    }
+
+    // Open ad in a new tab
+    function visitAd() {
+      window.open(document.getElementById('popupIframe').src, '_blank');
+    }
+
+    // Fetch and display ad data when the page loads
+    window.onload = () => {
+      fetchAdData();
+      startCountdown();
+    };
+  </script>
 </body>
 </html>
