@@ -1,240 +1,331 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Popup Ad</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Modern Glass Iframe with Ad Actions</title>
   <style>
     :root {
-      --glass-bg: rgba(0, 0, 0, 0.5);
-      --border-glow: 0 0 20px rgba(255, 0, 150, 0.8);
-      --primary: #ff0080;
-      --sponsored-bg: rgba(255, 0, 150, 0.7);
-      --red: #ff0000;
-      --cyan: #00ffff;
-      --black: #000;
+      --glass-bg: rgba(255, 255, 255, 0.2);
+      --border-glow: rgba(255, 255, 255, 0.4);
+      --shadow-glow: rgba(0, 0, 0, 0.1);
+      --primary: #ff66b2;
+      --accent: #66ffcc;
+      --black-bg: rgba(0, 0, 0, 0.6);
     }
-
-    body {
+    * {
       margin: 0;
       padding: 0;
-      font-family: 'Arial', sans-serif;
-      background-color: #121212;
+      box-sizing: border-box;
+      font-family: 'Poppins', sans-serif;
+    }
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: linear-gradient(135deg, #1a1a2e, #16213e);
+    }
+    .iframe-container {
+      position: relative;
+      width: 90%;
+      max-width: 400px;
+      height: 450px;
+      border-radius: 20px;
       overflow: hidden;
-    }
-
-    .popup {
-      display: block;
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
       background: var(--glass-bg);
-      border: 2px solid var(--primary);
-      border-radius: 10px;
-      box-shadow: var(--border-glow);
-      padding: 20px;
-      z-index: 9999;
-      width: 80%;
-      max-width: 600px;
-      height: auto;
-      animation: fadeIn 0.5s ease;
+      backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px);
+      border: 2px solid var(--border-glow);
+      box-shadow: 0 8px 32px var(--shadow-glow);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      padding: 15px;
     }
-
+    .top-bar {
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
     .sponsored {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      background-color: var(--sponsored-bg);
-      padding: 3px 10px;
-      border-radius: 5px;
-      font-weight: bold;
+      background: var(--primary);
       color: white;
-      font-size: 12px;
+      padding: 5px 10px;
+      border-radius: 10px;
+      font-size: 14px;
     }
-
-    .popup-close {
-      background-color: var(--red);
-      color: white;
-      font-size: 12px;
-      font-weight: bold;
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      padding: 3px 10px;
-      border-radius: 5px;
-      cursor: not-allowed;
-      border: none;
-      transition: 0.3s ease;
-    }
-
-    .popup-close.enabled {
-      background-color: var(--cyan);
-      color: var(--black);
+    .menu-container {
+      position: relative;
       cursor: pointer;
     }
-
-    .popup-close.enabled:hover {
-      background-color: lightcyan;
+    .menu-icon {
+      width: 30px;
+      height: 30px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: flex-end;
     }
-
-    .popup-content {
-      color: white;
-      font-size: 16px;
-      margin-top: 30px;
-      text-align: center;
+    .menu-icon div {
+      background: white;
+      border-radius: 2px;
+      transition: 0.3s;
     }
-
-    .popup-iframe {
-      width: 100%;
-      height: 250px;
-      border: none;
+    .menu-icon div:nth-child(1) {
+      width: 12px;
+      height: 4px;
+    }
+    .menu-icon div:nth-child(2) {
+      width: 18px;
+      height: 4px;
+    }
+    .menu-icon div:nth-child(3) {
+      width: 24px;
+      height: 4px;
+    }
+    .menu-dropdown {
+      position: absolute;
+      top: 40px;
+      right: 0;
+      width: 180px;
+      background: var(--black-bg);
       border-radius: 10px;
-      margin-top: 10px;
+      box-shadow: 0 4px 10px var(--shadow-glow);
+      padding: 10px;
+      display: none;
+      flex-direction: column;
+      backdrop-filter: blur(15px);
+      -webkit-backdrop-filter: blur(15px);
+      z-index: 10;
     }
-
-    .popup-description {
+    .menu-dropdown a,
+    .menu-dropdown div {
+      text-decoration: none;
       color: white;
       font-size: 14px;
-      margin: 10px 0;
-    }
-
-    .popup-button {
-      background-color: var(--primary);
-      color: white;
-      border: none;
-      border-radius: 5px;
-      padding: 10px 20px;
+      padding: 8px 12px;
+      display: block;
       cursor: pointer;
-      font-size: 16px;
-      transition: 0.3s ease;
+    }
+    .menu-dropdown a:hover,
+    .menu-dropdown div:hover {
+      background: var(--primary);
+      border-radius: 5px;
+    }
+    .menu-dropdown .create-ad {
+      margin-top: 10px;
+      background: var(--primary);
+      color: white;
+      text-align: center;
+      padding: 10px;
+      border-radius: 5px;
+      font-weight: bold;
+    }
+    .menu-dropdown .create-ad:hover {
+      background: var(--accent);
+    }
+    .menu-active {
+      display: flex;
+    }
+    .rotate {
+      transform: rotate(180deg);
+    }
+    .ad-preview {
       width: 100%;
+      height: 200px;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 4px 10px var(--shadow-glow);
+      background: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .ad-preview iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+    .ad-info {
+      text-align: center;
+      color: white;
       margin-top: 10px;
     }
-
-    .popup-button:hover {
-      background-color: #e6007a;
+    .countdown-btn {
+      width: 100%;
+      padding: 10px;
+      font-size: 16px;
+      text-align: center;
+      background: var(--accent);
+      color: black;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      margin-top: 20px;
     }
-
-    .blur-screen {
+    /* Popup Modal Styles */
+    .popup-modal {
       position: fixed;
       top: 0;
       left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0, 0, 0, 0.8);
-      z-index: 9999;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
       display: none;
       justify-content: center;
       align-items: center;
-      font-size: 24px;
-      color: white;
+      z-index: 20;
+    }
+    .popup-content {
+      background: white;
+      padding: 20px 30px;
+      border-radius: 10px;
+      text-align: center;
+      max-width: 300px;
+      box-shadow: 0 4px 10px var(--shadow-glow);
+    }
+    .popup-content button {
+      margin-top: 15px;
+      padding: 8px 15px;
+      background: var(--accent);
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
       font-weight: bold;
     }
-
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
   </style>
+  
+  <!-- Firebase Module Code (DO NOT CHANGE ANYTHING BELOW) -->
+  <script type="module">
+    // Import the functions you need from the SDKs you need
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-analytics.js";
+    // TODO: Add SDKs for Firebase products that you want to use
+    // https://firebase.google.com/docs/web/setup#available-libraries
+
+    // Your web app's Firebase configuration
+    // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+    const firebaseConfig = {
+      apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
+      authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
+      databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
+      projectId: "itzhoyoo-f9f7e",
+      storageBucket: "itzhoyoo-f9f7e.firebasestorage.app",
+      messagingSenderId: "1094792075584",
+      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
+      measurementId: "G-LLT6F9WRKH"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+  </script>
+  
+  <!-- Firebase Realtime Database Module for loadNewAd functionality -->
+  <script type="module">
+    import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+    
+    // Expose loadNewAd to the global scope so it can be called from non-module scripts.
+    window.loadNewAd = function() {
+      const db = getDatabase(app);
+      const adsRef = ref(db, 'ads');
+      get(adsRef).then(snapshot => {
+        if (snapshot.exists()) {
+          const ads = snapshot.val();
+          const adKeys = Object.keys(ads);
+          const randomKey = adKeys[Math.floor(Math.random() * adKeys.length)];
+          const newAdLink = ads[randomKey];
+          document.querySelector('.ad-preview iframe').src = newAdLink;
+        } else {
+          console.error("No ads found in the database.");
+        }
+      }).catch(error => console.error(error));
+    }
+  </script>
+  
+  <!-- Regular Script for UI functionality -->
+  <script>
+    // Countdown logic
+    let timeLeft = Math.floor(Math.random() * 11) + 20;
+    function updateCountdown() {
+      document.getElementById("countdown").innerText = `$5 WILL BE CREDITED IN ${timeLeft}s`;
+      if (timeLeft > 0) {
+        timeLeft--;
+        setTimeout(updateCountdown, 1000);
+      }
+    }
+    window.onload = updateCountdown;
+
+    // Toggle menu dropdown
+    function toggleMenu() {
+      document.querySelector('.menu-dropdown').classList.toggle('menu-active');
+      document.querySelector('.menu-icon').classList.toggle('rotate');
+    }
+
+    // Show popup for "Report Ad"
+    function showReportPopup() {
+      document.getElementById("popup-modal").style.display = "flex";
+    }
+    function closePopup() {
+      document.getElementById("popup-modal").style.display = "none";
+    }
+
+    // Event Listeners
+    document.addEventListener("DOMContentLoaded", function () {
+      // Report Ad click event
+      document.getElementById("report-ad").addEventListener("click", function (e) {
+        e.preventDefault();
+        showReportPopup();
+      });
+      // Don't Show This Ad click event
+      document.getElementById("dont-show-ad").addEventListener("click", function (e) {
+        e.preventDefault();
+        loadNewAd();
+      });
+      // Create Ads click event
+      document.getElementById("create-ads").addEventListener("click", function (e) {
+        e.preventDefault();
+        window.location.href = "adscampaign/index.html";
+      });
+    });
+  </script>
 </head>
 <body>
-
-  <div class="popup" id="popupAd">
-    <div class="sponsored">Sponsored</div>
-    <button class="popup-close" id="closeButton" disabled>Skip Ad in <span id="countdownTimer">10</span>s</button>
-    <div class="popup-content">
-      <h3 id="adTitle">Preview the Link</h3>
-      <p id="adDescription" class="popup-description"></p>
+  <div class="iframe-container">
+    <div class="top-bar">
+      <div class="sponsored">Sponsored</div>
+      <div class="menu-container" onclick="toggleMenu()" aria-label="Menu toggle">
+        <div class="menu-icon">
+          <div></div>
+          <div></div>
+          <div></div>
+        </div>
+        <div class="menu-dropdown">
+          <a href="#" id="report-ad">Report Ad</a>
+          <a href="#" id="dont-show-ad">Don't Show This Ad</a>
+          <div id="create-ads" class="create-ad">Create Ads</div>
+        </div>
+      </div>
     </div>
-    <iframe id="popupIframe" class="popup-iframe" src=""></iframe>
-    <button class="popup-button" id="visitAdButton" onclick="visitAd()">Visit Ad</button>
+    <div class="ad-preview">
+      <iframe src="https://example.com" sandbox="allow-scripts allow-same-origin"></iframe>
+    </div>
+    <div class="ad-info">
+      <h2>Ad Title Here</h2>
+      <p>Short ad description goes here.</p>
+    </div>
+    <button id="countdown" class="countdown-btn">$5 WILL BE CREDITED IN 30s</button>
   </div>
 
-  <div id="blurScreen" class="blur-screen">
-    Closing Ad...
+  <!-- Popup Modal for Report Ad -->
+  <div id="popup-modal" class="popup-modal">
+    <div class="popup-content">
+      <p>Ad reported successfully</p>
+      <button onclick="closePopup()">Okay</button>
+    </div>
   </div>
-
-  <script type="module">
-    // Initialize Firebase (Make sure Firebase SDK is already imported and configured)
-    import { getDatabase, ref, get } from 'https://www.gstatic.com/firebasejs/9.4.1/firebase-database.js';
-
-    // Reference to the Firebase Realtime Database
-    const db = getDatabase();
-
-    // Fetch ad campaign data from Firebase
-    function fetchAdData() {
-      const adRef = ref(db, 'adscampaigns'); // Path to your ad campaigns in Firebase
-      get(adRef)
-        .then((snapshot) => {
-          if (snapshot.exists()) {
-            const adDetails = snapshot.val();
-            
-            // Check if data is in array format and select a random ad
-            if (Array.isArray(adDetails)) {
-              const randomIndex = Math.floor(Math.random() * adDetails.length);
-              const ad = adDetails[randomIndex];
-
-              // Update the page with the ad data
-              document.getElementById('popupIframe').src = ad.url;
-              document.getElementById('adTitle').textContent = ad.title;
-              document.getElementById('adDescription').textContent = ad.description;
-            } else {
-              console.error("Expected an array of ads but got:", adDetails);
-              document.getElementById('adTitle').textContent = "No Ads Available";
-              document.getElementById('adDescription').textContent = "Please try again later.";
-            }
-          } else {
-            console.error("No ad data found in Firebase.");
-            document.getElementById('adTitle').textContent = "No Ads Available";
-            document.getElementById('adDescription').textContent = "Please try again later.";
-          }
-        })
-        .catch((error) => {
-          console.error("Error fetching ad data: ", error);
-          document.getElementById('adTitle').textContent = "Error Loading Ads";
-          document.getElementById('adDescription').textContent = "Please try again later.";
-        });
-    }
-
-    // Start countdown once ad data is fetched
-    function startCountdown() {
-      let countdownTime = 10;
-      const timerElement = document.getElementById('countdownTimer');
-      const closeButton = document.getElementById('closeButton');
-
-      const countdownInterval = setInterval(() => {
-        countdownTime--;
-        timerElement.textContent = countdownTime;
-
-        if (countdownTime <= 0) {
-          clearInterval(countdownInterval);
-          closeButton.disabled = false;
-          closeButton.classList.add('enabled');
-          closeButton.textContent = 'Skip Ad';
-          closeButton.onclick = closeAd;
-        }
-      }, 1000);
-    }
-
-    // Close ad and redirect after countdown
-    function closeAd() {
-      document.getElementById('blurScreen').style.display = 'flex';
-      setTimeout(() => {
-        window.location.href = 'index.html';
-      }, 3000);
-    }
-
-    // Open ad in a new tab
-    function visitAd() {
-      window.open(document.getElementById('popupIframe').src, '_blank');
-    }
-
-    // Fetch and display ad data when the page loads
-    window.onload = () => {
-      fetchAdData();
-      startCountdown();
-    };
-  </script>
 </body>
 </html>
