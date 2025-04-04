@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Post Creation</title>
+    <style>
+        /* Custom Styles for Bold and Neat Design */
+        :root {
+            --primary-bg: #1a1a1a;
+            --accent-color: #00ff80;
+            --button-bg: #222;
+            --button-hover-bg: #333;
+            --text-color: #fff;
+            --border-glow: #ff00c8;
+            --green-container: #28a745;
+            --neon-green: #00ff00;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: var(--primary-bg);
+            margin: 0;
+            padding: 0;
+            color: var(--text-color);
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 50px auto;
+            padding: 30px;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            align-items: center;
+        }
+
+        .profile {
+            display: flex;
+            align-items: center;
+        }
+
+        .profile img {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            margin-right: 15px;
+        }
+
+        .profile-info h3 {
+            margin: 0;
+            font-size: 1.2rem;
+            color: var(--accent-color);
+        }
+
+        .profile-info p {
+            margin: 5px 0;
+            font-size: 0.9rem;
+            color: #aaa;
+        }
+
+        .level-container {
+            padding: 10px 20px;
+            background-color: var(--green-container);
+            border-radius: 20px;
+            color: #fff;
+            font-size: 1rem;
+        }
+
+        .level-container p {
+            margin: 0;
+        }
+
+        .image-upload-section {
+            margin: 20px 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .image-upload-section input {
+            padding: 10px;
+            background-color: #333;
+            color: #fff;
+            border: none;
+            border-radius: 10px;
+            margin-top: 10px;
+            cursor: pointer;
+        }
+
+        .input-group {
+            margin: 15px 0;
+        }
+
+        .input-group label {
+            font-size: 1.1rem;
+            color: #fff;
+            display: block;
+        }
+
+        .input-group input,
+        .input-group textarea {
+            width: 100%;
+            padding: 10px;
+            margin-top: 8px;
+            background-color: #333;
+            color: #fff;
+            border: 2px solid #444;
+            border-radius: 10px;
+        }
+
+        .input-group textarea {
+            min-height: 150px;
+        }
+
+        .toggle-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .toggle-group label {
+            color: #fff;
+        }
+
+        .publish-btn {
+            background: var(--accent-color);
+            color: #fff;
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            border-radius: 10px;
+            width: 100%;
+            border: none;
+            cursor: pointer;
+            margin-top: 30px;
+            transition: background-color 0.3s ease;
+        }
+
+        .publish-btn:hover {
+            background-color: var(--neon-green);
+        }
+
+        .publish-btn:disabled {
+            background-color: #555;
+            cursor: not-allowed;
+        }
+
+        /* Modal Popup Styling */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: #333;
+            padding: 30px;
+            border-radius: 15px;
+            color: #fff;
+            text-align: center;
+        }
+
+        .modal button {
+            background-color: var(--accent-color);
+            padding: 10px 20px;
+            border: none;
+            color: #fff;
+            cursor: pointer;
+            border-radius: 10px;
+            font-size: 1rem;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header Section with Profile Info -->
+        <div class="header">
+            <div class="profile">
+                <img id="profile-pic" src="https://via.placeholder.com/60" alt="Profile Picture">
+                <div class="profile-info">
+                    <h3 id="username">@username</h3>
+                    <p id="followers">Followers: 0</p>
+                </div>
+            </div>
+            <div class="level-container">
+                <p id="level">Level 1</p>
+            </div>
+        </div>
+
+        <!-- Image Upload Section -->
+        <div class="image-upload-section">
+            <label for="image-upload">Upload Post Image</label>
+            <input type="file" id="image-upload" accept="image/*">
+        </div>
+
+        <!-- Post Title and Description -->
+        <div class="input-group">
+            <label for="post-title">Post Title</label>
+            <input type="text" id="post-title" placeholder="Enter your post title">
+        </div>
+
+        <div class="input-group">
+            <label for="post-description">Post Description</label>
+            <textarea id="post-description" placeholder="Enter post description"></textarea>
+        </div>
+
+        <!-- Privacy and Monetization Toggle -->
+        <div class="toggle-group">
+            <div>
+                <label for="privacy-toggle">Privacy</label>
+                <select id="privacy-toggle">
+                    <option value="public">Public</option>
+                    <option value="private">Private</option>
+                </select>
+            </div>
+            <div>
+                <label for="monetize-toggle">Monetize</label>
+                <input type="checkbox" id="monetize-toggle" disabled>
+            </div>
+        </div>
+
+        <!-- Publish Button -->
+        <button class="publish-btn" id="publish-btn" disabled>Publish Now</button>
+    </div>
+
+    <!-- Modal Popup -->
+    <div id="monetize-modal" class="modal">
+        <div class="modal-content">
+            <p>You need to be level 3 to monetize posts.</p>
+            <p>Your current level: <span id="current-level">Level 1</span></p>
+            <p>Next milestone: Level 3 (100+ followers)</p>
+            <button onclick="closeModal()">Close</button>
+        </div>
+    </div>
+
+   <script type="module">
+  // Firebase setup
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+  import { getAuth, onAuthStateChanged, updateProfile, getDatabase, ref, set, get, child, update } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+  import { getStorage, ref as storageRef, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-storage.js";
+
+  // Firebase Configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
+    authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
+    databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
+    projectId: "itzhoyoo-f9f7e",
+    storageBucket: "itzhoyoo-f9f7e.firebasestorage.app",
+    messagingSenderId: "1094792075584",
+    appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
+    measurementId: "G-LLT6F9WRKH"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getDatabase(app);
+  const storage = getStorage(app);
+
+  // Check user authentication
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      loadUserProfile(user);
+    }
+  });
+
+  function loadUserProfile(user) {
+    const userRef = ref(db, 'users/' + user.uid);
+    get(userRef).then((snapshot) => {
+      if (snapshot.exists()) {
+        const userData = snapshot.val();
+        document.getElementById('username').textContent = userData.username;
+        document.getElementById('followers').textContent = userData.followers;
+        document.getElementById('level').textContent = getUserLevel(userData.followers);
+        document.getElementById('level').style.backgroundColor = getUserLevelColor(userData.followers);
+        if (userData.profilePic) {
+          document.getElementById('profilePic').src = userData.profilePic;
+        }
+      } else {
+        console.log('No user data available');
+      }
+    });
+  }
+
+  function getUserLevel(followers) {
+    if (followers < 50) return "Level 1";
+    if (followers < 100) return "Level 2";
+    return "Level 3";
+  }
+
+  function getUserLevelColor(followers) {
+    if (followers < 50) return "gray";
+    if (followers < 100) return "yellow";
+    return "green";
+  }
+
+  // Image upload and save URL to Firebase
+  document.getElementById('uploadImage').addEventListener('change', handleFileSelect, false);
+
+  function handleFileSelect(event) {
+    const file = event.target.files[0];
+    if (file) {
+      const fileName = `posts/${new Date().getTime()}_${file.name}`;
+      const storageReference = storageRef(storage, fileName);
+      const uploadTask = uploadBytesResumable(storageReference, file);
+
+      uploadTask.on('state_changed', (snapshot) => {
+        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        console.log('Upload is ' + progress + '% done');
+      }, (error) => {
+        console.error('Upload error:', error);
+      }, () => {
+        getDownloadURL(uploadTask.snapshot.ref).then((downloadURL) => {
+          savePostImage(downloadURL);
+        });
+      });
+    }
+  }
+
+  // Save post data and image URL in Firebase
+  function savePostImage(imageUrl) {
+    const title = document.getElementById('postTitle').value;
+    const description = document.getElementById('postDescription').value;
+    const postRef = ref(db, 'posts/' + new Date().getTime());
+    const postData = {
+      title: title,
+      description: description,
+      imageUrl: imageUrl,
+      monetizeStatus: false, // Default monetize status
+      visibility: 'public' // Default visibility
+    };
+    set(postRef, postData).then(() => {
+      console.log("Post saved successfully");
+    }).catch((error) => {
+      console.error("Error saving post:", error);
+    });
+  }
+
+  // Monetize post (Level 3 users only)
+  document.getElementById('monetizeButton').addEventListener('click', (event) => {
+    const userRef = ref(db, 'users/' + auth.currentUser.uid);
+    get(userRef).then((snapshot) => {
+      const userData = snapshot.val();
+      if (userData.followers >= 100) {
+        update(ref(db, 'posts/' + new Date().getTime()), {
+          monetizeStatus: true
+        }).then(() => {
+          showMonetizePopup('Monetized successfully! Start earning.');
+        });
+      } else {
+        showMonetizePopup('You need to reach Level 3 to monetize your posts.');
+      }
+    });
+  });
+
+  function showMonetizePopup(message) {
+    const popup = document.createElement('div');
+    popup.className = 'popup';
+    popup.innerHTML = `<div class="popup-content"><p>${message}</p><button onclick="closePopup()">Close</button></div>`;
+    document.body.appendChild(popup);
+  }
+
+  function closePopup() {
+    const popup = document.querySelector('.popup');
+    if (popup) {
+      popup.remove();
+    }
+  }
+
+  // Display level milestone info
+  document.getElementById('levelButton').addEventListener('click', () => {
+    const userRef = ref(db, 'users/' + auth.currentUser.uid);
+    get(userRef).then((snapshot) => {
+      const userData = snapshot.val();
+      const nextMilestone = userData.followers >= 100 ? 'Level 3 - You can now monetize your posts!' : `Reach ${getNextMilestone(userData.followers)} followers for next level.`;
+      showLevelMilestonePopup(nextMilestone);
+    });
+  });
+
+  function getNextMilestone(followers) {
+    if (followers < 50) return 50;
+    if (followers < 100) return 100;
+    return 'You are at the highest level!';
+  }
+
+  function showLevelMilestonePopup(message) {
+    const popup = document.createElement('div');
+    popup.className = 'popup';
+    popup.innerHTML = `<div class="popup-content"><p>${message}</p><button onclick="closePopup()">Close</button></div>`;
+    document.body.appendChild(popup);
+  }
+</script>
+</body>
+</html>
