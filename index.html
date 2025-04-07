@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>NeonPPC - Professional Cyber Agency</title>
+  <title>NeonPPC - Performance Marketing Agency</title>
   <style>
     :root {
-      --glass-bg: rgba(0, 0, 0, 0.4);
-      --border-glow: 0 0 10px #0ff, 0 0 20px #0ff;
-      --primary: #0ff;
-      --accent: #f0f;
-      --text-light: #e0e0e0;
+      --primary: #0f62fe;
+      --bg-dark: #0d0d0d;
+      --text-light: #f4f4f4;
+      --accent: #ff4081;
+      --section-bg: #1a1a1a;
     }
 
     * {
@@ -21,7 +21,7 @@
 
     body {
       font-family: 'Segoe UI', sans-serif;
-      background: linear-gradient(145deg, #0a0a0a, #141414);
+      background: var(--bg-dark);
       color: var(--text-light);
       overflow-x: hidden;
     }
@@ -29,7 +29,7 @@
     header {
       position: sticky;
       top: 0;
-      background: var(--glass-bg);
+      background: rgba(0, 0, 0, 0.4);
       backdrop-filter: blur(10px);
       border-bottom: 1px solid #222;
       padding: 1rem 2rem;
@@ -80,14 +80,15 @@
     }
 
     .hero h2 {
-      font-size: 3rem;
+      font-size: 2.8rem;
       margin-bottom: 1rem;
-      color: var(--accent);
+      color: #ffffff;
+      letter-spacing: -1px;
     }
 
     .hero p {
-      max-width: 600px;
-      font-size: 1.2rem;
+      max-width: 650px;
+      font-size: 1.15rem;
       margin: 0 auto 2rem;
       line-height: 1.6;
       color: #ccc;
@@ -96,19 +97,17 @@
     .cta-button {
       background: var(--primary);
       border: none;
-      padding: 0.9rem 2rem;
+      padding: 0.85rem 2rem;
       font-size: 1rem;
-      color: #000;
-      font-weight: bold;
+      color: #fff;
+      font-weight: 600;
       border-radius: 6px;
-      box-shadow: var(--border-glow);
       cursor: pointer;
       transition: 0.3s;
     }
 
     .cta-button:hover {
-      transform: scale(1.05);
-      box-shadow: 0 0 20px #0ff, 0 0 40px #0ff;
+      background: #0047c5;
     }
 
     .hamburger {
@@ -167,11 +166,177 @@
       color: #000;
     }
 
+    .offers {
+      background: var(--section-bg);
+      padding: 4rem 2rem;
+      text-align: center;
+    }
+
+    .offers h2 {
+      font-size: 2rem;
+      margin-bottom: 2rem;
+      color: var(--primary);
+    }
+
+    .offers-grid {
+      max-width: 1000px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 2rem;
+    }
+
+    .offer-box {
+      background: #111;
+      padding: 2rem;
+      border-radius: 10px;
+      border: 1px solid #222;
+      text-align: left;
+    }
+
+    .offer-box h4 {
+      font-size: 1.2rem;
+      color: #fff;
+      margin-bottom: 0.5rem;
+    }
+
+    .offer-box p {
+      color: #aaa;
+      font-size: 0.95rem;
+      line-height: 1.4;
+    }
+
     @media (max-width: 768px) {
       .hero h2 {
-        font-size: 2.2rem;
+        font-size: 2rem;
       }
     }
+    .reviews {
+  padding: 4rem 2rem;
+  background: #121212;
+  text-align: center;
+}
+
+.star-group {
+  display: inline-block;
+  animation: fadeUp 0.8s ease-out forwards;
+}
+
+.star-group span {
+  font-size: 2rem;
+  color: gold;
+  letter-spacing: 5px;
+}
+
+.star-group p {
+  margin-top: 0.5rem;
+  color: #ccc;
+  font-size: 1rem;
+}
+
+.testimonials {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 2rem;
+  max-width: 1000px;
+  margin: 3rem auto 0;
+}
+
+.testimonial {
+  background: #1d1d1d;
+  padding: 2rem;
+  border-radius: 10px;
+  border: 1px solid #2a2a2a;
+  opacity: 0;
+  transform: translateY(30px);
+  animation: fadeUp 0.6s ease-out forwards;
+  animation-delay: var(--delay);
+}
+
+.testimonial:nth-child(1) { --delay: 0.2s; }
+.testimonial:nth-child(2) { --delay: 0.4s; }
+.testimonial:nth-child(3) { --delay: 0.6s; }
+
+.testimonial p {
+  color: #eee;
+  font-size: 1rem;
+  line-height: 1.5;
+}
+
+.testimonial h4 {
+  margin-top: 1rem;
+  font-weight: 500;
+  color: #999;
+  font-size: 0.95rem;
+}
+
+@keyframes fadeUp {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.services {
+  padding: 5rem 2rem;
+  background: #0d0d0d;
+  text-align: center;
+  color: #f0f0f0;
+}
+
+.services h2 {
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.services .subtext {
+  color: #aaa;
+  font-size: 1.1rem;
+  margin-bottom: 3rem;
+}
+
+.service-cards {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 2rem;
+}
+
+.service-card {
+  background: #1a1a1a;
+  padding: 2rem;
+  border-radius: 12px;
+  border: 1px solid #333;
+  max-width: 300px;
+  flex: 1;
+  transition: transform 0.3s ease;
+}
+
+.service-card:hover {
+  transform: translateY(-8px);
+}
+
+.service-card h3 {
+  font-size: 1.5rem;
+  color: #fff;
+  margin-bottom: 0.8rem;
+}
+
+.service-card p {
+  font-size: 1rem;
+  color: #bbb;
+  line-height: 1.4;
+  margin-bottom: 1.5rem;
+}
+
+.price-tag {
+  background: #fff;
+  color: #111;
+  display: inline-block;
+  padding: 0.4rem 1rem;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
   </style>
 </head>
 <body>
@@ -194,31 +359,96 @@
   </header>
 
   <section class="hero">
-    <h2>Dominate Your Ads With Precision</h2>
+    <h2>Performance-Driven Growth For Visionary Brands</h2>
     <p>
-      Cyberpunk PPC strategy that cuts through the noise. Get targeted traffic, explosive ROI, and pixel-perfect campaign execution. Let’s go beyond basic.
+      We help companies unlock scalable growth through data-backed ad campaigns and conversion-obsessed creative. No fluff. Just ROI. Whether you're a startup or enterprise — we build what converts.
     </p>
-    <button class="cta-button">Book a Free Audit</button>
+    <button class="cta-button">Let’s Talk Strategy</button>
+  </section>
+
+  <section class="offers">
+    <h2>What We Offer</h2>
+    <div class="offers-grid">
+      <div class="offer-box">
+        <h4>Paid Search Ads</h4>
+        <p>Laser-focused Google Ads campaigns that bring ready-to-buy users to your doorstep.</p>
+      </div>
+      <div class="offer-box">
+        <h4>Meta & TikTok Campaigns</h4>
+        <p>Creative-first paid social strategies with rapid iteration and aggressive ROAS tracking.</p>
+      </div>
+      <div class="offer-box">
+        <h4>Landing Page Optimization</h4>
+        <p>We design and test high-converting funnels that turn cold traffic into loyal customers.</p>
+      </div>
+      <div class="offer-box">
+        <h4>Full-Funnel Analytics</h4>
+        <p>From first click to lifetime value, we track what matters and scale what performs.</p>
+      </div>
+    </div>
   </section>
 
   <div class="sidebar-overlay" id="sidebar">
     <div class="close-btn" onclick="toggleSidebar()">×</div>
     <section>
       <h3>Pricing</h3>
-      <p>Starting from $499/month. We scale with your ambition, not your ad spend. Request custom quotes for enterprise setups.</p>
+      <p>We offer monthly retainers starting at $2,000. Custom quotes available for large-scale accounts.</p>
     </section>
     <section>
       <h3>Testimonials</h3>
-      <p>"Within 30 days, NeonPPC tripled our leads. Their team? Rockstars." — Alex G., SaaS Founder</p>
-      <p>"Best ROI we’ve seen in 10 years. Period." — Lana D., Ecommerce Exec</p>
+      <p>"They managed $500k in ad spend for us and made every dollar count." — Jamie L., Tech CEO</p>
+      <p>"Our CPL dropped 43% in 3 months. Insane." — Ryan M., SaaS CMO</p>
     </section>
     <section>
       <h3>Contact Us</h3>
-      <p>Email: team@neonppc.agency</p>
-      <p>Call: +44 123 456 7890</p>
+      <p>Email: hello@neonppc.agency</p>
+      <p>Phone: +1 (555) 123-4567</p>
     </section>
   </div>
+<section class="reviews">
+  <div class="stars">
+    <div class="star-group">
+      <span>★★★★★</span>
+      <p>Rated 5.0 by 1,000+ businesses</p>
+    </div>
+  </div>
 
+  <div class="testimonials">
+    <div class="testimonial">
+      <p>"NeonPPC transformed our ad performance. We went from burning cash to printing it."</p>
+      <h4>— Sarah K., Ecom Founder</h4>
+    </div>
+    <div class="testimonial">
+      <p>"We've worked with top-tier agencies before. This is the first time we saw results fast."</p>
+      <h4>— Mark L., SaaS VP Growth</h4>
+    </div>
+    <div class="testimonial">
+      <p>"Our ROAS tripled. The landing page tweaks alone paid for the service in a week."</p>
+      <h4>— Rachel D., DTC CMO</h4>
+    </div>
+  </div>
+<section class="services">
+  <h2>Our Services</h2>
+  <p class="subtext">Laser-focused strategies to scale your business. Transparent pricing. Real results.</p>
+  
+  <div class="service-cards">
+    <div class="service-card">
+      <h3>Google Ads Management</h3>
+      <p>High-converting ad campaigns that turn clicks into clients.</p>
+      <div class="price-tag">From £499/mo</div>
+    </div>
+    <div class="service-card">
+      <h3>Landing Page Optimization</h3>
+      <p>We design, test, and tweak your funnel to perfection.</p>
+      <div class="price-tag">From £399/mo</div>
+    </div>
+    <div class="service-card">
+      <h3>Meta & TikTok Ads</h3>
+      <p>Scroll-stopping creatives and bulletproof targeting.</p>
+      <div class="price-tag">From £599/mo</div>
+    </div>
+  </div>
+</section>
   <script>
     function toggleSidebar() {
       const sidebar = document.getElementById('sidebar');
