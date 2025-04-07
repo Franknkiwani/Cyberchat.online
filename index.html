@@ -2,330 +2,231 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Modern Glass Iframe with Ad Actions</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>NeonPPC - Professional Cyber Agency</title>
   <style>
     :root {
-      --glass-bg: rgba(255, 255, 255, 0.2);
-      --border-glow: rgba(255, 255, 255, 0.4);
-      --shadow-glow: rgba(0, 0, 0, 0.1);
-      --primary: #ff66b2;
-      --accent: #66ffcc;
-      --black-bg: rgba(0, 0, 0, 0.6);
+      --glass-bg: rgba(0, 0, 0, 0.4);
+      --border-glow: 0 0 10px #0ff, 0 0 20px #0ff;
+      --primary: #0ff;
+      --accent: #f0f;
+      --text-light: #e0e0e0;
     }
+
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
-      font-family: 'Poppins', sans-serif;
     }
+
     body {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      background: linear-gradient(135deg, #1a1a2e, #16213e);
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(145deg, #0a0a0a, #141414);
+      color: var(--text-light);
+      overflow-x: hidden;
     }
-    .iframe-container {
-      position: relative;
-      width: 90%;
-      max-width: 400px;
-      height: 450px;
-      border-radius: 20px;
-      overflow: hidden;
+
+    header {
+      position: sticky;
+      top: 0;
       background: var(--glass-bg);
-      backdrop-filter: blur(15px);
-      -webkit-backdrop-filter: blur(15px);
-      border: 2px solid var(--border-glow);
-      box-shadow: 0 8px 32px var(--shadow-glow);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: space-between;
-      padding: 15px;
-    }
-    .top-bar {
-      width: 100%;
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid #222;
+      padding: 1rem 2rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      z-index: 999;
+      transition: transform 0.5s ease;
     }
-    .sponsored {
-      background: var(--primary);
-      color: white;
-      padding: 5px 10px;
-      border-radius: 10px;
-      font-size: 14px;
+
+    header.rotated {
+      transform: rotateX(5deg);
     }
-    .menu-container {
-      position: relative;
-      cursor: pointer;
+
+    .logo-group {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
     }
-    .menu-icon {
-      width: 30px;
-      height: 30px;
+
+    .logo-bars {
       display: flex;
       flex-direction: column;
-      justify-content: space-between;
-      align-items: flex-end;
+      justify-content: center;
+      cursor: default;
     }
-    .menu-icon div {
-      background: white;
+
+    .logo-bars span {
+      display: block;
+      height: 2px;
+      margin: 3px 0;
+      background: var(--accent);
       border-radius: 2px;
+    }
+
+    .logo-bars span:nth-child(1) { width: 6px; }
+    .logo-bars span:nth-child(2) { width: 12px; }
+    .logo-bars span:nth-child(3) { width: 18px; }
+
+    h1 {
+      font-size: 1.5rem;
+      color: var(--primary);
+    }
+
+    .hero {
+      text-align: center;
+      padding: 6rem 2rem 4rem;
+    }
+
+    .hero h2 {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+      color: var(--accent);
+    }
+
+    .hero p {
+      max-width: 600px;
+      font-size: 1.2rem;
+      margin: 0 auto 2rem;
+      line-height: 1.6;
+      color: #ccc;
+    }
+
+    .cta-button {
+      background: var(--primary);
+      border: none;
+      padding: 0.9rem 2rem;
+      font-size: 1rem;
+      color: #000;
+      font-weight: bold;
+      border-radius: 6px;
+      box-shadow: var(--border-glow);
+      cursor: pointer;
       transition: 0.3s;
     }
-    .menu-icon div:nth-child(1) {
-      width: 12px;
-      height: 4px;
+
+    .cta-button:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 20px #0ff, 0 0 40px #0ff;
     }
-    .menu-icon div:nth-child(2) {
-      width: 18px;
-      height: 4px;
-    }
-    .menu-icon div:nth-child(3) {
-      width: 24px;
-      height: 4px;
-    }
-    .menu-dropdown {
-      position: absolute;
-      top: 40px;
-      right: 0;
-      width: 180px;
-      background: var(--black-bg);
-      border-radius: 10px;
-      box-shadow: 0 4px 10px var(--shadow-glow);
-      padding: 10px;
-      display: none;
+
+    .hamburger {
+      display: flex;
       flex-direction: column;
-      backdrop-filter: blur(15px);
-      -webkit-backdrop-filter: blur(15px);
-      z-index: 10;
-    }
-    .menu-dropdown a,
-    .menu-dropdown div {
-      text-decoration: none;
-      color: white;
-      font-size: 14px;
-      padding: 8px 12px;
-      display: block;
       cursor: pointer;
+      gap: 5px;
     }
-    .menu-dropdown a:hover,
-    .menu-dropdown div:hover {
+
+    .hamburger div {
+      width: 25px;
+      height: 3px;
       background: var(--primary);
-      border-radius: 5px;
+      border-radius: 2px;
     }
-    .menu-dropdown .create-ad {
-      margin-top: 10px;
-      background: var(--primary);
-      color: white;
-      text-align: center;
-      padding: 10px;
-      border-radius: 5px;
-      font-weight: bold;
-    }
-    .menu-dropdown .create-ad:hover {
-      background: var(--accent);
-    }
-    .menu-active {
-      display: flex;
-    }
-    .rotate {
-      transform: rotate(180deg);
-    }
-    .ad-preview {
-      width: 100%;
-      height: 200px;
-      border-radius: 10px;
-      overflow: hidden;
-      box-shadow: 0 4px 10px var(--shadow-glow);
-      background: white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    .ad-preview iframe {
-      width: 100%;
-      height: 100%;
-      border: none;
-    }
-    .ad-info {
-      text-align: center;
-      color: white;
-      margin-top: 10px;
-    }
-    .countdown-btn {
-      width: 100%;
-      padding: 10px;
-      font-size: 16px;
-      text-align: center;
-      background: var(--accent);
-      color: black;
-      border: none;
-      border-radius: 10px;
-      cursor: pointer;
-      margin-top: 20px;
-    }
-    /* Popup Modal Styles */
-    .popup-modal {
+
+    .sidebar-overlay {
       position: fixed;
       top: 0;
-      left: 0;
-      width: 100%;
+      right: -100%;
+      width: 80%;
       height: 100%;
-      background: rgba(0, 0, 0, 0.5);
-      display: none;
-      justify-content: center;
-      align-items: center;
-      z-index: 20;
+      background: #fff;
+      color: #111;
+      box-shadow: -10px 0 30px rgba(0,0,0,0.6);
+      padding: 2rem;
+      transition: right 0.4s ease;
+      z-index: 1000;
     }
-    .popup-content {
-      background: white;
-      padding: 20px 30px;
-      border-radius: 10px;
-      text-align: center;
-      max-width: 300px;
-      box-shadow: 0 4px 10px var(--shadow-glow);
+
+    .sidebar-overlay.active {
+      right: 0;
     }
-    .popup-content button {
-      margin-top: 15px;
-      padding: 8px 15px;
-      background: var(--accent);
-      border: none;
-      border-radius: 5px;
+
+    .sidebar-overlay h3 {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+      color: #000;
+    }
+
+    .sidebar-overlay section {
+      margin-bottom: 2rem;
+    }
+
+    .sidebar-overlay p {
+      line-height: 1.5;
+      color: #333;
+    }
+
+    .close-btn {
+      position: absolute;
+      top: 1rem;
+      right: 1.5rem;
+      font-size: 1.5rem;
       cursor: pointer;
-      font-weight: bold;
+      color: #000;
     }
-  </style>
-  
-  <!-- Firebase Module Code (DO NOT CHANGE ANYTHING BELOW) -->
-  <script type="module">
-    // Import the functions you need from the SDKs you need
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-    import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-analytics.js";
-    // TODO: Add SDKs for Firebase products that you want to use
-    // https://firebase.google.com/docs/web/setup#available-libraries
 
-    // Your web app's Firebase configuration
-    // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-    const firebaseConfig = {
-      apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
-      authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
-      databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
-      projectId: "itzhoyoo-f9f7e",
-      storageBucket: "itzhoyoo-f9f7e.firebasestorage.app",
-      messagingSenderId: "1094792075584",
-      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
-      measurementId: "G-LLT6F9WRKH"
-    };
-
-    // Initialize Firebase
-    const app = initializeApp(firebaseConfig);
-    const analytics = getAnalytics(app);
-  </script>
-  
-  <!-- Firebase Realtime Database Module for loadNewAd functionality -->
-  <script type="module">
-    import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
-    
-    // Expose loadNewAd to the global scope so it can be called from non-module scripts.
-    window.loadNewAd = function() {
-      const db = getDatabase(app);
-      const adsRef = ref(db, 'ads');
-      get(adsRef).then(snapshot => {
-        if (snapshot.exists()) {
-          const ads = snapshot.val();
-          const adKeys = Object.keys(ads);
-          const randomKey = adKeys[Math.floor(Math.random() * adKeys.length)];
-          const newAdLink = ads[randomKey];
-          document.querySelector('.ad-preview iframe').src = newAdLink;
-        } else {
-          console.error("No ads found in the database.");
-        }
-      }).catch(error => console.error(error));
-    }
-  </script>
-  
-  <!-- Regular Script for UI functionality -->
-  <script>
-    // Countdown logic
-    let timeLeft = Math.floor(Math.random() * 11) + 20;
-    function updateCountdown() {
-      document.getElementById("countdown").innerText = `$5 WILL BE CREDITED IN ${timeLeft}s`;
-      if (timeLeft > 0) {
-        timeLeft--;
-        setTimeout(updateCountdown, 1000);
+    @media (max-width: 768px) {
+      .hero h2 {
+        font-size: 2.2rem;
       }
     }
-    window.onload = updateCountdown;
-
-    // Toggle menu dropdown
-    function toggleMenu() {
-      document.querySelector('.menu-dropdown').classList.toggle('menu-active');
-      document.querySelector('.menu-icon').classList.toggle('rotate');
-    }
-
-    // Show popup for "Report Ad"
-    function showReportPopup() {
-      document.getElementById("popup-modal").style.display = "flex";
-    }
-    function closePopup() {
-      document.getElementById("popup-modal").style.display = "none";
-    }
-
-    // Event Listeners
-    document.addEventListener("DOMContentLoaded", function () {
-      // Report Ad click event
-      document.getElementById("report-ad").addEventListener("click", function (e) {
-        e.preventDefault();
-        showReportPopup();
-      });
-      // Don't Show This Ad click event
-      document.getElementById("dont-show-ad").addEventListener("click", function (e) {
-        e.preventDefault();
-        loadNewAd();
-      });
-      // Create Ads click event
-      document.getElementById("create-ads").addEventListener("click", function (e) {
-        e.preventDefault();
-        window.location.href = "adscampaign/index.html";
-      });
-    });
-  </script>
+  </style>
 </head>
 <body>
-  <div class="iframe-container">
-    <div class="top-bar">
-      <div class="sponsored">Sponsored</div>
-      <div class="menu-container" onclick="toggleMenu()" aria-label="Menu toggle">
-        <div class="menu-icon">
-          <div></div>
-          <div></div>
-          <div></div>
-        </div>
-        <div class="menu-dropdown">
-          <a href="#" id="report-ad">Report Ad</a>
-          <a href="#" id="dont-show-ad">Don't Show This Ad</a>
-          <div id="create-ads" class="create-ad">Create Ads</div>
-        </div>
+
+  <header id="mainHeader">
+    <div class="logo-group">
+      <div class="logo-bars">
+        <span></span>
+        <span></span>
+        <span></span>
       </div>
+      <h1>NeonPPC</h1>
     </div>
-    <div class="ad-preview">
-      <iframe src="https://example.com" sandbox="allow-scripts allow-same-origin"></iframe>
+
+    <div class="hamburger" onclick="toggleSidebar()">
+      <div></div>
+      <div></div>
+      <div></div>
     </div>
-    <div class="ad-info">
-      <h2>Ad Title Here</h2>
-      <p>Short ad description goes here.</p>
-    </div>
-    <button id="countdown" class="countdown-btn">$5 WILL BE CREDITED IN 30s</button>
+  </header>
+
+  <section class="hero">
+    <h2>Dominate Your Ads With Precision</h2>
+    <p>
+      Cyberpunk PPC strategy that cuts through the noise. Get targeted traffic, explosive ROI, and pixel-perfect campaign execution. Let’s go beyond basic.
+    </p>
+    <button class="cta-button">Book a Free Audit</button>
+  </section>
+
+  <div class="sidebar-overlay" id="sidebar">
+    <div class="close-btn" onclick="toggleSidebar()">×</div>
+    <section>
+      <h3>Pricing</h3>
+      <p>Starting from $499/month. We scale with your ambition, not your ad spend. Request custom quotes for enterprise setups.</p>
+    </section>
+    <section>
+      <h3>Testimonials</h3>
+      <p>"Within 30 days, NeonPPC tripled our leads. Their team? Rockstars." — Alex G., SaaS Founder</p>
+      <p>"Best ROI we’ve seen in 10 years. Period." — Lana D., Ecommerce Exec</p>
+    </section>
+    <section>
+      <h3>Contact Us</h3>
+      <p>Email: team@neonppc.agency</p>
+      <p>Call: +44 123 456 7890</p>
+    </section>
   </div>
 
-  <!-- Popup Modal for Report Ad -->
-  <div id="popup-modal" class="popup-modal">
-    <div class="popup-content">
-      <p>Ad reported successfully</p>
-      <button onclick="closePopup()">Okay</button>
-    </div>
-  </div>
+  <script>
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const header = document.getElementById('mainHeader');
+      sidebar.classList.toggle('active');
+      header.classList.toggle('rotated');
+    }
+  </script>
+
 </body>
 </html>
