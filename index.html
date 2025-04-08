@@ -110,107 +110,146 @@
       background: #0047c5;
     }
 
-    .hamburger {
-      display: flex;
-      flex-direction: column;
-      cursor: pointer;
-      gap: 5px;
-    }
+    .hamburger {  
+  display: flex;  
+  flex-direction: column;  
+  cursor: pointer;  
+  gap: 5px;  
+}  
 
-    .hamburger div {
-      width: 25px;
-      height: 3px;
-      background: var(--primary);
-      border-radius: 2px;
-    }
+.hamburger div {  
+  width: 25px;  
+  height: 3px;  
+  background: var(--primary);  
+  border-radius: 2px;  
+}  
 
-    .sidebar-overlay {
-      position: fixed;
-      top: 0;
-      right: -100%;
-      width: 80%;
-      height: 100%;
-      background: #fff;
-      color: #111;
-      box-shadow: -10px 0 30px rgba(0,0,0,0.6);
-      padding: 2rem;
-      transition: right 0.4s ease;
-      z-index: 1000;
-    }
+.sidebar-overlay {  
+  position: fixed;  
+  top: 0;  
+  right: -100%;  
+  width: 80%;  
+  height: 100%;  
+  background: var(--glass-bg);  
+  backdrop-filter: blur(12px);  
+  color: #fff;  
+  box-shadow: -10px 0 30px rgba(0,0,0,0.6);  
+  padding: 2rem;  
+  transition: right 0.4s ease;  
+  z-index: 1000;  
+  display: flex;  
+  flex-direction: column;  
+  align-items: center;  
+  overflow-y: auto;  
+}
 
-    .sidebar-overlay.active {
-      right: 0;
-    }
+.sidebar-overlay.active {  
+  right: 0;  
+}
 
-    .sidebar-overlay h3 {
-      font-size: 2rem;
-      margin-bottom: 1rem;
-      color: #000;
-    }
+.sidebar-overlay h3 {  
+  font-size: 2rem;  
+  margin-bottom: 1.5rem;  
+  color: var(--primary);  
+  text-align: center;  
+}  
 
-    .sidebar-overlay section {
-      margin-bottom: 2rem;
-    }
+.sidebar-overlay section {  
+  background: rgba(255,255,255,0.05);  
+  border: 1px solid rgba(255,255,255,0.1);  
+  border-radius: 12px;  
+  padding: 1.5rem;  
+  margin-bottom: 1.5rem;  
+  width: 100%;  
+  max-width: 400px;  
+  box-shadow: 0 0 10px rgba(0,0,0,0.3);  
+  text-align: center;  
+}  
 
-    .sidebar-overlay p {
-      line-height: 1.5;
-      color: #333;
-    }
+.sidebar-overlay section h4 {
+  color: var(--accent);
+  margin-bottom: 0.75rem;
+  font-size: 1.2rem;
+}
 
-    .close-btn {
-      position: absolute;
-      top: 1rem;
-      right: 1.5rem;
-      font-size: 1.5rem;
-      cursor: pointer;
-      color: #000;
-    }
+.sidebar-overlay p {  
+  line-height: 1.5;  
+  color: #ccc;  
+  margin-bottom: 1rem;  
+  font-size: 0.95rem;
+}
 
-    .offers {
-      background: var(--section-bg);
-      padding: 4rem 2rem;
-      text-align: center;
-    }
+.sidebar-btn {  
+  width: 100%;  
+  padding: 0.75rem 1.25rem;  
+  background: var(--primary);  
+  color: #fff;  
+  border: none;  
+  border-radius: 999px;  
+  font-size: 1rem;  
+  cursor: pointer;  
+  transition: background 0.3s ease, transform 0.2s ease;  
+}  
 
-    .offers h2 {
-      font-size: 2rem;
-      margin-bottom: 2rem;
-      color: var(--primary);
-    }
+.sidebar-btn:hover {  
+  background: var(--accent);  
+  transform: scale(1.03);  
+}
 
-    .offers-grid {
-      max-width: 1000px;
-      margin: 0 auto;
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 2rem;
-    }
+.close-btn {  
+  position: absolute;  
+  top: 1rem;  
+  right: 1.5rem;  
+  font-size: 1.5rem;  
+  cursor: pointer;  
+  color: #fff;  
+}
 
-    .offer-box {
-      background: #111;
-      padding: 2rem;
-      border-radius: 10px;
-      border: 1px solid #222;
-      text-align: left;
-    }
+.offers {  
+  background: var(--section-bg);  
+  padding: 4rem 2rem;  
+  text-align: center;  
+}  
 
-    .offer-box h4 {
-      font-size: 1.2rem;
-      color: #fff;
-      margin-bottom: 0.5rem;
-    }
+.offers h2 {  
+  font-size: 2rem;  
+  margin-bottom: 2rem;  
+  color: var(--primary);  
+}  
 
-    .offer-box p {
-      color: #aaa;
-      font-size: 0.95rem;
-      line-height: 1.4;
-    }
+.offers-grid {  
+  max-width: 1000px;  
+  margin: 0 auto;  
+  display: grid;  
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));  
+  gap: 2rem;  
+}  
 
-    @media (max-width: 768px) {
-      .hero h2 {
-        font-size: 2rem;
-      }
-    }
+.offer-box {  
+  background: #111;  
+  padding: 2rem;  
+  border-radius: 10px;  
+  border: 1px solid #222;  
+  text-align: left;  
+}  
+
+.offer-box h4 {  
+  font-size: 1.2rem;  
+  color: #fff;  
+  margin-bottom: 0.5rem;  
+}  
+
+.offer-box p {  
+  color: #aaa;  
+  font-size: 0.95rem;  
+  line-height: 1.4;  
+}  
+
+@media (max-width: 768px) {  
+  .hero h2 {  
+    font-size: 2rem;  
+  }  
+}
     /* Global Reset and Box Sizing */
 *,
 *::before,
@@ -702,23 +741,29 @@ main {
     </div>
   </section>
 
-  <div class="sidebar-overlay" id="sidebar">
-    <div class="close-btn" onclick="toggleSidebar()">×</div>
-    <section>
-      <h3>Pricing</h3>
-      <p>We offer monthly retainers starting at $2,000. Custom quotes available for large-scale accounts.</p>
-    </section>
-    <section>
-      <h3>Testimonials</h3>
-      <p>"They managed $500k in ad spend for us and made every dollar count." — Jamie L., Tech CEO</p>
-      <p>"Our CPL dropped 43% in 3 months. Insane." — Ryan M., SaaS CMO</p>
-    </section>
-    <section>
-      <h3>Contact Us</h3>
-      <p>Email: hello@neonppc.agency</p>
-      <p>Phone: +1 (555) 123-4567</p>
-    </section>
-  </div>
+ <div class="sidebar-overlay" id="sidebar">
+  <div class="close-btn" onclick="toggleSidebar()">×</div>
+
+  <section>
+    <h4>Pricing</h4>
+    <p>We offer monthly retainers starting at $2,000.<br>Custom quotes available for large-scale accounts.</p>
+    <button class="sidebar-btn">Get a Quote</button>
+  </section>
+
+  <section>
+    <h4>Testimonials</h4>
+    <p>"They managed $500k in ad spend for us and made every dollar count."<br>— Jamie L., Tech CEO</p>
+    <p>"Our CPL dropped 43% in 3 months. Insane."<br>— Ryan M., SaaS CMO</p>
+    <button class="sidebar-btn">Read More</button>
+  </section>
+
+  <section>
+    <h4>Contact Us</h4>
+    <p>Email: <a href="mailto:hello@neonppc.agency">hello@neonppc.agency</a></p>
+    <p>Phone: <a href="tel:+15551234567">+1 (555) 123-4567</a></p>
+    <button class="sidebar-btn">Message Us</button>
+  </section>
+</div>
 <section class="reviews">
   <div class="stars">
     <div class="star-group">
