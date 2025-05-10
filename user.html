@@ -1,181 +1,95 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CyberChat Profile Page</title>
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-  import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";const firebaseConfig = { apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo", authDomain: "itzhoyoo-f9f7e.firebaseapp.com", databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com", projectId: "itzhoyoo-f9f7e", storageBucket: "itzhoyoo-f9f7e.appspot.com", messagingSenderId: "1094792075584", appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5", measurementId: "G-LLT6F9WRKH" };
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Profile</title>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+    import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
 
-const app = initializeApp(firebaseConfig); const db = getDatabase(app);
+    const firebaseConfig = {
+      apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
+      authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
+      databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
+      projectId: "itzhoyoo-f9f7e",
+      storageBucket: "itzhoyoo-f9f7e.firebasestorage.app",
+      messagingSenderId: "1094792075584",
+      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
+      measurementId: "G-LLT6F9WRKH"
+    };
 
-async function loadUserProfile(userId) { const userRef = ref(db, 'users/' + userId); const snapshot = await get(userRef);
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
 
-if (snapshot.exists()) {
-  const user = snapshot.val();
-  document.getElementById('profileName').textContent = user.username || 'Unknown User';
-  document.getElementById('profilePic').src = user.profilePic || 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSMVM4ss1IUhi5TkN6fumDCVv_ZyfSfkXm6B0nJPnuNbP0UyqlgQn6B2Nc&s=10';
-}
+    // Fetch user profile data based on the userId from the URL
+    async function loadUserProfile(userId) {
+      const userRef = ref(db, 'users/' + userId);
+      const snapshot = await get(userRef);
+      
+      if (snapshot.exists()) {
+        const user = snapshot.val();
+        
+        // Dynamically set the username and profile picture in the header
+        const username = user.username || 'Unknown User'; // Default to 'Unknown User' if no username
+        const profilePic = user.profilePic || 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSMVM4ss1IUhi5TkN6fumDCVv_ZyfSfkXm6B0nJPnuNbP0UyqlgQn6B2Nc&s=10'; // Default image if no profilePic
 
-}
+        // Display user data
+        const usernameHeader = document.getElementById('username');
+        const profilePicHeader = document.getElementById('profilePic');
 
-async function loadUserJobs(userId) { const jobsRef = ref(db, 'jobs'); const jobsList = document.getElementById('jobsList');
+        if (usernameHeader) {
+          usernameHeader.textContent = `@${username}`;
+        }
 
-const snapshot = await get(jobsRef);
-const jobs = snapshot.val();
-jobsList.innerHTML = '';
-
-if (jobs) {
-  Object.keys(jobs).forEach(jobId => {
-    const job = jobs[jobId];
-    if (job.userId === userId) {
-      const jobDiv = document.createElement('div');
-      jobDiv.classList.add('job-card');
-
-      jobDiv.innerHTML = `
-        <div class="job-left">
-          <img src="${job.userPic || 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSMVM4ss1IUhi5TkN6fumDCVv_ZyfSfkXm6B0nJPnuNbP0UyqlgQn6B2Nc&s=10'}" alt="user pic">
-          <div>
-            <div class="job-name">${job.username || 'Unknown Job'}</div>
-            <div class="job-description">${job.description || 'No description available'}</div>
-          </div>
-        </div>
-        <div class="job-right">
-          <div class="job-price">$${job.price} / hr</div>
-          <button class="view-job-btn" onclick="window.location.href='job.html/${jobId}'">View</button>
-        </div>
-      `;
-
-      jobsList.appendChild(jobDiv);
+        if (profilePicHeader) {
+          profilePicHeader.src = profilePic;
+        }
+      } else {
+        console.log('User data not found.');
+      }
     }
-  });
-} else {
-  jobsList.innerHTML = '<p style="color:#bbb;">No jobs available.</p>';
-}
 
-}
+    // Extract userId from the URL and load the user profile
+    window.onload = () => {
+      const userId = window.location.pathname.split('/').pop(); // Get userId from URL (e.g., 'IuEbHVw8AOS9qPorNsnm6agCdXA2')
+      loadUserProfile(userId); // Load the user profile based on the userId
+    }
+  </script>
+  <style>
+    /* Styling for the profile page */
+    body {
+      background: #121212;
+      color: #fff;
+      font-family: sans-serif;
+    }
 
-window.onload = () => { const userId = 'userId1'; // Replace dynamically loadUserProfile(userId); loadUserJobs(userId); } </script>
+    .profile-header {
+      text-align: center;
+      margin-top: 20px;
+    }
 
-<style>
-* {
-  user-select: none;
-  -webkit-user-drag: none;
-  -webkit-tap-highlight-color: transparent;
-  outline: none;
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-body {
-  background: #121212;
-  color: #fff;
-  font-family: sans-serif;
-  overflow-x: hidden;
-}
-.profile-header {
-  text-align: center;
-  padding: 30px 0 10px;
-}
-.profile-header img {
-  width: 100px;
-  height: 100px;
-  border-radius: 50%;
-  border: 3px solid #ff69b4;
-  object-fit: cover;
-}
-.profile-header h1 {
-  font-size: 1.5rem;
-  margin-top: 10px;
-}
-.action-buttons {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-  margin: 15px 0;
-}
-.action-buttons button {
-  background: linear-gradient(90deg, #ff69b4, #0ff);
-  border: none;
-  padding: 8px 16px;
-  border-radius: 12px;
-  color: #000;
-  font-weight: bold;
-  cursor: pointer;
-  transition: opacity 0.3s;
-}
-.action-buttons button:hover {
-  opacity: 0.8;
-}
-#jobsSection {
-  padding: 15px;
-}
-#jobsSection h2 {
-  margin-bottom: 12px;
-  font-size: 1.2rem;
-  border-bottom: 1px solid #333;
-  padding-bottom: 5px;
-}
-.job-card {
-  background: #1e1e1e;
-  border: 1px solid #333;
-  border-radius: 12px;
-  padding: 12px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-}
-.job-left {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-.job-left img {
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  border: 2px solid #ff69b4;
-  object-fit: cover;
-}
-.job-name {
-  font-weight: bold;
-  font-size: 1rem;
-}
-.job-description {
-  color: #bbb;
-  font-size: 0.85rem;
-}
-.job-price {
-  color: #ff69b4;
-  font-size: 1rem;
-  margin-bottom: 6px;
-}
-.view-job-btn {
-  background: #0ff;
-  border: none;
-  padding: 6px 12px;
-  border-radius: 12px;
-  color: #000;
-  font-weight: bold;
-  cursor: pointer;
-}
-.view-job-btn:hover {
-  background: #00ccff;
-}
-</style></head>
+    .profile-header img {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .profile-header h2 {
+      margin-top: 10px;
+      font-size: 1.5rem;
+    }
+
+    /* Add additional styles here */
+  </style>
+</head>
 <body>
-<div class="profile-header">
-  <img id="profilePic" src="" alt="Profile Picture">
-  <h1 id="profileName">Username</h1>
-</div>
-<div class="action-buttons">
-  <button>Add Friend</button>
-  <button>Message</button>
-</div>
-<section id="jobsSection">
-  <h2>Jobs</h2>
-  <div id="jobsList"></div>
-</section>
+
+  <div class="profile-header">
+    <img id="profilePic" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSMVM4ss1IUhi5TkN6fumDCVv_ZyfSfkXm6B0nJPnuNbP0UyqlgQn6B2Nc&s=10" alt="Profile Picture">
+    <h2 id="username">@username</h2>
+  </div>
+
 </body>
 </html>
