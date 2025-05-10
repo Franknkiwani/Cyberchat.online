@@ -22,7 +22,7 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    // Fetch user profile data based on the userId from the URL
+    // Fetch user profile data based on the userId from the URL query parameter
     async function loadUserProfile(userId) {
       const userRef = ref(db, 'users/' + userId);
       const snapshot = await get(userRef);
@@ -50,10 +50,15 @@
       }
     }
 
-    // Extract userId from the URL and load the user profile
+    // Extract userId from the query parameters and load the user profile
     window.onload = () => {
-      const userId = window.location.pathname.split('/').pop(); // Get userId from URL (e.g., 'IuEbHVw8AOS9qPorNsnm6agCdXA2')
-      loadUserProfile(userId); // Load the user profile based on the userId
+      const urlParams = new URLSearchParams(window.location.search);
+      const userId = urlParams.get('id'); // Get 'id' from the query parameters
+      if (userId) {
+        loadUserProfile(userId); // Load the user profile based on the userId
+      } else {
+        console.log('User ID not found in query parameters.');
+      }
     }
   </script>
   <style>
