@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>CyberChat Full App</title>
+  <style>
+    /* Reset & Base */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    html, body {
+      height: 100%;
+      background: #0d0d0d;
+      color: #e0e0e0;
+      font-family: 'Segoe UI', 'Poppins', sans-serif;
+      scroll-behavior: smooth;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar {
+      width: 10px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #111;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: linear-gradient(180deg, cyan, #69f);
+      border-radius: 5px;
+    }
+
+    /* Header */
+    header {
+      background: rgba(20, 20, 20, 0.6);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-bottom: 2px solid cyan;
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 4px 20px rgba(0, 255, 255, 0.1);
+    }
+    header span {
+      font-size: 2.5rem;
+      font-weight: bold;
+      background: linear-gradient(90deg, #0ff, #69f, #0ff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: 2px;
+      text-shadow: 0 0 10px #0ff, 0 0 20px #69f;
+    }
+
+    /* Nav */
+    nav {
+      display: flex;
+      justify-content: center;
+      gap: 50px;
+      background: rgba(25, 25, 25, 0.85);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      padding: 15px 0;
+      box-shadow: 0 2px 12px rgba(0, 255, 255, 0.1);
+    }
+    nav div {
+      padding: 12px 20px;
+      cursor: pointer;
+      position: relative;
+      color: #bbb;
+      font-weight: 600;
+      border-radius: 10px;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    nav div:hover {
+      background: linear-gradient(135deg, #0ff2, #69f2);
+      color: cyan;
+      box-shadow: 0 0 10px cyan;
+    }
+    nav .active {
+      color: cyan;
+    }
+    nav .active::after {
+      content: "";
+      position: absolute;
+      bottom: -4px;
+      left: 25%;
+      width: 50%;
+      height: 4px;
+      background: linear-gradient(90deg, cyan, #69f);
+      border-radius: 3px;
+      box-shadow: 0 0 6px cyan;
+    }
+
+    /* Sections */
+    .section {
+      display: none;
+      padding: 25px;
+    }
+    .section.active {
+      display: block;
+    }
+
+    /* Cards */
+    .post, .friend, .product {
+      background: rgba(30, 30, 30, 0.75);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border: 1px solid #222;
+      padding: 20px;
+      margin-bottom: 20px;
+      border-radius: 18px;
+      box-shadow: 0 0 20px rgba(0, 255, 255, 0.05);
+      transition: all 0.3s ease;
+    }
+    .post:hover, .friend:hover, .product:hover {
+      transform: translateY(-5px) scale(1.02);
+      box-shadow: 0 0 30px rgba(0, 255, 255, 0.2);
+    }
+
+    /* Buttons */
+    button {
+      background: linear-gradient(90deg, cyan, #69f);
+      color: black;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: all 0.3s ease;
+      box-shadow: 0 0 5px cyan;
+    }
+    button:hover {
+      opacity: 0.9;
+      box-shadow: 0 0 15px cyan;
+      transform: scale(1.05);
+    }
+    button:active {
+      transform: scale(0.97);
+      opacity: 0.8;
+    }
+
+    /* View Count */
+    .view-count {
+      background: linear-gradient(90deg, cyan, #69f);
+      color: black;
+      padding: 4px 10px;
+      border-radius: 6px;
+      margin-left: 10px;
+      font-size: 0.85rem;
+      font-weight: bold;
+      box-shadow: 0 0 5px cyan;
+    }
+
+    /* Images */
+    img {
+      max-width: 100%;
+      border-radius: 14px;
+      margin-top: 12px;
+      box-shadow: 0 0 20px rgba(0, 255, 255, 0.15);
+      transition: all 0.3s ease;
+    }
+    img:hover {
+      transform: scale(1.02);
+      box-shadow: 0 0 30px rgba(0, 255, 255, 0.3);
+    }
+
+    /* Typography */
+    strong {
+      font-size: 1.3rem;
+      text-shadow: 0 0 3px cyan;
+    }
+    p {
+      margin-top: 12px;
+      line-height: 1.7;
+      color: #ccc;
+      font-size: 1rem;
+    }
+
+    /* Fancy effects */
+    .glow {
+      text-shadow: 0 0 5px cyan, 0 0 10px #69f;
+    }
+    .glass {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    /* Smooth fade */
+    .fade-in {
+      animation: fadein 0.5s ease forwards;
+    }
+    @keyframes fadein {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <span>CyberChat</span>
+</header>
+
+<nav>
+  <div id="tab-home" class="active">Homepage</div>
+  <div id="tab-messages">Messages</div>
+  <div id="tab-marketplace">Marketplace</div>
+</nav>
+
+<div id="homepage" class="section active"></div>
+<div id="messages" class="section"></div>
+<div id="marketplace" class="section"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+import { getDatabase, ref, onValue, push, update } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
+  authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
+  databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
+  projectId: "itzhoyoo-f9f7e",
+  storageBucket: "itzhoyoo-f9f7e.appspot.com",
+  messagingSenderId: "1094792075584",
+  appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
+  measurementId: "G-LLT6F9WRKH"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+// Tab switching
+const tabs = ['home', 'messages', 'marketplace'];
+tabs.forEach(t => {
+  document.getElementById('tab-'+t).onclick = () => {
+    tabs.forEach(s => {
+      document.getElementById('tab-'+s).classList.remove('active');
+      document.getElementById(s).classList.remove('active');
+    });
+    document.getElementById('tab-'+t).classList.add('active');
+    document.getElementById(t).classList.add('active');
+  }
+});
+
+// Load Homepage posts
+function loadHomepage() {
+  const postsRef = ref(db, 'posts/');
+  const container = document.getElementById('homepage');
+  onValue(postsRef, snap => {
+    const data = snap.val();
+    container.innerHTML = '';
+    for (let id in data) {
+      const p = data[id];
+      const div = document.createElement('div');
+      div.className = 'post fade-in';
+      div.innerHTML = `
+        <strong>${p.userName}</strong> 
+        <button onclick="followUser('${id}')">${p.followed ? 'Following' : 'Follow'}</button> 
+        <span class="view-count">${p.views} views</span>
+        ${p.image ? `<img src="${p.image}">` : ''}
+        <p>${p.content}</p>
+        <button onclick="openPostDetail('${id}')">Open Post</button>
+      `;
+      container.appendChild(div);
+    }
+  });
+}
+
+// Load Messages
+function loadMessages() {
+  const friendsRef = ref(db, 'friends/');
+  const container = document.getElementById('messages');
+  onValue(friendsRef, snap => {
+    const data = snap.val();
+    container.innerHTML = '';
+    for (let id in data) {
+      const f = data[id];
+      const div = document.createElement('div');
+      div.className = 'friend';
+      div.innerHTML = `
+        <strong>${f.name}</strong> 
+        <span class="view-count">${f.unread} msgs</span>
+      `;
+      container.appendChild(div);
+    }
+  });
+}
+
+// Load Marketplace
+function loadMarketplace() {
+  const productsRef = ref(db, 'marketplace/');
+  const container = document.getElementById('marketplace');
+  onValue(productsRef, snap => {
+    const data = snap.val();
+    container.innerHTML = '';
+    for (let id in data) {
+      const p = data[id];
+      const div = document.createElement('div');
+      div.className = 'product';
+      div.innerHTML = `
+        <strong>${p.title}</strong> - $${p.price}
+        ${p.image ? `<img src="${p.image}">` : ''}
+        <p>${p.description}</p>
+      `;
+      container.appendChild(div);
+    }
+  });
+}
+
+// Follow button
+window.followUser = (postId) => {
+  const postRef = ref(db, 'posts/' + postId);
+  update(postRef, { followed: true });
+}
+
+// Post detail modal (simple alert for now)
+window.openPostDetail = (postId) => {
+  const postRef = ref(db, 'posts/' + postId);
+  onValue(postRef, snap => {
+    const p = snap.val();
+    let comments = '';
+    if (p.comments) {
+      for (let cid in p.comments) {
+        comments += `\n- ${p.comments[cid].text}`;
+      }
+    }
+    const cmt = prompt(`Viewing post by ${p.userName}:\n${p.content}\n\nComments:${comments}\n\nType new comment:`);
+    if (cmt) {
+      const commentsRef = ref(db, 'posts/' + postId + '/comments');
+      push(commentsRef, { text: cmt });
+    }
+  }, { onlyOnce: true });
+}
+
+// Initialize
+loadHomepage();
+loadMessages();
+loadMarketplace();
+</script>
+
+</body>
+</html>
