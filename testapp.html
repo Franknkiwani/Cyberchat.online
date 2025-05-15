@@ -1,0 +1,391 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Money Offers</title>
+  <style>
+    * {
+      user-select: none;
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background-color: #111;
+      color: #fff;
+    }
+    header {
+      background-color: #000;
+      padding: 1rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+    }
+    .logo {
+      font-size: 1.5rem;
+      color: cyan;
+      font-weight: 700;
+      text-shadow: 0 0 5px cyan;
+    }
+    .money-button {
+      background-color: #222;
+      color: lime;
+      border: none;
+      padding: 0.5rem 1rem;
+      font-size: 1rem;
+      font-weight: bold;
+      border-radius: 5px;
+      cursor: pointer;
+      box-shadow: 0 0 5px #0f0 inset;
+    }
+
+    /* Modal base styles */
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+    }
+    .modal-overlay.show {
+      display: flex !important;
+      animation: fadeIn 0.3s ease-in-out;
+    }
+
+    .modal {
+      background: #222;
+      padding: 2rem;
+      border-radius: 10px;
+      max-width: 400px;
+      width: 90%;
+      text-align: center;
+    }
+
+    /* Jumpscare Animations */
+    @keyframes jumpscareZoom {
+      0% { transform: scale(0); opacity: 0; }
+      60% { transform: scale(1.2); opacity: 1; }
+      80% { transform: scale(0.95); }
+      100% { transform: scale(1); }
+    }
+
+    @keyframes shake {
+      0% { transform: translateX(0); }
+      20% { transform: translateX(-5px); }
+      40% { transform: translateX(5px); }
+      60% { transform: translateX(-4px); }
+      80% { transform: translateX(4px); }
+      100% { transform: translateX(0); }
+    }
+
+    .modal.jumpscare {
+      animation: jumpscareZoom 0.5s ease, shake 0.5s ease 0.5s;
+      animation-fill-mode: both;
+      border: 2px solid #ff4444;
+      box-shadow: 0 0 20px red, 0 0 10px #f00 inset;
+    }
+
+    /* Modal Content */
+    .modal h2 {
+      margin-top: 0;
+      font-size: 1.3rem;
+      color: #ff6666;
+      text-shadow: 0 0 5px red;
+    }
+    .modal p {
+      font-size: 1rem;
+      color: #ccc;
+    }
+
+    .cashout-methods {
+      margin: 1.5rem 0;
+      text-align: left;
+      padding-left: 1rem;
+    }
+    .cashout-methods li {
+      margin: 0.5rem 0;
+      list-style-type: disc;
+      padding-left: 0.5rem;
+      font-weight: bold;
+    }
+    .paypal { color: #00acee; }
+    .payee { color: #33cc33; }
+    .bank { color: #ffaa00; }
+    .amazon { color: #ff9900; }
+    .crypto { color: #ff66cc; }
+
+    .cancel-btn {
+      display: block;
+      width: 100%;
+      padding: 0.8rem;
+      background: #444;
+      border: none;
+      color: #ccc;
+      font-weight: bold;
+      border-radius: 6px;
+      margin-top: 1.5rem;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+    .cancel-btn:hover {
+      background: #666;
+    }
+
+    /* Login/Register Modal */
+    #loginModal .modal {
+      box-shadow: 0 0 15px rgba(0,200,255,0.7);
+    }
+    #loginModal h2 {
+      color: cyan;
+      text-shadow: 0 0 8px #0ff;
+    }
+    input {
+      width: 100%;
+      padding: 0.6rem;
+      margin-bottom: 1rem;
+      border: none;
+      border-radius: 5px;
+      background: #333;
+      color: #fff;
+      font-size: 1rem;
+    }
+    input::placeholder {
+      color: #bbb;
+    }
+    .login-btn {
+      background: cyan;
+      color: #000;
+      font-weight: bold;
+      padding: 0.7rem;
+      border: none;
+      border-radius: 5px;
+      width: 100%;
+      cursor: pointer;
+      font-size: 1.1rem;
+    }
+    .login-btn:disabled {
+      background: #099;
+      cursor: not-allowed;
+    }
+    .error-message {
+      color: #f55;
+      margin-bottom: 1rem;
+      font-weight: bold;
+      min-height: 1.2rem;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">MONEY OFFERS</div>
+    <button class="money-button" id="balanceBtn">$0.000</button>
+  </header>
+
+  <!-- Cashout Modal -->
+  <div class="modal-overlay" id="cashoutModal" role="dialog" aria-modal="true" aria-labelledby="cashoutTitle" tabindex="-1">
+    <div class="modal" tabindex="0">
+      <h2 id="cashoutTitle">Insufficient Balance</h2>
+      <p>You need at least <strong>$10</strong> to cash out.</p>
+      <ul class="cashout-methods">
+        <li class="paypal">PayPal</li>
+        <li class="payee">Payoneer</li>
+        <li class="bank">Bank Transfer</li>
+        <li class="amazon">Amazon Gift Card</li>
+        <li class="crypto">Crypto Wallet</li>
+      </ul>
+      <button class="cancel-btn" id="cancelCashoutBtn">Cancel</button>
+    </div>
+  </div>
+
+  <!-- Login/Register Modal -->
+  <div class="modal-overlay" id="loginModal" role="dialog" aria-modal="true" aria-labelledby="loginTitle" tabindex="-1">
+    <div class="modal" tabindex="0">
+      <h2 id="loginTitle">Login or Register</h2>
+      <div class="error-message" id="loginError"></div>
+      <input id="emailInput" type="email" placeholder="Email" autocomplete="username" required />
+      <input id="passwordInput" type="password" placeholder="Password" autocomplete="current-password" required />
+      <button class="login-btn" id="authButton" disabled>Continue</button>
+    </div>
+  </div>
+
+  <!-- Firebase & App Script -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-analytics.js";
+    import {
+      getAuth,
+      onAuthStateChanged,
+      signInWithEmailAndPassword,
+      createUserWithEmailAndPassword
+    } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+
+    // Your Firebase config
+    const firebaseConfig = {
+      apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
+      authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
+      databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
+      projectId: "itzhoyoo-f9f7e",
+      storageBucket: "itzhoyoo-f9f7e.firebasestorage.app",
+      messagingSenderId: "1094792075584",
+      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
+      measurementId: "G-LLT6F9WRKH"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+    const auth = getAuth();
+
+    // Elements
+    const loginModal = document.getElementById('loginModal');
+    const cashoutModal = document.getElementById('cashoutModal');
+    const authButton = document.getElementById('authButton');
+    const emailInput = document.getElementById('emailInput');
+    const passwordInput = document.getElementById('passwordInput');
+    const loginError = document.getElementById('loginError');
+    const balanceBtn = document.getElementById('balanceBtn');
+    const cancelCashoutBtn = document.getElementById('cancelCashoutBtn');
+    const cashoutInner = cashoutModal.querySelector('.modal');
+
+    // Enable auth button only when inputs valid
+    function validateInputs() {
+      const email = emailInput.value.trim();
+      const password = passwordInput.value.trim();
+      authButton.disabled = !(email.length > 4 && password.length >= 6);
+    }
+    emailInput.addEventListener('input', validateInputs);
+    passwordInput.addEventListener('input', validateInputs);
+
+    // Show login modal
+    function showLoginModal() {
+      loginModal.classList.add('show');
+      emailInput.focus();
+    }
+    // Hide login modal
+    function hideLoginModal() {
+      loginModal.classList.remove('show');
+      loginError.textContent = '';
+      emailInput.value = '';
+      passwordInput.value = '';
+      authButton.disabled = true;
+    }
+
+    // Show cashout modal with jumpscare
+    function showCashoutModal() {
+      cashoutModal.classList.add('show');
+      cashoutInner.classList.add('jumpscare');
+      cashoutInner.focus();
+    }
+    // Hide cashout modal
+    function hideCashoutModal() {
+      cashoutModal.classList.remove('show');
+      cashoutInner.classList.remove('jumpscare');
+    }
+
+    // Authentication flow on button click
+    authButton.addEventListener('click', () => {
+      loginError.textContent = '';
+      const email = emailInput.value.trim();
+      const password = passwordInput.value.trim();
+
+      // Try sign in first
+      signInWithEmailAndPassword(auth, email, password)
+        .then(userCredential => {
+          hideLoginModal();
+          updateBalanceForUser(userCredential.user);
+        })
+        .catch(error => {
+          if (error.code === 'auth/user-not-found') {
+            // Register new user if not found
+            createUserWithEmailAndPassword(auth, email, password)
+              .then(userCredential => {
+                hideLoginModal();
+                updateBalanceForUser(userCredential.user);
+              })
+.catch(registerError => {
+                loginError.textContent = registerError.message;
+              });
+          } else {
+            loginError.textContent = error.message;
+          }
+        });
+    });
+
+    // On page load, check auth state
+    onAuthStateChanged(auth, user => {
+      if (user) {
+        hideLoginModal();
+        updateBalanceForUser(user);
+      } else {
+        showLoginModal();
+      }
+    });
+
+    // Fake function to update balance display for demo
+    function updateBalanceForUser(user) {
+      // Here you would fetch actual balance from database; for demo:
+      // Set to $5 so that cashout modal shows on click (insufficient)
+      balanceBtn.textContent = '$5.000';
+    }
+
+    // Show cashout modal when balance button clicked (only if logged in)
+    balanceBtn.addEventListener('click', () => {
+      if (auth.currentUser) {
+        // Demo check: balance < $10 shows popup
+        const currentBalance = parseFloat(balanceBtn.textContent.replace(/[^0-9.]/g, ''));
+        if (currentBalance < 10) {
+          showCashoutModal();
+        } else {
+          alert('You have enough balance to cash out!');
+        }
+      } else {
+        showLoginModal();
+      }
+    });
+
+    // Cancel button hides cashout modal
+    cancelCashoutBtn.addEventListener('click', () => {
+      hideCashoutModal();
+    });
+
+    // Accessibility: trap focus inside modals when open
+    function trapFocus(modal) {
+      const focusable = modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+      if (!focusable.length) return;
+
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+
+      modal.addEventListener('keydown', e => {
+        if (e.key === 'Tab') {
+          if (e.shiftKey) { // shift+tab
+            if (document.activeElement === first) {
+              e.preventDefault();
+              last.focus();
+            }
+          } else { // tab
+            if (document.activeElement === last) {
+              e.preventDefault();
+              first.focus();
+            }
+          }
+        }
+      });
+    }
+
+    trapFocus(loginModal.querySelector('.modal'));
+    trapFocus(cashoutModal.querySelector('.modal'));
+  </script>
+</body>
+</html>
