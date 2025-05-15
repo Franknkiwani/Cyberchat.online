@@ -1,12 +1,173 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CyberChat Marketplace</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Money Offers</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+    body { font-family: Arial, sans-serif; background: #111; color: #fff; }
+
+    header {
+      background: #000;
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+    }
+
+    .logo { color: cyan; font-weight: bold; font-size: 1.2rem; }
+    .money-button {
+      background: #222; color: lime; border: none;
+      padding: 0.5rem 1rem; font-size: 1rem; font-weight: bold;
+      border-radius: 5px; box-shadow: 0 0 5px #0f0 inset;
+    }
+
+    /* OLD Live feed style: simpler fade */
+    .live-feed {
+      text-align: center;
+      background: #222;
+      padding: 0.5rem;
+      opacity: 1;
+      transition: opacity 0.5s ease-in-out;
+    }
+
+    .offers-container {
+      display: flex; flex-direction: column; gap: 14px;
+      max-width: 380px; margin: 20px auto;
+    }
+
+    .offer-card {
+      display: flex; background: #222;
+      border-radius: 8px; padding: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.6);
+    }
+
+    .offer-image-wrapper {
+      margin-right: 12px; flex-shrink: 0;
+      display: flex; flex-direction: column; align-items: center;
+    }
+
+    .offer-image {
+      width: 80px; height: 80px; object-fit: cover;
+      border-radius: 6px;
+    }
+
+    .offer-payment { margin-top: 4px; color: #4caf50; font-weight: bold; }
+    .offer-content { flex: 1; }
+    .offer-title { font-size: 1.1rem; margin-bottom: 6px; }
+    .offer-description { color: #ccc; margin-bottom: 12px; }
+    .complete-task-btn {
+      width: 100%; padding: 8px 0;
+      background: #4caf50; color: white;
+      border: none; border-radius: 5px;
+      cursor: pointer; font-weight: bold;
+    }
+
+    /* OLD Balance popup style */
+    .modal, .balance-popup {
+      position: fixed; top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(0, 0, 0, 0.85);
+      z-index: 9999; display: none;
+    }
+
+    .modal-content, .balance-popup-content {
+      background: #222; /* less bright */
+      padding: 1.5rem 2rem;
+      border-radius: 6px;
+      max-width: 350px;
+      text-align: center; color: #eee;
+      box-shadow: none; /* no glowing red */
+      border: 2px solid #4caf50;
+    }
+
+    .modal-content input, .modal-content button {
+      display: block; margin: 10px auto; padding: 10px;
+      width: 80%; border-radius: 5px;
+      border: 1px solid #4caf50;
+      background: #111;
+      color: #4caf50;
+      font-weight: bold;
+    }
+
+    .cashout-methods {
+      padding-left: 1rem;
+      text-align: left;
+      margin-bottom: 1rem;
+      color: #ccc;
+    }
+    .cashout-methods li {
+      margin: 0.5rem 0;
+      padding: 0.2rem 0;
+      list-style-type: disc;
+    }
+
+    .paypal { color: #03a9f4; }
+    .payee { color: #fbc02d; }
+    .bank { color: #8bc34a; }
+    .amazon { color: #ff9800; }
+    .crypto { color: #9c27b0; }
+
+    .cancel-btn {
+      margin-top: 1rem;
+      width: 100%;
+      background: #444;
+      color: #ccc;
+      padding: 10px;
+      border: none;
+      border-radius: 5px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="logo">MONEY OFFERS</div>
+    <button class="money-button" id="balanceBtn">$0.000</button>
+  </header>
+
+  <div class="live-feed" id="liveFeed">User #A12X made $1.22 just now</div>
+
+  <div class="offers-container" id="offersContainer">
+    <!-- Offer cards inserted dynamically -->
+  </div>
+
+  <!-- Login/Register Modal -->
+  <div class="modal" id="authModal">
+    <div class="modal-content">
+      <h3>Login / Register</h3>
+      <input type="email" id="email" placeholder="Email">
+      <input type="password" id="password" placeholder="Password">
+      <button onclick="login()">Login</button>
+      <button onclick="register()">Register</button>
+    </div>
+  </div>
+
+  <!-- Balance Popup -->
+  <div class="balance-popup" id="balancePopup">
+    <div class="balance-popup-content">
+      <h3>Insufficient Balance</h3>
+      <p>You need at least $10 to cash out.</p>
+      <ul class="cashout-methods">
+        <li class="paypal">PayPal</li>
+        <li class="payee">Payoneer</li>
+        <li class="bank">Bank Transfer</li>
+        <li class="amazon">Amazon Gift Card</li>
+        <li class="crypto">Crypto Wallet</li>
+      </ul>
+      <button class="cancel-btn" onclick="hideBalancePopup()">Cancel</button>
+    </div>
+  </div>
+
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-  import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+  import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+  import { getDatabase, ref, onValue, set, get, update } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
@@ -20,106 +181,112 @@
   };
 
   const app = initializeApp(firebaseConfig);
-  const db = getDatabase(app);
+  const auth = getAuth();
+  const db = getDatabase();
 
-  async function loadUsers() {
-    const userRef = ref(db, 'users');
-    const profileList = document.getElementById('profileList');
+  const balanceBtn = document.getElementById("balanceBtn");
+  const balancePopup = document.getElementById("balancePopup");
 
-    try {
-      const snapshot = await get(userRef);
-      const users = snapshot.val();
-      if (!users) {
-        profileList.innerHTML = 'No users available.';
-        return;
-      }
+  balanceBtn.onclick = () => {
+    balancePopup.style.display = "flex";
+  };
 
-      Object.keys(users).forEach(userId => {
-        const user = users[userId];
-        const profilePic = user.profilePic || 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSMVM4ss1IUhi5TkN6fumDCVv_ZyfSfkXm6B0nJPnuNbP0UyqlgQn6B2Nc&s=10';
-        const username = user.username || 'Unknown User';
+  window.hideBalancePopup = () => balancePopup.style.display = "none";
 
-        const profileCard = document.createElement('div');
-        profileCard.classList.add('profile-card');
-        profileCard.innerHTML = `
-          <img src="${profilePic}" alt="${username}">
-          <div class="username">${username}</div>
-          <button class="view-btn" onclick="window.location.href='user.html?userid=${userId}'">View</button>
-        `;
-        profileList.appendChild(profileCard);
-      });
-    } catch (error) {
-      console.error('Error fetching users:', error);
-      profileList.innerHTML = 'Failed to load users.';
+  const authModal = document.getElementById("authModal");
+  let currentUser = null;
+
+  function login() {
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+    signInWithEmailAndPassword(auth, email, password).then(() => {
+      authModal.style.display = "none";
+    }).catch(alert);
+  }
+
+  function register() {
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+    createUserWithEmailAndPassword(auth, email, password).then((cred) => {
+      set(ref(db, 'users/' + cred.user.uid), { balance: 0 });
+      authModal.style.display = "none";
+    }).catch(alert);
+  }
+
+  window.login = login;
+  window.register = register;
+
+  onAuthStateChanged(auth, (user) => {
+    if (!user) {
+      authModal.style.display = "flex";
+    } else {
+      currentUser = user;
+      loadBalance();
     }
+  });
+
+  function loadBalance() {
+    const balRef = ref(db, 'users/' + currentUser.uid + '/balance');
+    onValue(balRef, (snap) => {
+      const bal = parseFloat(snap.val() || 0).toFixed(3);
+      balanceBtn.textContent = "$" + bal;
+    });
   }
 
-  async function loadJobs() {
-    const jobsRef = ref(db, 'jobs');
-    const jobsList = document.getElementById('jobsList');
-
-    try {
-      const snapshot = await get(jobsRef);
-      const jobs = snapshot.val();
-      if (!jobs) {
-        jobsList.innerHTML = 'No jobs available.';
-        return;
-      }
-
-      Object.keys(jobs).forEach(jobId => {
-        const job = jobs[jobId];
-        const userPic = job.userPic || 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSMVM4ss1IUhi5TkN6fumDCVv_ZyfSfkXm6B0nJPnuNbP0UyqlgQn6B2Nc&s=10';
-        const jobName = job.username || 'Unknown Job';
-
-        const jobDiv = document.createElement('div');
-        jobDiv.classList.add('job-card');
-        jobDiv.innerHTML = `
-          <img src="${userPic}" alt="${jobName}">
-          <div class="job-details">
-            <div class="job-name">${jobName}</div>
-            <div class="job-description">${job.description || 'No description available'}</div>
-            <div class="job-price">$${job.price} / per hour</div>
-          </div>
-          <button class="view-job-btn" onclick="window.location.href='jobs.html?jobid=${jobId}'">View Job</button>
-        `;
-        jobsList.appendChild(jobDiv);
-      });
-    } catch (error) {
-      console.error('Error fetching jobs:', error);
-      jobsList.innerHTML = 'Failed to load jobs.';
-    }
+  function updateBalance(amount) {
+    const userRef = ref(db, 'users/' + currentUser.uid);
+    get(userRef).then((snap) => {
+      const data = snap.val();
+      const newBal = (parseFloat(data?.balance || 0) + amount).toFixed(3);
+      update(userRef, { balance: newBal });
+    });
   }
 
-  window.onload = () => {
-    loadUsers();
-    loadJobs();
+  // Add Offer Cards
+  const offerTexts = [
+    {title: "Special Offer 1", pay: 0.10},
+    {title: "Special Offer 2", pay: 0.15},
+    {title: "Special Offer 3", pay: 0.30},
+  ];
+
+  const offersContainer = document.getElementById("offersContainer");
+
+  offerTexts.forEach((o, i) => {
+    const card = document.createElement("div");
+    card.className = "offer-card";
+    card.innerHTML = `
+      <div class="offer-image-wrapper">
+        <img src="https://via.placeholder.com/80" class="offer-image"/>
+        <div class="offer-payment">$${o.pay.toFixed(3)}</div>
+      </div>
+      <div class="offer-content">
+        <h3 class="offer-title">${o.title}</h3>
+        <p class="offer-description">Click to complete this task and earn!</p>
+        <button class="complete-task-btn">Complete Task</button>
+      </div>`;
+    card.querySelector("button").onclick = () => updateBalance(o.pay);
+    offersContainer.appendChild(card);
+  });
+
+  // Live feed animation OLD style
+  const liveFeed = document.getElementById("liveFeed");
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+
+  function randomUser() {
+    return Array.from({length: 4}, () => chars[Math.floor(Math.random() * chars.length)]).join("");
   }
+
+  function updateLiveFeed() {
+    liveFeed.style.opacity = 0; // fade out
+    setTimeout(() => {
+      const amount = (Math.random() * 4.9 + 0.1).toFixed(2);
+      liveFeed.textContent = `User #${randomUser()} made $${amount} just now`;
+      liveFeed.style.opacity = 1; // fade in
+    }, 500);
+  }
+
+  setInterval(updateLiveFeed, 3000);
+
 </script>
-<style>
-/* same styles you already wrote (copy the full CSS from your original code) */
-</style>
-</head>
-<body>
-
-<header>
-  <div style="display:flex; align-items:center; gap:8px;">
-    <div class="menu-icon">
-      <div></div><div></div><div></div>
-    </div>
-    <span style="font-size:1.2rem; font-weight:bold; background: linear-gradient(90deg, #ff69b4, #0ff, #69f, #ff69b4); -webkit-background-clip: text; color: transparent;">CyberChat</span>
-  </div>
-  <div class="header-right" onclick="window.location.href='myaccount.html'">
-    <img id="myProfilePic" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSMVM4ss1IUhi5TkN6fumDCVv_ZyfSfkXm6B0nJPnuNbP0UyqlgQn6B2Nc&s=10" alt="My Pic">
-    <div class="profile-label">Profile</div>
-  </div>
-</header>
-
-<div class="profile-list" id="profileList"></div>
-
-<section id="jobsSection">
-  <h2 style="padding:10px 0; font-size:1.1rem;">Jobs</h2>
-  <div id="jobsList"></div>
-</section>
-
 </body>
 </html>
