@@ -1,887 +1,391 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" >
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>NeonPPC - Performance Marketing Agency</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Login/Register - Make Money App</title>
   <style>
-    :root {
-      --primary: #0f62fe;
-      --bg-dark: #0d0d0d;
-      --text-light: #f4f4f4;
-      --accent: #ff4081;
-      --section-bg: #1a1a1a;
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body, * {
+      user-select: none;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
     }
-
     * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
+      outline: none !important;
+      -webkit-tap-highlight-color: transparent;
     }
-
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background: var(--bg-dark);
-      color: var(--text-light);
-      overflow-x: hidden;
-    }
-
-    header {
-      position: sticky;
-      top: 0;
-      background: rgba(0, 0, 0, 0.4);
-      backdrop-filter: blur(10px);
-      border-bottom: 1px solid #222;
-      padding: 1rem 2rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      z-index: 999;
-      transition: transform 0.5s ease;
-    }
-
-    header.rotated {
-      transform: rotateX(5deg);
-    }
-
-    .logo-group {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-    }
-
-    .logo-bars {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      cursor: default;
-    }
-
-    .logo-bars span {
-      display: block;
-      height: 2px;
-      margin: 3px 0;
-      background: var(--accent);
-      border-radius: 2px;
-    }
-
-    .logo-bars span:nth-child(1) { width: 6px; }
-    .logo-bars span:nth-child(2) { width: 12px; }
-    .logo-bars span:nth-child(3) { width: 18px; }
-
-    h1 {
-      font-size: 1.5rem;
-      color: var(--primary);
-    }
-
-    .hero {
-      text-align: center;
-      padding: 6rem 2rem 4rem;
-    }
-
-    .hero h2 {
-      font-size: 2.8rem;
-      margin-bottom: 1rem;
-      color: #ffffff;
-      letter-spacing: -1px;
-    }
-
-    .hero p {
-      max-width: 650px;
-      font-size: 1.15rem;
-      margin: 0 auto 2rem;
-      line-height: 1.6;
-      color: #ccc;
-    }
-
-    .cta-button {
-      background: var(--primary);
-      border: none;
-      padding: 0.85rem 2rem;
-      font-size: 1rem;
-      color: #fff;
-      font-weight: 600;
-      border-radius: 6px;
+    body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; color: #333; }
+    .container { padding: 20px; max-width: 400px; margin: 60px auto; }
+    header { text-align: center; margin-bottom: 30px; }
+    h1 { font-size: 2rem; color: #2b8a3e; }
+    .card { background: #fff; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); padding: 20px; display: flex; flex-direction: column; }
+    .btn { display: block; width: 100%; padding: 14px; background: #2b8a3e; color: #fff; border: none; border-radius: 12px; text-align: center; font-size: 1rem; cursor: pointer; margin-top: 10px; text-decoration: none; }
+    .btn-google { background: #4285F4; display: flex; align-items: center; justify-content: center; gap: 8px; border-radius: 50px; }
+    .btn-google img.google-icon { border-radius: 50%; height: 20px; width: 20px; }
+    input { width: 100%; padding: 12px; margin-top: 10px; border: 1px solid #ccc; border-radius: 10px; }
+    .separator { text-align: center; margin: 15px 0; color: #666; font-weight: 600; }
+    .toggle-text { text-align: center; margin: 20px 0 0; color: #555; cursor: pointer; }
+    .toggle-text span { color: #2b8a3e; text-decoration: underline; }
+    .forgot-password { text-align: right; margin-top: 8px; font-size: 0.9rem; }
+    .forgot-password a {
+      color: #2b8a3e;
+      text-decoration: underline;
       cursor: pointer;
-      transition: 0.3s;
+      user-select: text;
+      -webkit-user-select: text;
+      -moz-user-select: text;
+      -ms-user-select: text;
     }
-
-    .cta-button:hover {
-      background: #0047c5;
+    /* Message area styles */
+    #message-area {
+      margin-top: 15px;
+      padding: 12px;
+      border-radius: 10px;
+      font-weight: 600;
+      display: none;
     }
-
-    .hamburger {  
-  display: flex;  
-  flex-direction: column;  
-  cursor: pointer;  
-  gap: 5px;  
-}  
-
-.hamburger div {  
-  width: 25px;  
-  height: 3px;  
-  background: var(--primary);  
-  border-radius: 2px;  
-}  
-
-.sidebar-overlay {  
-  position: fixed;  
-  top: 0;  
-  right: -100%;  
-  width: 80%;  
-  height: 100%;  
-  background: var(--glass-bg);  
-  backdrop-filter: blur(12px);  
-  color: #fff;  
-  box-shadow: -10px 0 30px rgba(0,0,0,0.6);  
-  padding: 2rem;  
-  transition: right 0.4s ease;  
-  z-index: 1000;  
-  display: flex;  
-  flex-direction: column;  
-  align-items: center;  
-  overflow-y: auto;  
-}
-
-.sidebar-overlay.active {  
-  right: 0;  
-}
-
-.sidebar-overlay h3 {  
-  font-size: 2rem;  
-  margin-bottom: 1.5rem;  
-  color: var(--primary);  
-  text-align: center;  
-}  
-
-.sidebar-overlay section {  
-  background: rgba(255,255,255,0.05);  
-  border: 1px solid rgba(255,255,255,0.1);  
-  border-radius: 12px;  
-  padding: 1.5rem;  
-  margin-bottom: 1.5rem;  
-  width: 100%;  
-  max-width: 400px;  
-  box-shadow: 0 0 10px rgba(0,0,0,0.3);  
-  text-align: center;  
-}  
-
-.sidebar-overlay section h4 {
-  color: var(--accent);
-  margin-bottom: 0.75rem;
-  font-size: 1.2rem;
-}
-
-.sidebar-overlay p {  
-  line-height: 1.5;  
-  color: #ccc;  
-  margin-bottom: 1rem;  
-  font-size: 0.95rem;
-}
-
-.sidebar-btn {  
-  width: 100%;  
-  padding: 0.75rem 1.25rem;  
-  background: var(--primary);  
-  color: #fff;  
-  border: none;  
-  border-radius: 999px;  
-  font-size: 1rem;  
-  cursor: pointer;  
-  transition: background 0.3s ease, transform 0.2s ease;  
-}  
-
-.sidebar-btn:hover {  
-  background: var(--accent);  
-  transform: scale(1.03);  
-}
-
-.close-btn {  
-  position: absolute;  
-  top: 1rem;  
-  right: 1.5rem;  
-  font-size: 1.5rem;  
-  cursor: pointer;  
-  color: #fff;  
-}
-
-.offers {  
-  background: var(--section-bg);  
-  padding: 4rem 2rem;  
-  text-align: center;  
-}  
-
-.offers h2 {  
-  font-size: 2rem;  
-  margin-bottom: 2rem;  
-  color: var(--primary);  
-}  
-
-.offers-grid {  
-  max-width: 1000px;  
-  margin: 0 auto;  
-  display: grid;  
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));  
-  gap: 2rem;  
-}  
-
-.offer-box {  
-  background: #111;  
-  padding: 2rem;  
-  border-radius: 10px;  
-  border: 1px solid #222;  
-  text-align: left;  
-}  
-
-.offer-box h4 {  
-  font-size: 1.2rem;  
-  color: #fff;  
-  margin-bottom: 0.5rem;  
-}  
-
-.offer-box p {  
-  color: #aaa;  
-  font-size: 0.95rem;  
-  line-height: 1.4;  
-}  
-
-@media (max-width: 768px) {  
-  .hero h2 {  
-    font-size: 2rem;  
-  }  
-}
-    /* Global Reset and Box Sizing */
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
-
-body, html {
-  margin: 0;
-  padding: 0;
-  font-family: 'Poppins', sans-serif;
-  width: 100%;
-  height: 100%;
-}
-
-/* Reviews Section */
-.reviews {
-  padding: 4rem 2rem;
-  background: #121212;
-  text-align: center;
-  width: 100%;
-}
-
-.star-group {
-  display: inline-block;
-  animation: fadeUp 0.8s ease-out forwards;
-}
-
-.star-group span {
-  font-size: 2rem;
-  color: gold;
-  letter-spacing: 5px;
-}
-
-.star-group p {
-  margin-top: 0.5rem;
-  color: #ccc;
-  font-size: 1rem;
-}
-
-.testimonial {
-  background: #1d1d1d;
-  padding: 2rem;
-  border-radius: 10px;
-  border: 1px solid #2a2a2a;
-  opacity: 0;
-  transform: translateY(30px);
-  animation: fadeUp 0.6s ease-out forwards;
-  animation-delay: var(--delay);
-}
-
-.testimonial:nth-child(1) { --delay: 0.2s; }
-.testimonial:nth-child(2) { --delay: 0.4s; }
-.testimonial:nth-child(3) { --delay: 0.6s; }
-
-.testimonial p {
-  color: #eee;
-  font-size: 1rem;
-  line-height: 1.5;
-}
-
-.testimonial h4 {
-  margin-top: 1rem;
-  font-weight: 500;
-  color: #999;
-  font-size: 0.95rem;
-}
-
-@keyframes fadeUp {
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-/* Services Section */
-.services {
-  padding: 5rem 2rem;
-  background: #0d0d0d;
-  text-align: center;
-  color: #f0f0f0;
-  width: 100%;
-}
-
-.services h2 {
-  font-size: 2.5rem;
-  margin-bottom: 0.5rem;
-}
-
-.services .subtext {
-  color: #aaa;
-  font-size: 1.1rem;
-  margin-bottom: 3rem;
-}
-
-.service-cards {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 2rem;
-  width: 100%;
-}
-
-.service-card {
-  background: #1a1a1a;
-  padding: 2rem;
-  border-radius: 12px;
-  border: 1px solid #333;
-  max-width: 300px;
-  flex: 1;
-  transition: transform 0.3s ease;
-}
-
-.service-card:hover {
-  transform: translateY(-8px);
-}
-
-.service-card h3 {
-  font-size: 1.5rem;
-  color: #fff;
-  margin-bottom: 0.8rem;
-}
-
-.service-card p {
-  font-size: 1rem;
-  color: #bbb;
-  line-height: 1.4;
-  margin-bottom: 1.5rem;
-}
-
-.price-tag {
-  background: #fff;
-  color: #111;
-  display: inline-block;
-  padding: 0.4rem 1rem;
-  border-radius: 20px;
-  font-weight: 600;
-  font-size: 0.95rem;
-}
-
-/* CTA Section */
-.cta-repeater {
-  background: #141414;
-  padding: 5rem 2rem;
-  text-align: center;
-  color: #f8f8f8;
-  width: 100%;
-}
-
-.cta-repeater h2 {
-  font-size: 2rem;
-  margin-bottom: 1rem;
-}
-
-.cta-repeater p {
-  font-size: 1.1rem;
-  color: #ccc;
-  margin-bottom: 2rem;
-}
-
-.cta-button {
-  background: linear-gradient(135deg, #00ffd0, #00aaff);
-  color: #000;
-  padding: 0.8rem 2rem;
-  font-weight: bold;
-  border-radius: 30px;
-  text-decoration: none;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.cta-button:hover {
-  transform: scale(1.05);
-  box-shadow: 0 0 20px rgba(0, 255, 200, 0.4);
-}
-
-/* FAQ Section */
-.faq {
-  padding: 5rem 2rem;
-  background: #0f0f0f;
-  color: #f4f4f4;
-  max-width: 800px;
-  margin: auto;
-  width: 100%;
-}
-
-.faq h2 {
-  font-size: 2rem;
-  text-align: center;
-  margin-bottom: 2rem;
-}
-
-.faq-item {
-  margin-bottom: 1rem;
-  border-bottom: 1px solid #333;
-}
-
-.faq-question {
-  background: none;
-  border: none;
-  color: #00ffd0;
-  font-size: 1.1rem;
-  width: 100%;
-  text-align: left;
-  padding: 1rem;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.faq-answer {
-  padding: 0 1rem 1rem;
-  display: none;
-  color: #ccc;
-  font-size: 0.95rem;
-  line-height: 1.5;
-}
-
-.faq-question.active + .faq-answer {
-  display: block;
-}
-
-/* Contact Form Section */
-.contact-form {
-  padding: 5rem 2rem;
-  background: #121212;
-  color: #f0f0f0;
-  text-align: center;
-  width: 100%;
-}
-
-.contact-form h2 {
-  font-size: 2rem;
-  margin-bottom: 1rem;
-}
-
-.contact-form p {
-  color: #aaa;
-  margin-bottom: 2rem;
-}
-
-.contact-form form {
-  max-width: 600px;
-  margin: auto;
-  display: grid;
-  gap: 1rem;
-  width: 100%;
-}
-
-.contact-form input,
-.contact-form select,
-.contact-form textarea {
-  padding: 1rem;
-  border: none;
-  border-radius: 8px;
-  background: #1e1e1e;
-  color: #fff;
-  width: 100%;
-}
-
-.contact-form textarea {
-  resize: vertical;
-  min-height: 120px;
-}
-
-.contact-form button {
-  background: #00ffd0;
-  color: #111;
-  padding: 1rem;
-  font-weight: bold;
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
-  transition: transform 0.3s ease;
-}
-
-.contact-form button:hover {
-  transform: scale(1.05);
-}
-
-/* Showcase Images */
-#showcase-img {
-  width: 100%;
-  border-radius: 16px;
-  box-shadow: 0 0 15px white, 0 0 30px black;
-  transition: opacity 1s ease-in-out;
-}
-
-/* Work Showcase Section */
-#work-showcase {
-  text-align: center;
-  padding: 20px;
-  width: 100%;
-}
-
-/* Footer Section */
-.footer {
-  background: #0e0e0e;
-  color: #ccc;
-  padding: 40px 20px;
-  font-family: 'Poppins', sans-serif;
-  border-top: 1px solid #1f1f1f;
-  width: 100%;
-}
-
-.footer-content {
-  max-width: 1100px;
-  margin: auto;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: 30px;
-  width: 100%;
-}
-
-.footer h2 {
-  color: #fff;
-  margin-bottom: 10px;
-  font-size: 22px;
-}
-
-.footer p {
-  margin: 5px 0;
-  font-size: 14px;
-  line-height: 1.6;
-}
-
-.footer-links {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.footer-links a {
-  color: #999;
-  text-decoration: none;
-  transition: 0.3s;
-}
-
-.footer-links a:hover {
-  color: #00ffee;
-  text-shadow: 0 0 5px #00ffee;
-}
-
-/* Responsive Adjustments for Footer */
-@media (max-width: 768px) {
-  .footer-content {
-    flex-direction: column;
-    text-align: center;
-    align-items: center;
-  }
-
-  .footer-links {
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-
-  .footer-links a {
-    margin: 0 10px;
-  }
-}
-/* Ensure the page stretches to 100% of the height */
-html, body {
-  margin: 0;
-  padding: 0;
-  height: 100%; /* Ensure the height stretches the page */
-  display: flex;
-  flex-direction: column; /* Stack content vertically */
-}
-
-main {
-  flex: 1; /* Allow main content to take up available space */
-}
-
-/* Footer Section */
-.footer {
-  background: #0e0e0e;
-  color: #ccc;
-  padding: 40px 20px;
-  font-family: 'Poppins', sans-serif;
-  border-top: 1px solid #1f1f1f;
-  width: 100%;
-  position: relative; /* Keeps footer at the bottom */
-}
-
-.footer-content {
-  max-width: 1100px;
-  margin: auto;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: 30px;
-  width: 100%;
-}
-
-.footer h2 {
-  color: #fff;
-  margin-bottom: 10px;
-  font-size: 22px;
-}
-
-.footer p {
-  margin: 5px 0;
-  font-size: 14px;
-  line-height: 1.6;
-}
-
-.footer-links {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.footer-links a {
-  color: #999;
-  text-decoration: none;
-  transition: 0.3s;
-}
-
-.footer-links a:hover {
-  color: #00ffee;
-  text-shadow: 0 0 5px #00ffee;
-}
-
-/* Responsive Adjustments for Footer */
-@media (max-width: 768px) {
-  .footer-content {
-    flex-direction: column;
-    text-align: center;
-    align-items: center;
-  }
-
-  .footer-links {
-    flex-direction: row;
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-
-  .footer-links a {
-    margin: 0 10px;
-  }
-}
+    #message-area.error {
+      background-color: #ffe6e6;
+      color: #cc0000;
+      border: 1px solid #cc0000;
+    }
+    #message-area.success {
+      background-color: #e6ffe6;
+      color: #006600;
+      border: 1px solid #006600;
+    }
+    #loading-spinner {
+      margin: 10px auto;
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #2b8a3e;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      animation: spin 1s linear infinite;
+      display: none;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg);}
+      100% { transform: rotate(360deg);}
+    }
+    label.remember-me {
+      display: flex;
+      align-items: center;
+      margin-top: 10px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      user-select: text;
+    }
+    label.remember-me input {
+      margin-right: 8px;
+    }
   </style>
 </head>
 <body>
+  <div class="container">
+    <header>
+      <h1>Make Money</h1>
+      <p id="subtitle">Login or Register to start earning</p>
+    </header>
 
-  <header id="mainHeader">
-    <div class="logo-group">
-      <div class="logo-bars">
-        <span></span>
-        <span></span>
-        <span></span>
-      </div>
-      <h1>NeonPPC</h1>
-    </div>
+    <div class="card" id="form-container">
 
-    <div class="hamburger" onclick="toggleSidebar()">
-      <div></div>
-      <div></div>
-      <div></div>
-    </div>
-  </header>
+      <!-- Login Form -->
+      <form id="login-form" style="display:flex; flex-direction: column;">
+        <h2 id="form-title">Login</h2>
+        <input type="email" id="login-email" placeholder="Email" required autocomplete="email" />
+        <input type="password" id="login-password" placeholder="Password" required autocomplete="current-password" />
+        
+        <label class="remember-me"><input type="checkbox" id="remember-me" /> Remember me</label>
+        
+        <div class="forgot-password"><a href="#" id="forgot-password-link">Forgot Password?</a></div>
+        <button type="submit" class="btn">Login</button>
 
-  <section class="hero">
-    <h2>Performance-Driven Growth For Visionary Brands</h2>
-    <p>
-      We help companies unlock scalable growth through data-backed ad campaigns and conversion-obsessed creative. No fluff. Just ROI. Whether you're a startup or enterprise — we build what converts.
-    </p>
-    <button class="cta-button">Let’s Talk Strategy</button>
-  </section>
+        <div id="loading-spinner"></div>
 
-  <section class="offers">
-    <h2>What We Offer</h2>
-    <div class="offers-grid">
-      <div class="offer-box">
-        <h4>Paid Search Ads</h4>
-        <p>Laser-focused Google Ads campaigns that bring ready-to-buy users to your doorstep.</p>
-      </div>
-      <div class="offer-box">
-        <h4>Meta & TikTok Campaigns</h4>
-        <p>Creative-first paid social strategies with rapid iteration and aggressive ROAS tracking.</p>
-      </div>
-      <div class="offer-box">
-        <h4>Landing Page Optimization</h4>
-        <p>We design and test high-converting funnels that turn cold traffic into loyal customers.</p>
-      </div>
-      <div class="offer-box">
-        <h4>Full-Funnel Analytics</h4>
-        <p>From first click to lifetime value, we track what matters and scale what performs.</p>
-      </div>
-    </div>
-  </section>
+        <div class="separator">or</div>
 
- <div class="sidebar-overlay" id="sidebar">
-  <div class="close-btn" onclick="toggleSidebar()">×</div>
+        <button type="button" id="google-login-btn" class="btn btn-google" aria-label="Continue with Google">
+          <img class="google-icon" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRPbae_HqhX9hAdb4v-sMse53Uw6mvG7x0kXWT6TlmxpjheUWk-4FHHdLf_&s=10" alt="Google logo" />
+          Continue with Google
+        </button>
+      </form>
 
-  <section>
-    <h4>Pricing</h4>
-    <p>We offer monthly retainers starting at $2,000.<br>Custom quotes available for large-scale accounts.</p>
-    <button class="sidebar-btn">Get a Quote</button>
-  </section>
+      <!-- Register Form -->
+      <form id="register-form" style="display:none; flex-direction: column;">
+        <h2>Register</h2>
+        <input type="text" id="register-name" placeholder="Full Name" required autocomplete="name" />
+        <input type="email" id="register-email" placeholder="Email" required autocomplete="email" />
+        <input type="password" id="register-password" placeholder="Password" required autocomplete="new-password" />
+        <small id="password-strength" style="color:#666; margin-top: 5px;"></small>
+        <button type="submit" class="btn">Register</button>
 
-  <section>
-    <h4>Testimonials</h4>
-    <p>"They managed $500k in ad spend for us and made every dollar count."<br>— Jamie L., Tech CEO</p>
-    <p>"Our CPL dropped 43% in 3 months. Insane."<br>— Ryan M., SaaS CMO</p>
-    <button class="sidebar-btn">Read More</button>
-  </section>
+        <div id="loading-spinner-register"></div>
+      </form>
 
-  <section>
-    <h4>Contact Us</h4>
-    <p>Email: <a href="mailto:hello@neonppc.agency">hello@neonppc.agency</a></p>
-    <p>Phone: <a href="tel:+15551234567">+1 (555) 123-4567</a></p>
-    <button class="sidebar-btn">Message Us</button>
-  </section>
-</div>
-<section class="reviews">
-  <div class="stars">
-    <div class="star-group">
-      <span>★★★★★</span>
-      <p>Rated 5.0 by 1,000+ businesses</p>
+      <p class="toggle-text" id="toggle-link" tabindex="0" role="button" aria-pressed="false" aria-label="Toggle between login and register">
+        Don't have an account? <span id="toggle-action" style="user-select:none;">Register</span>
+      </p>
+
+      <div id="message-area" role="alert"></div>
     </div>
   </div>
-</section>
-  <div class="testimonials">
-    <div class="testimonial">
-      <p>"NeonPPC transformed our ad performance. We went from burning cash to printing it."</p>
-      <h4>— Sarah K., Ecom Founder</h4>
-    </div>
-    <div class="testimonial">
-      <p>"We've worked with top-tier agencies before. This is the first time we saw results fast."</p>
-      <h4>— Mark L., SaaS VP Growth</h4>
-    </div>
-    <div class="testimonial">
-      <p>"Our ROAS tripled. The landing page tweaks alone paid for the service in a week."</p>
-      <h4>— Rachel D., DTC CMO</h4>
-    </div>
-  </div>
-<section class="services">
-  <h2>Our Services</h2>
-  <p class="subtext">Laser-focused strategies to scale your business. Transparent pricing. Real results.</p>
-  
-  <div class="service-cards">
-    <div class="service-card">
-      <h3>Google Ads Management</h3>
-      <p>High-converting ad campaigns that turn clicks into clients.</p>
-      <div class="price-tag">From £499/mo</div>
-    </div>
-    <div class="service-card">
-      <h3>Landing Page Optimization</h3>
-      <p>We design, test, and tweak your funnel to perfection.</p>
-      <div class="price-tag">From £399/mo</div>
-    </div>
-    <div class="service-card">
-      <h3>Meta & TikTok Ads</h3>
-      <p>Scroll-stopping creatives and bulletproof targeting.</p>
-      <div class="price-tag">From £599/mo</div>
-    </div>
-  </div>
-</section>
-<section class="cta-repeater">
-  <h2>Still wondering if we're the right fit?</h2>
-  <p>Let us show you what your ads could *really* be doing. No fluff. Just ROI.</p>
-  <a href="#contact" class="cta-button">Get Your Free Audit</a>
-</section>
-<section class="faq">
-  <h2>Frequently Asked Questions</h2>
-  <div class="faq-item">
-    <button class="faq-question">What’s your minimum contract?</button>
-    <div class="faq-answer">We offer month-to-month flexibility. Most clients stay for results.</div>
-  </div>
-  <div class="faq-item">
-    <button class="faq-question">How fast will I see results?</button>
-    <div class="faq-answer">We typically start driving traffic within 5-7 days of onboarding.</div>
-  </div>
-  <div class="faq-item">
-    <button class="faq-question">Do you work with startups?</button>
-    <div class="faq-answer">Yes, as long as you’re serious about growth and have a product-market fit.</div>
-  </div>
-</section>
-<section class="contact-form" id="contact">
-  <h2>Let’s Talk Strategy</h2>
-  <p>Tell us a bit about your business and goals. We'll reach out fast.</p>
-  <form>
-    <input type="text" placeholder="Name" required />
-    <input type="email" placeholder="Email" required />
-    <input type="text" placeholder="Website URL" />
-    <select required>
-      <option disabled selected>Budget Range</option>
-      <option>£500 - £1,000/mo</option>
-      <option>£1,000 - £5,000/mo</option>
-      <option>£5,000+/mo</option>
-    </select>
-    <textarea placeholder="What can we help you with?" required></textarea>
-    <button type="submit">Submit</button>
-  </form>
-</section>
-<div id="work-showcase" style="text-align: center; padding: 20px;">
-  <img id="showcase-img" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSTjKahMwWxHhOLvG1krVbh8NUDP9IE3MNQvkykvEmbwOv-Qx0Ps1m_yHwH&s=10">
-</div>
-</section>
-<footer class="footer">
-  <div class="footer-content">
-    <div class="footer-left">
-      <h2>CyberDev Agency</h2>
-      <p>Crafting digital experiences with precision and style.</p>
-    </div>
-    <div class="footer-links">
-      <a href="#">Home</a>
-      <a href="#">Services</a>
-      <a href="#">Work</a>
-      <a href="#">Contact</a>
-    </div>
-    <div class="footer-right">
-      <p>&copy; 2025 CyberDev. All rights reserved.</p>
-      <p>Made with focus and zero fluff.</p>
-    </div>
-  </div>
-</footer>
-  <script>
-    function toggleSidebar() {
-      const sidebar = document.getElementById('sidebar');
-      const header = document.getElementById('mainHeader');
-      sidebar.classList.toggle('active');
-      header.classList.toggle('rotated');
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-analytics.js";
+    import {
+      getAuth,
+      signInWithEmailAndPassword,
+      createUserWithEmailAndPassword,
+      signInWithPopup,
+      GoogleAuthProvider,
+      sendPasswordResetEmail,
+      sendEmailVerification,
+      onAuthStateChanged,
+      setPersistence,
+      browserLocalPersistence,
+      browserSessionPersistence,
+      signOut
+    } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+    import {
+      getDatabase,
+      ref,
+      set,
+      get,
+      child
+    } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+
+    // Firebase config
+    const firebaseConfig = {
+      apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
+      authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
+      databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
+      projectId: "itzhoyoo-f9f7e",
+      storageBucket: "itzhoyoo-f9f7e.firebasestorage.app",
+      messagingSenderId: "1094792075584",
+      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
+      measurementId: "G-LLT6F9WRKH"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    getAnalytics(app);
+    const auth = getAuth(app);
+    const database = getDatabase(app);
+    const googleProvider = new GoogleAuthProvider();
+
+    // Elements
+    const loginForm = document.getElementById('login-form');
+    const registerForm = document.getElementById('register-form');
+    const toggleLink = document.getElementById('toggle-link');
+    const toggleAction = document.getElementById('toggle-action');
+    const messageArea = document.getElementById('message-area');
+    const googleLoginBtn = document.getElementById('google-login-btn');
+    const forgotPasswordLink = document.getElementById('forgot-password-link');
+    const loadingSpinner = document.getElementById('loading-spinner');
+    const loadingSpinnerRegister = document.getElementById('loading-spinner-register');
+    const rememberMeCheckbox = document.getElementById('remember-me');
+    const passwordInput = document.getElementById('register-password');
+    const passwordStrengthText = document.getElementById('password-strength');
+
+    // Helper functions
+    function showMessage(msg, type = 'error') {
+      messageArea.textContent = msg;
+      messageArea.className = type;
+      messageArea.style.display = 'block';
     }
-  document.querySelectorAll('.faq-question').forEach(btn => {
-    btn.addEventListener('click', () => {
-      btn.classList.toggle('active');
-      const answer = btn.nextElementSibling;
-      answer.style.display = answer.style.display === 'block' ? 'none' : 'block';
-    });
-  });
-</script>
+    function clearMessage() {
+      messageArea.textContent = '';
+      messageArea.className = '';
+      messageArea.style.display = 'none';
+    }
+    function showLoading(spinner, show = true) {
+      spinner.style.display = show ? 'block' : 'none';
+    }
 
+    // Password strength check simple version
+    passwordInput.addEventListener('input', () => {
+      // Password strength check
+      const val = passwordInput.value;
+      let strength = 'Weak';
+      let color = '#cc0000';
+
+      if(val.length >= 12 && /[A-Z]/.test(val) && /[0-9]/.test(val) && /[\W_]/.test(val)) {
+        strength = 'Strong';
+        color = '#2b8a3e';
+      } else if(val.length >= 8 && /[A-Z]/.test(val) && /[0-9]/.test(val)) {
+        strength = 'Medium';
+        color = '#d18e0f';
+      }
+
+      passwordStrengthText.textContent = `Password strength: ${strength}`;
+      passwordStrengthText.style.color = color;
+      if(val.length === 0) passwordStrengthText.textContent = '';
+    });
+
+    // Toggle between login and register forms
+    toggleLink.addEventListener('click', () => {
+      clearMessage();
+      if (loginForm.style.display !== 'none') {
+        loginForm.style.display = 'none';
+        registerForm.style.display = 'flex';
+        toggleAction.textContent = 'Login';
+        toggleLink.setAttribute('aria-pressed', 'true');
+      } else {
+        registerForm.style.display = 'none';
+        loginForm.style.display = 'flex';
+        toggleAction.textContent = 'Register';
+        toggleLink.setAttribute('aria-pressed', 'false');
+      }
+    });
+
+    // Login submit
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      clearMessage();
+      showLoading(loadingSpinner);
+      try {
+        const email = document.getElementById('login-email').value.trim();
+        const password = document.getElementById('login-password').value;
+        // Persistence setting based on remember me checkbox
+        await setPersistence(auth, rememberMeCheckbox.checked ? browserLocalPersistence : browserSessionPersistence);
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+
+        if (!userCredential.user.emailVerified) {
+          showMessage('Please verify your email before logging in. Check your inbox.', 'error');
+          await auth.signOut();
+          showLoading(loadingSpinner, false);
+          return;
+        }
+
+        showMessage('Login successful! Redirecting...', 'success');
+        showLoading(loadingSpinner, false);
+        // Redirect to homepage or app main page:
+        window.location.href = 'homepage.html';
+
+      } catch (error) {
+        showLoading(loadingSpinner, false);
+        if(error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password'){
+          showMessage('Invalid email or password.', 'error');
+        } else if(error.code === 'auth/too-many-requests'){
+          showMessage('Too many failed attempts. Please try again later.', 'error');
+        } else {
+          showMessage('Error logging in: ' + error.message, 'error');
+        }
+      }
+    });
+
+    // Register submit
+    registerForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      clearMessage();
+      showLoading(loadingSpinnerRegister);
+      try {
+        const name = document.getElementById('register-name').value.trim();
+        const email = document.getElementById('register-email').value.trim();
+        const password = document.getElementById('register-password').value;
+
+        if(password.length < 8){
+          showMessage('Password must be at least 8 characters.', 'error');
+          showLoading(loadingSpinnerRegister, false);
+          return;
+        }
+
+        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+
+        // Save additional user info to realtime database
+        await set(ref(database, 'users/' + userCredential.user.uid), {
+          name: name,
+          email: email,
+          createdAt: Date.now()
+        });
+
+        // Send verification email
+        await sendEmailVerification(userCredential.user);
+
+        showMessage('Registration successful! A verification email has been sent to your email address. Please verify before logging in.', 'success');
+        registerForm.reset();
+        showLoading(loadingSpinnerRegister, false);
+
+        // Switch back to login form automatically after 5 seconds
+        setTimeout(() => {
+          toggleLink.click();
+        }, 5000);
+
+      } catch (error) {
+        showLoading(loadingSpinnerRegister, false);
+        if(error.code === 'auth/email-already-in-use'){
+          showMessage('This email is already registered. Please login or use a different email.', 'error');
+        } else if(error.code === 'auth/invalid-email'){
+          showMessage('Please enter a valid email address.', 'error');
+        } else if(error.code === 'auth/weak-password'){
+          showMessage('Password is too weak.', 'error');
+        } else {
+          showMessage('Error registering: ' + error.message, 'error');
+        }
+      }
+    });
+
+    // Google login button
+    googleLoginBtn.addEventListener('click', async () => {
+      clearMessage();
+      showLoading(loadingSpinner);
+      try {
+        await setPersistence(auth, browserLocalPersistence);
+        const result = await signInWithPopup(auth, googleProvider);
+
+        // Save user info on first sign in to database
+        const userRef = ref(database, 'users/' + result.user.uid);
+        const snapshot = await get(userRef);
+        if (!snapshot.exists()) {
+          await set(userRef, {
+            name: result.user.displayName,
+            email: result.user.email,
+            createdAt: Date.now()
+          });
+        }
+
+        showMessage('Google login successful! Redirecting...', 'success');
+        showLoading(loadingSpinner, false);
+        window.location.href = 'homepage.html';
+
+      } catch (error) {
+        showLoading(loadingSpinner, false);
+        showMessage('Google login failed: ' + error.message, 'error');
+      }
+    });
+
+    // Forgot password link
+    forgotPasswordLink.addEventListener('click', async (e) => {
+      e.preventDefault();
+      clearMessage();
+      const email = document.getElementById('login-email').value.trim();
+      if(!email) {
+        showMessage('Please enter your email in the email field to reset password.', 'error');
+        return;
+      }
+      try {
+        await sendPasswordResetEmail(auth, email);
+        showMessage('Password reset email sent. Please check your inbox.', 'success');
+      } catch (error) {
+        if(error.code === 'auth/user-not-found'){
+          showMessage('No user found with that email.', 'error');
+        } else {
+          showMessage('Error sending reset email: ' + error.message, 'error');
+        }
+      }
+    });
+
+    // Optional: detect auth state and redirect if already logged in & verified
+    onAuthStateChanged(auth, user => {
+      if(user && user.emailVerified) {
+        // User logged in & verified, redirect to homepage
+        window.location.href = 'homepage.html';
+      }
+    });
+  </script>
 </body>
 </html>
