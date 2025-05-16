@@ -1,495 +1,595 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en" >
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Make Money</title>
-<style>
-  :root {
-    --bg: #121212;
-    --surface: #1e1e1e;
-    --primary: #00c853;
-    --text: #ffffff;
-    --muted: #b0b0b0;
-    --radius: 14px;
-    --neon: #00fff7;
-  }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <title>Make Money - Dark Theme</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
+        Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      background: #121212;
+      color: #eee;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      display: flex;
+      justify-content: center;
+      padding: 0 20px;
+    }
 
-  * {
-    box-sizing: border-box;
-    -webkit-tap-highlight-color: transparent;
-    user-select: none;
-  }
+    .header-wrapper {
+      width: 100%;
+      max-width: 460px;
+      position: fixed;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #181818;
+      padding: 10px 0 12px;
+      z-index: 9999;
+      box-sizing: border-box;
+      border-bottom: 1px solid #2a2a2a;
+      user-select: none;
+    }
 
-  html, body {
-    margin: 0;
-    font-family: -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
-    background: var(--bg);
-    color: var(--text);
-  }
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 28px;
+      background: #222;
+      border-radius: 40px;
+      border: 1px solid #333;
+      user-select: none;
+    }
 
-  button, input {
-    user-select: none;
-  }
+    .logo-container {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .logo {
+      width: 42px;
+      height: 42px;
+      background: linear-gradient(135deg, #4ade80, #22c55e);
+      border-radius: 12px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-weight: 700;
+      font-size: 26px;
+      color: white;
+      user-select: none;
+    }
+    .site-name {
+      font-weight: 700;
+      font-size: 18px;
+      color: #eee;
+      user-select: none;
+    }
 
-  button:focus, button:active {
-    outline: none;
-    -webkit-tap-highlight-color: transparent;
-  }
+    .balance-btn {
+      background: #22c55e;
+      color: white;
+      font-weight: 600;
+      font-size: 16px;
+      padding: 10px 30px;
+      border-radius: 9999px;
+      border: 2px solid black;
+      cursor: pointer;
+      transition: background 0.25s ease;
+      user-select: none;
+      outline: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .balance-btn:focus {
+      outline: none;
+    }
 
-  .app {
-    max-width: 430px;
-    margin: auto;
-    background: var(--bg);
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    position: relative;
-  }
+    .main {
+      margin-top: 90px; /* moved sections closer to header */
+      max-width: 460px;
+      width: 100%;
+      user-select: none;
+    }
 
-  header {
-    background: var(--surface);
-    color: var(--text);
-    padding: 16px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 20px;
-    font-weight: bold;
-    border-bottom: 1px solid #2a2a2a;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-  }
+    .sections {
+      display: flex;
+      justify-content: space-between;
+      padding: 0 12px;
+      margin-bottom: 16px;
+      border-bottom: 1px solid #333;
+      user-select: none;
+      flex-direction: row; /* always row, no stacking */
+    }
 
-  .balance-btn {
-    font-size: 14px;
-    background: var(--primary);
-    color: #000;
-    padding: 6px 12px;
-    border-radius: 8px;
-    font-weight: 600;
-    border: none;
-    cursor: pointer;
-    transition: background 0.3s ease;
-  }
+    .section {
+      position: relative;
+      width: 48%;
+      background: transparent;
+      padding: 14px 0;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 15px;
+      font-weight: 600;
+      color: #aaa;
+      box-shadow: none;
+      border-bottom: 3px solid transparent;
+      cursor: pointer;
+      transition: color 0.3s ease, border-color 0.3s ease;
+      justify-content: center;
+      user-select: none;
+      outline: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .section:hover {
+      color: #22c55e;
+    }
 
-  .balance-btn:hover {
-    background: #00e676;
-  }
+    .section.active,
+    .section:focus {
+      color: #22c55e;
+      border-bottom-color: #22c55e;
+      font-weight: 700;
+      outline: none !important;
+    }
 
-  .recent-transactions {
-    background: var(--surface);
-    padding: 10px 16px;
-    text-align: center;
-    position: sticky;
-    top: 64px;
-    z-index: 99;
-  }
+    .section:focus {
+      outline: none !important;
+    }
 
-  .highlight-user {
-    font-size: 16px;
-    font-weight: bold;
-    padding: 12px 20px;
-    border-radius: 16px;
-    border: 2px solid var(--neon);
-    box-shadow: 0 0 12px var(--neon), 0 0 24px var(--neon);
-    width: fit-content;
-    margin: 0 auto;
-    background: #00000066;
-    transition: color 0.5s ease;
-  }
+    /* Icons container size */
+    .section-icon {
+      width: 26px;
+      height: 26px;
+      flex-shrink: 0;
+      stroke-width: 2.2;
+    }
+    .section-icon svg {
+      width: 100%;
+      height: 100%;
+      stroke: currentColor;
+      fill: none;
+      stroke-linejoin: round;
+      stroke-linecap: round;
+    }
 
-  .task-list {
-    padding: 16px;
-  }
+    /* Special fill for Make Money icon */
+    .make-money-icon svg {
+      fill: currentColor;
+      stroke: none;
+    }
 
-  .task {
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    background: var(--surface);
-    padding: 12px;
-    border-radius: var(--radius);
-    margin-bottom: 12px;
-  }
+    main {
+      padding: 0 12px;
+      color: #ccc;
+      min-height: 160px;
+      user-select: text; /* Allow text selection inside content */
+    }
 
-  .task img {
-    width: 50px;
-    height: 50px;
-    border-radius: 10px;
-    object-fit: cover;
-  }
+    main h1 {
+      color: #eee;
+      user-select: text;
+    }
 
-  .task-details {
-    flex: 1;
-  }
+    main p {
+      user-select: text;
+    }
 
-  .task-details h4 {
-    margin: 0;
-    font-size: 16px;
-    color: var(--primary);
-  }
-
-  .task-details p {
-    margin: 4px 0 6px;
-    color: var(--muted);
-    font-size: 13px;
-  }
-
-  .task-pay {
-    font-weight: bold;
-    margin-bottom: 8px;
-  }
-
-  .task button {
-    background: var(--primary);
-    border: none;
-    padding: 6px 12px;
-    border-radius: 6px;
-    color: black;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background 0.3s ease;
-  }
-
-  .task button:hover {
-    background: #00e676;
-  }
-
-  .popup-overlay {
-    position: fixed;
-    top: 0; left: 0;
-    width: 100vw; height: 100vh;
-    background: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(5px);
-    display: none;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-  }
-
-  .popup-overlay.active {
-    display: flex;
-    animation: shake 0.3s ease-in-out;
-  }
-
-  .popup {
-    background: var(--surface);
-    padding: 20px;
-    border-radius: 10px;
-    width: 90%;
-    max-width: 320px;
-    color: white;
-    box-shadow: 0 0 15px var(--neon);
-    transform: scale(0.95);
-    transition: transform 0.3s ease;
-  }
-
-  .popup-overlay.active .popup {
-    transform: scale(1);
-  }
-
-  .payment-methods {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin-top: 10px;
-  }
-
-  .payment-methods button {
-    padding: 10px;
-    border: none;
-    border-radius: 6px;
-    font-weight: bold;
-    cursor: pointer;
-    background: var(--primary);
-    color: black;
-    transition: background 0.3s ease;
-  }
-
-  .payment-methods button:hover {
-    background: #00e676;
-  }
-
-  .cancel-btn {
-    margin-top: 15px;
-    background: #666;
-    color: white;
-    border: none;
-    padding: 10px;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: background 0.3s ease;
-  }
-
-  .cancel-btn:hover {
-    background: #888;
-  }
-
-  @keyframes shake {
-    0% { transform: translateX(0); }
-    25% { transform: translateX(-5px); }
-    50% { transform: translateX(5px); }
-    75% { transform: translateX(-3px); }
-    100% { transform: translateX(0); }
-  }
-  .popup {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: white;
-  padding: 2rem;
-  border-radius: 1rem;
-  box-shadow: 0 0 20px rgba(0,0,0,0.3);
-  z-index: 9999;
-  display: none;
-  text-align: center;
+    /* Keep header and sections nice on mobile but no stacking */
+    @media (max-width: 480px) {
+      .sections {
+        flex-direction: row; /* keep side by side on mobile */
+        gap: 12px;
+        padding: 0 8px;
+      }
+      .section {
+        width: 48%;
+        justify-content: center;
+        padding-left: 0;
+      }
+      header {
+        padding: 14px 20px;
+      }
+      .header-wrapper {
+        padding: 8px 0 10px;
+      }
+    }
+    #cashout-form input {
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  background: #1f1f1f;
+  border: 1px solid #333;
+  color: #eee;
+  font-size: 14px;
+  margin-bottom: 8px;
 }
-.popup.success {
-  border: 2px solid #00e676;
-}
-.popup.error {
-  border: 2px solid #ff1744;
-}
-.popup-content span {
-  font-size: 2.5rem;
+#cashout-form label {
+  font-weight: 600;
   display: block;
-  margin-bottom: 0.5rem;
+  margin-bottom: 6px;
+  color: #ccc;
 }
-.overlay {
-  position: fixed;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  background: rgba(0,0,0,0.3);
-  backdrop-filter: blur(5px);
-  z-index: 9998;
-  display: none;
+#cashout-form small {
+  color: #888;
+  font-size: 13px;
 }
-</style>
+.required {
+  color: #f87171;
+}
+
+.submit-btn {
+  margin-top: 12px;
+  padding: 12px;
+  background: #22c55e;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-weight: 600;
+  font-size: 16px;
+  width: 100%;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+.submit-btn:hover {
+  background: #16a34a;
+}
+  </style>
 </head>
 <body>
-  <div class="app">
+  <div class="header-wrapper">
     <header>
-      <div>MAKE MONEY</div>
-      <button class="balance-btn" id="balanceBtn">$0.000</button>
-    </header><div class="recent-transactions">
-  <div class="highlight-user" id="highlightUser">Loading...</div>
-</div>
+      <div class="logo-container">
+        <div class="logo">$</div>
+        <div class="site-name">Earnify</div>
+      </div>
+      <button class="balance-btn" tabindex="0">$0.00</button>
+    </header>
+  </div>
 
-<div class="task-list" id="taskList"></div>
-<div id="popupOverlay" class="popup-overlay">
-  <div class="popup">
-    <h3>Insufficient balance</h3>
-    <p>You need $10 to withdraw</p>
-    <div class="payment-methods">
-      <button style="background:#0070ba; color:white;" data-method="PayPal">PayPal</button>
-      <button style="background:#339933; color:white;" data-method="Payoneer">Payoneer</button>
-      <button style="background:#003366; color:white;" data-method="Bank">Bank</button>
-      <button style="background:#ff9900; color:black;" data-method="Amazon">Amazon Gift Card</button>
-      <button style="background:#f7931a; color:white;" data-method="Bitcoin">Bitcoin</button>
+  <div class="main">
+    <div class="sections" role="tablist" aria-label="Main navigation tabs">
+      <div class="section active" data-tab="make-money" tabindex="0" role="tab" aria-selected="true" aria-controls="make-money-content" id="make-money-tab">
+        <span class="section-icon make-money-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" >
+            <rect x="3" y="3" width="18" height="18" rx="6" ry="6"/>
+            <text x="12" y="17" text-anchor="middle" font-size="14" font-weight="700" fill="#121212" font-family="Arial, sans-serif">$</text>
+          </svg>
+        </span>
+        <span>Make Money</span>
+      </div>
+      <div class="section" data-tab="cashout" tabindex="0" role="tab" aria-selected="false" aria-controls="cashout-content" id="cashout-tab">
+        <span class="section-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" >
+            <path d="M7 7l5-5m0 0l5 5m-5-5v18" />
+            <path d="M17 17l-5 5m0 0l-5-5m5 5V3" />
+          </svg>
+        </span>
+        <span>Cashout</span>
+      </div>
     </div>
-    <div id="errorMsg" style="color:red; margin-top:10px;"></div>
-    <div id="emailSection" style="display:none; margin-top:10px;">
-      <input type="email" id="emailInput" placeholder="Enter your email" />
-      <button id="cashoutBtn" style="margin-top:5px;">Cashout $10</button>
-    </div>
-    <button id="cancelBtn" class="cancel-btn">Cancel</button>
+
+    <main>
+      <section id="make-money-content" role="tabpanel" aria-labelledby="make-money-tab">
+        <h1>Make Money</h1>
+        <p>Complete tasks and earn real cash. Get started with offers and promotions to boost your earnings quickly.</p>
+      </section>
+      <section id="cashout-content" role="tabpanel" aria-labelledby="cashout-tab" hidden>
+       <h1>Cashout</h1>
+<p></p>
+
+<label for="provider-select" style="display:block; margin-top:1em;">Choose payment method:</label>
+<select id="provider-select" style="width:100%; padding:10px; margin-top:6px; border-radius:8px; border:none; background:#1e1e1e; color:#eee;">
+  <option value="">-- Select Provider --</option>
+  <option value="paypal">PayPal</option>
+  <option value="bank">Bank Transfer</option>
+  <option value="payoneer">Payoneer</option>
+  <option value="amazon">Amazon Gift Card</option>
+  <option value="bitcoin">Bitcoin</option>
+  <option value="usdd">USDD</option>
+</select>
+
+<div id="cashout-form" style="margin-top: 20px;"></div>
+</section>
+    </main>
   </div>
-</div>
-  </div>
-  <div id="customPopup" class="popup">
-  <div class="popup-content">
-    <span id="popupIcon"></span>
-    <p id="popupMessage"></p>
-  </div>
-</div>
-<div id="pageOverlay" class="overlay"></div>
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-import { getDatabase, ref, get, update } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+  import { getDatabase, ref, onValue, push, serverTimestamp, runTransaction } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
-  authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
-  databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
-  projectId: "itzhoyoo-f9f7e",
-  storageBucket: "itzhoyoo-f9f7e.appspot.com",
-  messagingSenderId: "1094792075584",
-  appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
-  measurementId: "G-LLT6F9WRKH"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-
-const balanceBtn = document.getElementById("balanceBtn");
-const highlightUser = document.getElementById("highlightUser");
-const taskList = document.getElementById("taskList");
-const userId = "demoUser";
-let balance = 0.0;
-
-async function loadBalance() {
-  const snapshot = await get(ref(db, `users/${userId}`));
-  if (snapshot.exists()) {
-    const data = snapshot.val();
-    balance = data.balance || 0.0;
-    balanceBtn.textContent = `$${balance.toFixed(3)}`;
-  }
-}
-
-await loadBalance();
-
-function showPopup(success, message) {
-  const popup = document.getElementById("customPopup");
-  const overlay = document.getElementById("pageOverlay");
-  const icon = document.getElementById("popupIcon");
-  const msg = document.getElementById("popupMessage");
-
-  popup.className = `popup ${success ? "success" : "error"}`;
-  icon.textContent = success ? "✅" : "❌";
-  msg.textContent = message;
-
-  popup.style.display = "block";
-  overlay.style.display = "block";
-
-  setTimeout(() => {
-    popup.style.display = "none";
-    overlay.style.display = "none";
-  }, 3000);
-}
-
-const tasks = Array.from({length: 10}, (_, i) => ({
-  id: i + 1,
-  title: `Task ${i + 1}`,
-  desc: "Complete this task to earn money.",
-  pay: +(Math.random() * 0.4 + 0.1).toFixed(2),
-  img: `https://picsum.photos/seed/task${i}/100`
-}));
-
-tasks.forEach(task => {
-  const div = document.createElement("div");
-  div.className = "task";
-  div.innerHTML = `
-    <img src="${task.img}" alt="Task">
-    <div class="task-details">
-      <h4>${task.title}</h4>
-      <p>${task.desc}</p>
-      <div class="task-pay">Earn: $${task.pay}</div>
-      <button>Complete Task</button>
-    </div>
-  `;
-  div.querySelector("button").onclick = () => {
-    const key = `task_${task.id}_start`;
-    localStorage.setItem(key, JSON.stringify({ time: Date.now(), pay: task.pay }));
-    window.location.href = `https://example.com/task?id=${task.id}`; // Replace with actual task URL
+  const firebaseConfig = {
+    apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
+    authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
+    databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
+    projectId: "itzhoyoo-f9f7e",
+    storageBucket: "itzhoyoo-f9f7e.firebasestorage.app",
+    messagingSenderId: "1094792075584",
+    appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
+    measurementId: "G-LLT6F9WRKH"
   };
-  taskList.appendChild(div);
-});
 
-// Check for returned tasks
-tasks.forEach(async task => {
-  const key = `task_${task.id}_start`;
-  const data = localStorage.getItem(key);
-  if (data) {
-    const { time, pay } = JSON.parse(data);
-    const timeSpent = (Date.now() - time) / 1000;
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getDatabase(app);
 
-    if (timeSpent >= 20) {
-      balance += pay;
-      await update(ref(db, `users/${userId}`), {
-        balance,
-        [`tasks/${task.id}`]: { status: "completed", timeSpent }
-      });
-      balanceBtn.textContent = `$${balance.toFixed(3)}`;
-      showPopup(true, `Task ${task.id} completed! $${pay} earned.`);
-    } else {
-      await update(ref(db, `users/${userId}/tasks/${task.id}`), {
-        status: "tooFast",
-        timeSpent
-      });
-      showPopup(false, `Task ${task.id} failed (too quick).`);
-    }
-    localStorage.removeItem(key);
+  const balanceBtn = document.querySelector('.balance-btn');
+  const providerSelect = document.getElementById('provider-select');
+  const formContainer = document.getElementById('cashout-form');
+
+  let currentUser = null;
+  let userBalanceRef = null;
+
+  // Show balance or login prompt
+  function updateBalanceUI(balance) {
+    balanceBtn.textContent = `$${(balance || 0).toFixed(2)}`;
   }
-});
 
-const colors = ["#00fff7", "#ff4081", "#7c4dff", "#00e676", "#ffab00"];
+  function resetUIForLogout() {
+    updateBalanceUI(0);
+    formContainer.innerHTML = '';
+    providerSelect.value = '';
+  }
 
-function getRandomCode() {
-  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-  return Array.from({length: 4}, () => chars[Math.floor(Math.random() * chars.length)]).join('');
-}
-
-function getRandomAmount() {
-  return (Math.random() < 0.85 ? (Math.random() * 4.9 + 0.1) : (Math.random() * 5 + 5)).toFixed(2);
-}
-
-function updateHighlightUser() {
-  const code = getRandomCode();
-  const amount = getRandomAmount();
-  const color = colors[Math.floor(Math.random() * colors.length)];
-  highlightUser.style.color = color;
-  highlightUser.textContent = `User #${code} received $${amount}`;
-}
-
-updateHighlightUser();
-setInterval(updateHighlightUser, 3000);
-
-const popupOverlay = document.getElementById("popupOverlay");
-const cancelBtn = document.getElementById("cancelBtn");
-const paymentButtons = document.querySelectorAll(".payment-methods button");
-const errorMsg = document.getElementById("errorMsg");
-const emailSection = document.getElementById("emailSection");
-const emailInput = document.getElementById("emailInput");
-const cashoutBtn = document.getElementById("cashoutBtn");
-
-balanceBtn.addEventListener("click", () => {
-  popupOverlay.classList.add("active");
-});
-
-cancelBtn.addEventListener("click", () => {
-  popupOverlay.classList.remove("active");
-  emailSection.style.display = "none";
-  errorMsg.textContent = "";
-});
-
-paymentButtons.forEach(button => {
-  button.addEventListener("click", () => {
-    errorMsg.textContent = "";
-    emailInput.value = "";
-
-    if (balance < 10) {
-      errorMsg.textContent = "Insufficient funds for this method.";
-      emailSection.style.display = "none";
+  // Listen for auth state changes
+  onAuthStateChanged(auth, user => {
+    currentUser = user;
+    if (user) {
+      // Setup balance reference
+      userBalanceRef = ref(db, `users/${user.uid}/balance`);
+      // Listen for balance updates
+      onValue(userBalanceRef, snapshot => {
+        const balance = snapshot.val();
+        updateBalanceUI(balance);
+      });
     } else {
-      emailSection.style.display = "block";
-      emailSection.setAttribute("data-method", button.dataset.method);
+      resetUIForLogout();
     }
   });
-});
 
-cashoutBtn.addEventListener("click", async () => {
-  const email = emailInput.value.trim();
-  if (!email) return showPopup(false, "Please enter your email");
+  // Tab navigation code unchanged
+  const tabs = document.querySelectorAll('.section');
+  const contents = document.querySelectorAll('main > section');
 
-  const snapshot = await get(ref(db, `users/${userId}`));
-  if (snapshot.exists()) {
-    const userData = snapshot.val();
-    if (userData.balance >= 10) {
-      await update(ref(db, `users/${userId}`), {
-        balance: userData.balance - 10
-      });
-      balance -= 10;
-      balanceBtn.textContent = `$${balance.toFixed(3)}`;
-      showPopup(true, `$10 cashed out via ${emailSection.dataset.method} to ${email}`);
-      popupOverlay.classList.remove("active");
-      emailSection.style.display = "none";
-    } else {
-      showPopup(false, "Your balance is now less than $10");
-    }
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      activateTab(tab.dataset.tab);
+    });
+    tab.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        activateTab(tab.dataset.tab);
+      }
+    });
+  });
+
+  function activateTab(tabName) {
+    tabs.forEach(t => {
+      const selected = t.dataset.tab === tabName;
+      t.classList.toggle('active', selected);
+      t.setAttribute('aria-selected', selected);
+      if (selected) t.focus();
+    });
+    contents.forEach(c => {
+      c.hidden = c.id !== tabName + '-content';
+    });
   }
-});
+
+  // Cashout form templates (unchanged)
+  const formTemplates = {
+    paypal: {
+      min: 10,
+      max: 100,
+      html: `
+        <label>Withdraw Amount <span class="required">*</span>:</label>
+        <input type="number" id="amount" placeholder="e.g. 25" required />
+
+        <label>Email <span class="required">*</span>:</label>
+        <input type="email" id="email" required />
+
+        <label>Confirm Email <span class="required">*</span>:</label>
+        <input type="email" id="confirmEmail" required />
+      `
+    },
+    bank: {
+      min: 15,
+      max: 500,
+      html: `
+        <label>Withdraw Amount <span class="required">*</span>:</label>
+        <input type="number" id="amount" required />
+
+        <label>First Name <span class="required">*</span>:</label>
+        <input type="text" id="fname" required />
+
+        <label>Last Name <span class="required">*</span>:</label>
+        <input type="text" id="lname" required />
+
+        <label>Email <span class="required">*</span>:</label>
+        <input type="email" id="email" required />
+
+        <label>Account Number <span class="required">*</span>:</label>
+        <input type="text" id="account" required />
+
+        <label>Bank Name <span class="required">*</span>:</label>
+        <input type="text" id="bank" required />
+
+        <label>Country <span class="required">*</span>:</label>
+        <input type="text" id="country" required />
+
+        <label>Phone Number <span class="required">*</span>:</label>
+        <input type="tel" id="phone" required />
+      `
+    },
+    payoneer: {
+      min: 20,
+      max: 250,
+      html: `
+        <label>Withdraw Amount <span class="required">*</span>:</label>
+        <input type="number" id="amount" required />
+
+        <label>Payoneer Email <span class="required">*</span>:</label>
+        <input type="email" id="email" required />
+      `
+    },
+    amazon: {
+      min: 5,
+      max: 100,
+      html: `
+        <label>Withdraw Amount <span class="required">*</span>:</label>
+        <input type="number" id="amount" required />
+
+        <label>Email for Gift Card <span class="required">*</span>:</label>
+        <input type="email" id="email" required />
+      `
+    },
+    bitcoin: {
+      min: 20,
+      max: 300,
+      html: `
+        <label>Withdraw Amount <span class="required">*</span>:</label>
+        <input type="number" id="amount" required />
+
+        <label>Bitcoin Wallet Address <span class="required">*</span>:</label>
+        <input type="text" id="wallet" required />
+      `
+    },
+    usdd: {
+      min: 20,
+      max: 300,
+      html: `
+        <label>Withdraw Amount <span class="required">*</span>:</label>
+        <input type="number" id="amount" required />
+
+        <label>TRC20 Wallet Address <span class="required">*</span>:</label>
+        <input type="text" id="wallet" required />
+      `
+    }
+  };
+
+  providerSelect.addEventListener('change', () => {
+    const selected = providerSelect.value;
+    if (!selected) {
+      formContainer.innerHTML = '';
+      return;
+    }
+
+    const { html } = formTemplates[selected];
+    formContainer.innerHTML = `
+      <form id="cashoutRequestForm">
+        ${html}
+        <button type="submit" class="submit-btn">Confirm Cashout</button>
+        <small id="form-error" style="color:#f87171; display:none; margin-top:8px;"></small>
+      </form>
+    `;
+  });
+
+  formContainer.addEventListener('submit', async function (e) {
+    if (!e.target.matches('#cashoutRequestForm')) return;
+
+    e.preventDefault();
+
+    if (!currentUser) {
+      alert("Please log in to request a cashout.");
+      return;
+    }
+
+    const selected = providerSelect.value;
+    const form = e.target;
+    const fields = form.querySelectorAll('input[required]');
+    const errorMsg = form.querySelector('#form-error');
+    const amountInput = form.querySelector('#amount');
+    const amount = parseFloat(amountInput?.value);
+    const { min, max } = formTemplates[selected];
+
+    // Validation
+    let allFilled = true;
+    fields.forEach(f => {
+      if (!f.value.trim()) {
+        allFilled = false;
+      }
+    });
+
+    if (!allFilled) {
+      errorMsg.textContent = 'Please fill in all required fields.';
+      errorMsg.style.display = 'block';
+      return;
+    }
+
+    if (isNaN(amount) || amount < min || amount > max) {
+      errorMsg.textContent = `Amount must be between $${min} and $${max}.`;
+      errorMsg.style.display = 'block';
+      return;
+    }
+
+    // For PayPal, confirm email match
+    if (selected === 'paypal') {
+      const email = form.querySelector('#email').value.trim();
+      const confirmEmail = form.querySelector('#confirmEmail').value.trim();
+      if (email.toLowerCase() !== confirmEmail.toLowerCase()) {
+        errorMsg.textContent = "Email and Confirm Email do not match.";
+        errorMsg.style.display = 'block';
+        return;
+      }
+    }
+
+    errorMsg.style.display = 'none';
+
+    try {
+      // Transactionally check and deduct balance
+      const userBalanceRef = ref(db, `users/${currentUser.uid}/balance`);
+      const cashoutRequestsRef = ref(db, `cashoutRequests`);
+
+      // Use a transaction to prevent race conditions and cheating
+      const transactionResult = await runTransaction(userBalanceRef, (currentBalance) => {
+        if (currentBalance === null || currentBalance < amount) {
+          return; // Abort transaction - insufficient balance
+        }
+        return currentBalance - amount;
+      });
+
+      if (!transactionResult.committed) {
+        errorMsg.textContent = "Insufficient balance for this cashout.";
+        errorMsg.style.display = 'block';
+        return;
+      }
+
+      // Save cashout request record
+      const cashoutData = {
+        uid: currentUser.uid,
+        provider: selected,
+        amount: amount,
+        details: {},
+        status: 'pending',
+        createdAt: serverTimestamp()
+      };
+
+      // Collect details except amount
+      fields.forEach(f => {
+        if (f.id !== 'amount') {
+          cashoutData.details[f.id] = f.value.trim();
+        }
+      });
+
+      await push(cashoutRequestsRef, cashoutData);
+
+      alert('Cashout request submitted successfully!');
+      form.reset();
+      providerSelect.value = '';
+      formContainer.innerHTML = '';
+
+    } catch (error) {
+      console.error(error);
+      errorMsg.textContent = "An error occurred while submitting your cashout request.";
+      errorMsg.style.display = 'block';
+    }
+  });
 </script>
 </body>
 </html>
