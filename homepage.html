@@ -1,0 +1,495 @@
+<!DOCTYPE html><html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Make Money</title>
+<style>
+  :root {
+    --bg: #121212;
+    --surface: #1e1e1e;
+    --primary: #00c853;
+    --text: #ffffff;
+    --muted: #b0b0b0;
+    --radius: 14px;
+    --neon: #00fff7;
+  }
+
+  * {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+  }
+
+  html, body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+  }
+
+  button, input {
+    user-select: none;
+  }
+
+  button:focus, button:active {
+    outline: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .app {
+    max-width: 430px;
+    margin: auto;
+    background: var(--bg);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+
+  header {
+    background: var(--surface);
+    color: var(--text);
+    padding: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 20px;
+    font-weight: bold;
+    border-bottom: 1px solid #2a2a2a;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  .balance-btn {
+    font-size: 14px;
+    background: var(--primary);
+    color: #000;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: background 0.3s ease;
+  }
+
+  .balance-btn:hover {
+    background: #00e676;
+  }
+
+  .recent-transactions {
+    background: var(--surface);
+    padding: 10px 16px;
+    text-align: center;
+    position: sticky;
+    top: 64px;
+    z-index: 99;
+  }
+
+  .highlight-user {
+    font-size: 16px;
+    font-weight: bold;
+    padding: 12px 20px;
+    border-radius: 16px;
+    border: 2px solid var(--neon);
+    box-shadow: 0 0 12px var(--neon), 0 0 24px var(--neon);
+    width: fit-content;
+    margin: 0 auto;
+    background: #00000066;
+    transition: color 0.5s ease;
+  }
+
+  .task-list {
+    padding: 16px;
+  }
+
+  .task {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    background: var(--surface);
+    padding: 12px;
+    border-radius: var(--radius);
+    margin-bottom: 12px;
+  }
+
+  .task img {
+    width: 50px;
+    height: 50px;
+    border-radius: 10px;
+    object-fit: cover;
+  }
+
+  .task-details {
+    flex: 1;
+  }
+
+  .task-details h4 {
+    margin: 0;
+    font-size: 16px;
+    color: var(--primary);
+  }
+
+  .task-details p {
+    margin: 4px 0 6px;
+    color: var(--muted);
+    font-size: 13px;
+  }
+
+  .task-pay {
+    font-weight: bold;
+    margin-bottom: 8px;
+  }
+
+  .task button {
+    background: var(--primary);
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    color: black;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.3s ease;
+  }
+
+  .task button:hover {
+    background: #00e676;
+  }
+
+  .popup-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(5px);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+  }
+
+  .popup-overlay.active {
+    display: flex;
+    animation: shake 0.3s ease-in-out;
+  }
+
+  .popup {
+    background: var(--surface);
+    padding: 20px;
+    border-radius: 10px;
+    width: 90%;
+    max-width: 320px;
+    color: white;
+    box-shadow: 0 0 15px var(--neon);
+    transform: scale(0.95);
+    transition: transform 0.3s ease;
+  }
+
+  .popup-overlay.active .popup {
+    transform: scale(1);
+  }
+
+  .payment-methods {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 10px;
+  }
+
+  .payment-methods button {
+    padding: 10px;
+    border: none;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    background: var(--primary);
+    color: black;
+    transition: background 0.3s ease;
+  }
+
+  .payment-methods button:hover {
+    background: #00e676;
+  }
+
+  .cancel-btn {
+    margin-top: 15px;
+    background: #666;
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+  }
+
+  .cancel-btn:hover {
+    background: #888;
+  }
+
+  @keyframes shake {
+    0% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    50% { transform: translateX(5px); }
+    75% { transform: translateX(-3px); }
+    100% { transform: translateX(0); }
+  }
+  .popup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  padding: 2rem;
+  border-radius: 1rem;
+  box-shadow: 0 0 20px rgba(0,0,0,0.3);
+  z-index: 9999;
+  display: none;
+  text-align: center;
+}
+.popup.success {
+  border: 2px solid #00e676;
+}
+.popup.error {
+  border: 2px solid #ff1744;
+}
+.popup-content span {
+  font-size: 2.5rem;
+  display: block;
+  margin-bottom: 0.5rem;
+}
+.overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.3);
+  backdrop-filter: blur(5px);
+  z-index: 9998;
+  display: none;
+}
+</style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div>MAKE MONEY</div>
+      <button class="balance-btn" id="balanceBtn">$0.000</button>
+    </header><div class="recent-transactions">
+  <div class="highlight-user" id="highlightUser">Loading...</div>
+</div>
+
+<div class="task-list" id="taskList"></div>
+<div id="popupOverlay" class="popup-overlay">
+  <div class="popup">
+    <h3>Insufficient balance</h3>
+    <p>You need $10 to withdraw</p>
+    <div class="payment-methods">
+      <button style="background:#0070ba; color:white;" data-method="PayPal">PayPal</button>
+      <button style="background:#339933; color:white;" data-method="Payoneer">Payoneer</button>
+      <button style="background:#003366; color:white;" data-method="Bank">Bank</button>
+      <button style="background:#ff9900; color:black;" data-method="Amazon">Amazon Gift Card</button>
+      <button style="background:#f7931a; color:white;" data-method="Bitcoin">Bitcoin</button>
+    </div>
+    <div id="errorMsg" style="color:red; margin-top:10px;"></div>
+    <div id="emailSection" style="display:none; margin-top:10px;">
+      <input type="email" id="emailInput" placeholder="Enter your email" />
+      <button id="cashoutBtn" style="margin-top:5px;">Cashout $10</button>
+    </div>
+    <button id="cancelBtn" class="cancel-btn">Cancel</button>
+  </div>
+</div>
+  </div>
+  <div id="customPopup" class="popup">
+  <div class="popup-content">
+    <span id="popupIcon"></span>
+    <p id="popupMessage"></p>
+  </div>
+</div>
+<div id="pageOverlay" class="overlay"></div>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+import { getDatabase, ref, get, update } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
+  authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
+  databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
+  projectId: "itzhoyoo-f9f7e",
+  storageBucket: "itzhoyoo-f9f7e.appspot.com",
+  messagingSenderId: "1094792075584",
+  appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
+  measurementId: "G-LLT6F9WRKH"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+const balanceBtn = document.getElementById("balanceBtn");
+const highlightUser = document.getElementById("highlightUser");
+const taskList = document.getElementById("taskList");
+const userId = "demoUser";
+let balance = 0.0;
+
+async function loadBalance() {
+  const snapshot = await get(ref(db, `users/${userId}`));
+  if (snapshot.exists()) {
+    const data = snapshot.val();
+    balance = data.balance || 0.0;
+    balanceBtn.textContent = `$${balance.toFixed(3)}`;
+  }
+}
+
+await loadBalance();
+
+function showPopup(success, message) {
+  const popup = document.getElementById("customPopup");
+  const overlay = document.getElementById("pageOverlay");
+  const icon = document.getElementById("popupIcon");
+  const msg = document.getElementById("popupMessage");
+
+  popup.className = `popup ${success ? "success" : "error"}`;
+  icon.textContent = success ? "✅" : "❌";
+  msg.textContent = message;
+
+  popup.style.display = "block";
+  overlay.style.display = "block";
+
+  setTimeout(() => {
+    popup.style.display = "none";
+    overlay.style.display = "none";
+  }, 3000);
+}
+
+const tasks = Array.from({length: 10}, (_, i) => ({
+  id: i + 1,
+  title: `Task ${i + 1}`,
+  desc: "Complete this task to earn money.",
+  pay: +(Math.random() * 0.4 + 0.1).toFixed(2),
+  img: `https://picsum.photos/seed/task${i}/100`
+}));
+
+tasks.forEach(task => {
+  const div = document.createElement("div");
+  div.className = "task";
+  div.innerHTML = `
+    <img src="${task.img}" alt="Task">
+    <div class="task-details">
+      <h4>${task.title}</h4>
+      <p>${task.desc}</p>
+      <div class="task-pay">Earn: $${task.pay}</div>
+      <button>Complete Task</button>
+    </div>
+  `;
+  div.querySelector("button").onclick = () => {
+    const key = `task_${task.id}_start`;
+    localStorage.setItem(key, JSON.stringify({ time: Date.now(), pay: task.pay }));
+    window.location.href = `https://example.com/task?id=${task.id}`; // Replace with actual task URL
+  };
+  taskList.appendChild(div);
+});
+
+// Check for returned tasks
+tasks.forEach(async task => {
+  const key = `task_${task.id}_start`;
+  const data = localStorage.getItem(key);
+  if (data) {
+    const { time, pay } = JSON.parse(data);
+    const timeSpent = (Date.now() - time) / 1000;
+
+    if (timeSpent >= 20) {
+      balance += pay;
+      await update(ref(db, `users/${userId}`), {
+        balance,
+        [`tasks/${task.id}`]: { status: "completed", timeSpent }
+      });
+      balanceBtn.textContent = `$${balance.toFixed(3)}`;
+      showPopup(true, `Task ${task.id} completed! $${pay} earned.`);
+    } else {
+      await update(ref(db, `users/${userId}/tasks/${task.id}`), {
+        status: "tooFast",
+        timeSpent
+      });
+      showPopup(false, `Task ${task.id} failed (too quick).`);
+    }
+    localStorage.removeItem(key);
+  }
+});
+
+const colors = ["#00fff7", "#ff4081", "#7c4dff", "#00e676", "#ffab00"];
+
+function getRandomCode() {
+  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+  return Array.from({length: 4}, () => chars[Math.floor(Math.random() * chars.length)]).join('');
+}
+
+function getRandomAmount() {
+  return (Math.random() < 0.85 ? (Math.random() * 4.9 + 0.1) : (Math.random() * 5 + 5)).toFixed(2);
+}
+
+function updateHighlightUser() {
+  const code = getRandomCode();
+  const amount = getRandomAmount();
+  const color = colors[Math.floor(Math.random() * colors.length)];
+  highlightUser.style.color = color;
+  highlightUser.textContent = `User #${code} received $${amount}`;
+}
+
+updateHighlightUser();
+setInterval(updateHighlightUser, 3000);
+
+const popupOverlay = document.getElementById("popupOverlay");
+const cancelBtn = document.getElementById("cancelBtn");
+const paymentButtons = document.querySelectorAll(".payment-methods button");
+const errorMsg = document.getElementById("errorMsg");
+const emailSection = document.getElementById("emailSection");
+const emailInput = document.getElementById("emailInput");
+const cashoutBtn = document.getElementById("cashoutBtn");
+
+balanceBtn.addEventListener("click", () => {
+  popupOverlay.classList.add("active");
+});
+
+cancelBtn.addEventListener("click", () => {
+  popupOverlay.classList.remove("active");
+  emailSection.style.display = "none";
+  errorMsg.textContent = "";
+});
+
+paymentButtons.forEach(button => {
+  button.addEventListener("click", () => {
+    errorMsg.textContent = "";
+    emailInput.value = "";
+
+    if (balance < 10) {
+      errorMsg.textContent = "Insufficient funds for this method.";
+      emailSection.style.display = "none";
+    } else {
+      emailSection.style.display = "block";
+      emailSection.setAttribute("data-method", button.dataset.method);
+    }
+  });
+});
+
+cashoutBtn.addEventListener("click", async () => {
+  const email = emailInput.value.trim();
+  if (!email) return showPopup(false, "Please enter your email");
+
+  const snapshot = await get(ref(db, `users/${userId}`));
+  if (snapshot.exists()) {
+    const userData = snapshot.val();
+    if (userData.balance >= 10) {
+      await update(ref(db, `users/${userId}`), {
+        balance: userData.balance - 10
+      });
+      balance -= 10;
+      balanceBtn.textContent = `$${balance.toFixed(3)}`;
+      showPopup(true, `$10 cashed out via ${emailSection.dataset.method} to ${email}`);
+      popupOverlay.classList.remove("active");
+      emailSection.style.display = "none";
+    } else {
+      showPopup(false, "Your balance is now less than $10");
+    }
+  }
+});
+</script>
+</body>
+</html>
