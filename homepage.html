@@ -4,204 +4,197 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
   <title>Make Money - Dark Theme</title>
-  <style>
-    * {
-      box-sizing: border-box;
-    }
-    body {
-      margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
-        Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-      background: #121212;
-      color: #eee;
-      user-select: none;
-      -webkit-tap-highlight-color: transparent;
-      display: flex;
-      justify-content: center;
-      padding: 0 20px;
-    }
+<style>
+* {
+  box-sizing: border-box;
+  user-select: none;
+  -webkit-user-select: none; /* Safari */
+  -moz-user-select: none;    /* Firefox */
+  -ms-user-select: none;     /* IE10+ */
+  -webkit-tap-highlight-color: transparent;
+}
 
-    .header-wrapper {
-      width: 100%;
-      max-width: 460px;
-      position: fixed;
-      top: 0;
-      left: 50%;
-      transform: translateX(-50%);
-      background: #181818;
-      padding: 10px 0 12px;
-      z-index: 9999;
-      box-sizing: border-box;
-      border-bottom: 1px solid #2a2a2a;
-      user-select: none;
-    }
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
+    Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  background: #121212;
+  color: #eee;
+  display: flex;
+  justify-content: center;
+  padding: 0 20px;
+}
 
-    header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 14px 28px;
-      background: #222;
-      border-radius: 40px;
-      border: 1px solid #333;
-      user-select: none;
-    }
+.header-wrapper {
+  width: 100%;
+  max-width: 460px;
+  position: fixed;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #181818;
+  padding: 10px 0 12px;
+  z-index: 9999;
+  border-bottom: 1px solid #2a2a2a;
+}
 
-    .logo-container {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-    }
-    .logo {
-      width: 42px;
-      height: 42px;
-      background: linear-gradient(135deg, #4ade80, #22c55e);
-      border-radius: 12px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-weight: 700;
-      font-size: 26px;
-      color: white;
-      user-select: none;
-    }
-    .site-name {
-      font-weight: 700;
-      font-size: 18px;
-      color: #eee;
-      user-select: none;
-    }
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 28px;
+  background: #222;
+  border-radius: 40px;
+  border: 1px solid #333;
+}
 
-    .balance-btn {
-      background: #22c55e;
-      color: white;
-      font-weight: 600;
-      font-size: 16px;
-      padding: 10px 30px;
-      border-radius: 9999px;
-      border: 2px solid black;
-      cursor: pointer;
-      transition: background 0.25s ease;
-      user-select: none;
-      outline: none;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .balance-btn:focus {
-      outline: none;
-    }
+.logo-container {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
 
-    .main {
-      margin-top: 90px; /* moved sections closer to header */
-      max-width: 460px;
-      width: 100%;
-      user-select: none;
-    }
+.logo {
+  width: 42px;
+  height: 42px;
+  background: linear-gradient(135deg, #4ade80, #22c55e);
+  border-radius: 12px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: 700;
+  font-size: 26px;
+  color: white;
+}
 
-    .sections {
-      display: flex;
-      justify-content: space-between;
-      padding: 0 12px;
-      margin-bottom: 16px;
-      border-bottom: 1px solid #333;
-      user-select: none;
-      flex-direction: row; /* always row, no stacking */
-    }
+.site-name {
+  font-weight: 700;
+  font-size: 18px;
+  color: #eee;
+}
 
-    .section {
-      position: relative;
-      width: 48%;
-      background: transparent;
-      padding: 14px 0;
-      border-radius: 6px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 15px;
-      font-weight: 600;
-      color: #aaa;
-      box-shadow: none;
-      border-bottom: 3px solid transparent;
-      cursor: pointer;
-      transition: color 0.3s ease, border-color 0.3s ease;
-      justify-content: center;
-      user-select: none;
-      outline: none;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .section:hover {
-      color: #22c55e;
-    }
+.balance-btn {
+  background: #22c55e;
+  color: white;
+  font-weight: 600;
+  font-size: 16px;
+  padding: 10px 30px;
+  border-radius: 9999px;
+  border: 2px solid black;
+  cursor: pointer;
+  transition: background 0.25s ease;
+  outline: none;
+}
 
-    .section.active,
-    .section:focus {
-      color: #22c55e;
-      border-bottom-color: #22c55e;
-      font-weight: 700;
-      outline: none !important;
-    }
+.balance-btn:focus {
+  outline: none;
+}
 
-    .section:focus {
-      outline: none !important;
-    }
+.main {
+  margin-top: 90px;
+  max-width: 460px;
+  width: 100%;
+}
 
-    /* Icons container size */
-    .section-icon {
-      width: 26px;
-      height: 26px;
-      flex-shrink: 0;
-      stroke-width: 2.2;
-    }
-    .section-icon svg {
-      width: 100%;
-      height: 100%;
-      stroke: currentColor;
-      fill: none;
-      stroke-linejoin: round;
-      stroke-linecap: round;
-    }
+.sections {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 12px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid #333;
+  flex-direction: row;
+}
 
-    /* Special fill for Make Money icon */
-    .make-money-icon svg {
-      fill: currentColor;
-      stroke: none;
-    }
+.section {
+  position: relative;
+  width: 48%;
+  background: transparent;
+  padding: 14px 0;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #aaa;
+  border-bottom: 3px solid transparent;
+  cursor: pointer;
+  transition: color 0.3s ease, border-color 0.3s ease;
+  justify-content: center;
+  outline: none;
+}
 
-    main {
-      padding: 0 12px;
-      color: #ccc;
-      min-height: 160px;
-      user-select: text; /* Allow text selection inside content */
-    }
+.section:hover {
+  color: #22c55e;
+}
 
-    main h1 {
-      color: #eee;
-      user-select: text;
-    }
+.section.active,
+.section:focus {
+  color: #22c55e;
+  border-bottom-color: #22c55e;
+  font-weight: 700;
+  outline: none !important;
+}
 
-    main p {
-      user-select: text;
-    }
+.section:focus {
+  outline: none !important;
+}
 
-    /* Keep header and sections nice on mobile but no stacking */
-    @media (max-width: 480px) {
-      .sections {
-        flex-direction: row; /* keep side by side on mobile */
-        gap: 12px;
-        padding: 0 8px;
-      }
-      .section {
-        width: 48%;
-        justify-content: center;
-        padding-left: 0;
-      }
-      header {
-        padding: 14px 20px;
-      }
-      .header-wrapper {
-        padding: 8px 0 10px;
-      }
-    }
-    #cashout-form input {
+.section-icon {
+  width: 26px;
+  height: 26px;
+  flex-shrink: 0;
+  stroke-width: 2.2;
+}
+
+.section-icon svg {
+  width: 100%;
+  height: 100%;
+  stroke: currentColor;
+  fill: none;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.make-money-icon svg {
+  fill: currentColor;
+  stroke: none;
+}
+
+main {
+  padding: 0 12px;
+  color: #ccc;
+  min-height: 160px;
+}
+
+main h1 {
+  color: #eee;
+}
+
+main p {
+  /* user-select is disabled globally, so no override here */
+}
+
+@media (max-width: 480px) {
+  .sections {
+    flex-direction: row;
+    gap: 12px;
+    padding: 0 8px;
+  }
+  .section {
+    width: 48%;
+    justify-content: center;
+    padding-left: 0;
+  }
+  header {
+    padding: 14px 20px;
+  }
+  .header-wrapper {
+    padding: 8px 0 10px;
+  }
+}
+
+#cashout-form input {
   width: 100%;
   padding: 10px;
   border-radius: 8px;
@@ -211,16 +204,19 @@
   font-size: 14px;
   margin-bottom: 8px;
 }
+
 #cashout-form label {
   font-weight: 600;
   display: block;
   margin-bottom: 6px;
   color: #ccc;
 }
+
 #cashout-form small {
   color: #888;
   font-size: 13px;
 }
+
 .required {
   color: #f87171;
 }
@@ -238,10 +234,96 @@
   cursor: pointer;
   transition: background 0.2s ease;
 }
+
 .submit-btn:hover {
   background: #16a34a;
 }
-  </style>
+    #loader-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: #0b0f10;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      opacity: 1;
+      transition: opacity 1s ease;
+    }
+
+    .grid-loader {
+      display: grid;
+      grid-template-columns: repeat(3, 24px);
+      grid-gap: 10px;
+    }
+
+    .block {
+      width: 24px;
+      height: 24px;
+      background-color: #1f2a2e;
+      border-radius: 4px;
+      animation: cashPulse 1.3s infinite ease-in-out;
+    }
+
+    .block:nth-child(1) { animation-delay: 0s; }
+    .block:nth-child(2) { animation-delay: 0.1s; }
+    .block:nth-child(3) { animation-delay: 0.2s; }
+    .block:nth-child(4) { animation-delay: 0.3s; }
+    .block:nth-child(5) { animation-delay: 0.4s; background-color: #00ff9c; }
+    .block:nth-child(6) { animation-delay: 0.5s; }
+    .block:nth-child(7) { animation-delay: 0.6s; }
+    .block:nth-child(8) { animation-delay: 0.7s; }
+    .block:nth-child(9) { animation-delay: 0.8s; }
+
+    @keyframes cashPulse {
+      0%, 100% {
+        transform: scale(1);
+        background-color: #1f2a2e;
+      }
+      50% {
+        transform: scale(1.4);
+        background-color: #00ff9c;
+        box-shadow: 0 0 8px #00ff9c88;
+      }
+    }
+
+    .icon {
+      margin-top: 30px;
+      width: 32px;
+      height: 32px;
+      background-image: url('https://img.icons8.com/fluency/48/money.png');
+      background-size: contain;
+      background-repeat: no-repeat;
+      animation: iconJump 1.5s infinite ease-in-out;
+    }
+
+    .text {
+      margin-top: 10px;
+      color: #cddc39;
+      letter-spacing: 1.5px;
+      font-size: 1.05rem;
+      text-align: center;
+      animation: fadeText 2s ease-in-out infinite alternate;
+    }
+
+    @keyframes fadeText {
+      from { opacity: 0.4; transform: translateY(2px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes iconJump {
+      0%, 100% { transform: translateY(0); }
+      50%      { transform: translateY(-8px); }
+    }
+
+    .fade-out {
+      opacity: 0 !important;
+      pointer-events: none;
+    }
+</style>
 </head>
 <body>
   <div class="header-wrapper">
@@ -250,7 +332,7 @@
         <div class="logo">$</div>
         <div class="site-name">Earnify</div>
       </div>
-      <button class="balance-btn" tabindex="0">$0.00</button>
+      <button class="balance-btn" tabindex="0">LOADING</button>
     </header>
   </div>
 
@@ -279,8 +361,8 @@
     <main>
       <section id="make-money-content" role="tabpanel" aria-labelledby="make-money-tab">
         <h1>Make Money</h1>
-        <p>Complete tasks and earn real cash. Get started with offers and promotions to boost your earnings quickly.</p>
-      </section>
+        <div id="task-container"></div>
+        </section>
       <section id="cashout-content" role="tabpanel" aria-labelledby="cashout-tab" hidden>
        <h1>Cashout</h1>
 <p></p>
@@ -300,6 +382,22 @@
 </section>
     </main>
   </div>
+   <div id="loader-overlay">
+    <div class="grid-loader">
+      <div class="block"></div>
+      <div class="block"></div>
+      <div class="block"></div>
+      <div class="block"></div>
+      <div class="block"></div>
+      <div class="block"></div>
+      <div class="block"></div>
+      <div class="block"></div>
+      <div class="block"></div>
+    </div>
+    <div class="icon"></div>
+    <div class="text">Building your earnings...</div>
+  </div>
+
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
   import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
@@ -320,14 +418,16 @@
   const auth = getAuth(app);
   const db = getDatabase(app);
 
+  // UI references
   const balanceBtn = document.querySelector('.balance-btn');
   const providerSelect = document.getElementById('provider-select');
   const formContainer = document.getElementById('cashout-form');
+  const taskContainer = document.getElementById('task-container');
 
   let currentUser = null;
   let userBalanceRef = null;
 
-  // Show balance or login prompt
+  // --- Balance UI updates ---
   function updateBalanceUI(balance) {
     balanceBtn.textContent = `$${(balance || 0).toFixed(2)}`;
   }
@@ -336,25 +436,304 @@
     updateBalanceUI(0);
     formContainer.innerHTML = '';
     providerSelect.value = '';
+    taskContainer.innerHTML = '<p>Please log in to see tasks.</p>';
   }
 
-  // Listen for auth state changes
+  // --- Cashout form templates ---
+  const formTemplates = {
+    paypal: {
+      min: 10,
+      max: 100,
+      html: `
+        <label>Withdraw Amount <span class="required">*</span>:</label>
+        <input type="number" id="amount" placeholder="e.g. 25" required />
+        <label>Email <span class="required">*</span>:</label>
+        <input type="email" id="email" required />
+        <label>Confirm Email <span class="required">*</span>:</label>
+        <input type="email" id="confirmEmail" required />
+      `
+    },
+    bank: {
+      min: 15,
+      max: 500,
+      html: `
+        <label>Withdraw Amount <span class="required">*</span>:</label>
+        <input type="number" id="amount" required />
+        <label>First Name <span class="required">*</span>:</label>
+        <input type="text" id="fname" required />
+        <label>Last Name <span class="required">*</span>:</label>
+        <input type="text" id="lname" required />
+        <label>Email <span class="required">*</span>:</label>
+        <input type="email" id="email" required />
+        <label>Account Number <span class="required">*</span>:</label>
+        <input type="text" id="account" required />
+        <label>Bank Name <span class="required">*</span>:</label>
+        <input type="text" id="bank" required />
+        <label>Country <span class="required">*</span>:</label>
+        <input type="text" id="country" required />
+        <label>Phone Number <span class="required">*</span>:</label>
+        <input type="tel" id="phone" required />
+      `
+    },
+    payoneer: {
+      min: 20,
+      max: 250,
+      html: `
+        <label>Withdraw Amount <span class="required">*</span>:</label>
+        <input type="number" id="amount" required />
+        <label>Payoneer Email <span class="required">*</span>:</label>
+        <input type="email" id="email" required />
+      `
+    },
+    amazon: {
+      min: 5,
+      max: 100,
+      html: `
+        <label>Withdraw Amount <span class="required">*</span>:</label>
+        <input type="number" id="amount" required />
+        <label>Email for Gift Card <span class="required">*</span>:</label>
+        <input type="email" id="email" required />
+      `
+    },
+    bitcoin: {
+      min: 20,
+      max: 300,
+      html: `
+        <label>Withdraw Amount <span class="required">*</span>:</label>
+        <input type="number" id="amount" required />
+        <label>Bitcoin Wallet Address <span class="required">*</span>:</label>
+        <input type="text" id="wallet" required />
+      `
+    },
+    usdd: {
+      min: 20,
+      max: 300,
+      html: `
+        <label>Withdraw Amount <span class="required">*</span>:</label>
+        <input type="number" id="amount" required />
+        <label>TRC20 Wallet Address <span class="required">*</span>:</label>
+        <input type="text" id="wallet" required />
+      `
+    }
+  };
+
+  // --- Load tasks from Firebase and render ---
+  function loadTasks() {
+    if (!currentUser) {
+      taskContainer.innerHTML = '<p>Please log in to see tasks.</p>';
+      return;
+    }
+    const tasksRef = ref(db, 'tasks');
+    onValue(tasksRef, snapshot => {
+      const tasks = snapshot.val();
+      if (!tasks) {
+        taskContainer.innerHTML = '<p>No tasks available.</p>';
+        return;
+      }
+      taskContainer.innerHTML = '';
+      const taskEntries = Object.entries(tasks).slice(0, 10);
+      taskEntries.forEach(([taskId, task]) => {
+        const taskEl = document.createElement('div');
+        taskEl.className = 'task-card';
+        taskEl.style.cssText = `
+          display: flex; 
+          align-items: center; 
+          border: 1px solid #ddd; 
+          padding: 12px; 
+          margin-bottom: 12px; 
+          border-radius: 8px;
+          background: #fff;
+        `;
+
+        // Image left
+        const img = document.createElement('img');
+        img.src = task.image;
+        img.alt = task.title;
+        img.style.cssText = `
+          width: 120px; 
+          height: 90px; 
+          object-fit: cover; 
+          border-radius: 6px; 
+          margin-right: 16px;
+          flex-shrink: 0;
+        `;
+
+        // Right content
+        const rightDiv = document.createElement('div');
+        rightDiv.style.flex = '1';
+
+        const title = document.createElement('h3');
+        title.textContent = task.title;
+        title.style.margin = '0 0 6px 0';
+
+        const desc = document.createElement('p');
+        desc.textContent = task.description;
+        desc.style.margin = '0 0 8px 0';
+        desc.style.color = '#555';
+
+        const bottomDiv = document.createElement('div');
+        bottomDiv.style.display = 'flex';
+        bottomDiv.style.justifyContent = 'space-between';
+        bottomDiv.style.alignItems = 'center';
+
+        const reward = document.createElement('span');
+        reward.textContent = `Reward: $${task.amount.toFixed(2)}`;
+        reward.style.fontWeight = '600';
+        reward.style.color = '#1a8917';
+
+        const btn = document.createElement('button');
+        btn.textContent = 'Complete Task';
+        btn.style.padding = '6px 14px';
+        btn.style.border = 'none';
+        btn.style.backgroundColor = '#2563eb';
+        btn.style.color = 'white';
+        btn.style.borderRadius = '4px';
+        btn.style.cursor = 'pointer';
+        btn.addEventListener('click', () => {
+          window.open(task.url, '_blank');
+        });
+
+        bottomDiv.appendChild(reward);
+        bottomDiv.appendChild(btn);
+
+        rightDiv.appendChild(title);
+        rightDiv.appendChild(desc);
+        rightDiv.appendChild(bottomDiv);
+
+        taskEl.appendChild(img);
+        taskEl.appendChild(rightDiv);
+
+        taskContainer.appendChild(taskEl);
+      });
+    });
+  }
+
+  // --- Auth state changes ---
   onAuthStateChanged(auth, user => {
     currentUser = user;
     if (user) {
-      // Setup balance reference
+      // Setup balance listener
       userBalanceRef = ref(db, `users/${user.uid}/balance`);
-      // Listen for balance updates
       onValue(userBalanceRef, snapshot => {
         const balance = snapshot.val();
         updateBalanceUI(balance);
       });
+      loadTasks();
     } else {
       resetUIForLogout();
     }
   });
 
-  // Tab navigation code unchanged
+  // --- Cashout provider selection ---
+  providerSelect.addEventListener('change', () => {
+    const selected = providerSelect.value;
+    if (!selected) {
+      formContainer.innerHTML = '';
+      return;
+    }
+    const { html } = formTemplates[selected];
+    formContainer.innerHTML = `
+      <form id="cashoutRequestForm">
+        ${html}
+        <button type="submit" class="submit-btn">Confirm Cashout</button>
+        <small id="form-error" style="color:#f87171; display:none; margin-top:8px;"></small>
+      </form>
+    `;
+  });
+
+  // --- Cashout form submit handler ---
+  formContainer.addEventListener('submit', async function (e) {
+    if (!e.target.matches('#cashoutRequestForm')) return;
+    e.preventDefault();
+    if (!currentUser) {
+      alert("Please log in to request a cashout.");
+      return;
+    }
+
+    const selected = providerSelect.value;
+    const form = e.target;
+    const fields = form.querySelectorAll('input[required]');
+    const errorMsg = form.querySelector('#form-error');
+    const amountInput = form.querySelector('#amount');
+    const amount = parseFloat(amountInput?.value);
+    const { min, max } = formTemplates[selected];
+
+    // Validation
+    let allFilled = true;
+    fields.forEach(f => {
+      if (!f.value.trim()) {
+        allFilled = false;
+      }
+    });
+    if (!allFilled) {
+      errorMsg.textContent = 'Please fill in all required fields.';
+      errorMsg.style.display = 'block';
+      return;
+    }
+    if (isNaN(amount) || amount < min || amount > max) {
+      errorMsg.textContent = `Amount must be between $${min} and $${max}.`;
+      errorMsg.style.display = 'block';
+      return;
+    }
+    if (selected === 'paypal') {
+      const email = form.querySelector('#email').value.trim();
+      const confirmEmail = form.querySelector('#confirmEmail').value.trim();
+      if (email.toLowerCase() !== confirmEmail.toLowerCase()) {
+        errorMsg.textContent = "Email and Confirm Email do not match.";
+        errorMsg.style.display = 'block';
+        return;
+      }
+    }
+    errorMsg.style.display = 'none';
+
+    try {
+      // Deduct balance transactionally
+      const userBalanceRef = ref(db, `users/${currentUser.uid}/balance`);
+      const cashoutRequestsRef = ref(db, `cashoutRequests`);
+
+      const transactionResult = await runTransaction(userBalanceRef, (currentBalance) => {
+        if (currentBalance === null || currentBalance < amount) {
+          return; // Abort transaction - insufficient balance
+        }
+        return currentBalance - amount;
+      });
+
+      if (!transactionResult.committed) {
+        errorMsg.textContent = "Insufficient balance for this cashout.";
+        errorMsg.style.display = 'block';
+        return;
+      }
+
+      // Save cashout request record
+      const cashoutData = {
+        uid: currentUser.uid,
+        provider: selected,
+        amount: amount,
+        details: {},
+        status: 'pending',
+        createdAt: serverTimestamp()
+      };
+      fields.forEach(f => {
+        if (f.id !== 'amount') {
+          cashoutData.details[f.id] = f.value.trim();
+        }
+      });
+
+      await push(cashoutRequestsRef, cashoutData);
+
+      alert('Cashout request submitted successfully!');
+      form.reset();
+      providerSelect.value = '';
+      formContainer.innerHTML = '';
+
+    } catch (error) {
+      console.error(error);
+      errorMsg.textContent = "An error occurred while submitting your cashout request.";
+      errorMsg.style.display = 'block';
+    }
+  });
+
+  // --- Tab navigation (unchanged, just kept here) ---
   const tabs = document.querySelectorAll('.section');
   const contents = document.querySelectorAll('main > section');
 
@@ -381,215 +760,11 @@
       c.hidden = c.id !== tabName + '-content';
     });
   }
-
-  // Cashout form templates (unchanged)
-  const formTemplates = {
-    paypal: {
-      min: 10,
-      max: 100,
-      html: `
-        <label>Withdraw Amount <span class="required">*</span>:</label>
-        <input type="number" id="amount" placeholder="e.g. 25" required />
-
-        <label>Email <span class="required">*</span>:</label>
-        <input type="email" id="email" required />
-
-        <label>Confirm Email <span class="required">*</span>:</label>
-        <input type="email" id="confirmEmail" required />
-      `
-    },
-    bank: {
-      min: 15,
-      max: 500,
-      html: `
-        <label>Withdraw Amount <span class="required">*</span>:</label>
-        <input type="number" id="amount" required />
-
-        <label>First Name <span class="required">*</span>:</label>
-        <input type="text" id="fname" required />
-
-        <label>Last Name <span class="required">*</span>:</label>
-        <input type="text" id="lname" required />
-
-        <label>Email <span class="required">*</span>:</label>
-        <input type="email" id="email" required />
-
-        <label>Account Number <span class="required">*</span>:</label>
-        <input type="text" id="account" required />
-
-        <label>Bank Name <span class="required">*</span>:</label>
-        <input type="text" id="bank" required />
-
-        <label>Country <span class="required">*</span>:</label>
-        <input type="text" id="country" required />
-
-        <label>Phone Number <span class="required">*</span>:</label>
-        <input type="tel" id="phone" required />
-      `
-    },
-    payoneer: {
-      min: 20,
-      max: 250,
-      html: `
-        <label>Withdraw Amount <span class="required">*</span>:</label>
-        <input type="number" id="amount" required />
-
-        <label>Payoneer Email <span class="required">*</span>:</label>
-        <input type="email" id="email" required />
-      `
-    },
-    amazon: {
-      min: 5,
-      max: 100,
-      html: `
-        <label>Withdraw Amount <span class="required">*</span>:</label>
-        <input type="number" id="amount" required />
-
-        <label>Email for Gift Card <span class="required">*</span>:</label>
-        <input type="email" id="email" required />
-      `
-    },
-    bitcoin: {
-      min: 20,
-      max: 300,
-      html: `
-        <label>Withdraw Amount <span class="required">*</span>:</label>
-        <input type="number" id="amount" required />
-
-        <label>Bitcoin Wallet Address <span class="required">*</span>:</label>
-        <input type="text" id="wallet" required />
-      `
-    },
-    usdd: {
-      min: 20,
-      max: 300,
-      html: `
-        <label>Withdraw Amount <span class="required">*</span>:</label>
-        <input type="number" id="amount" required />
-
-        <label>TRC20 Wallet Address <span class="required">*</span>:</label>
-        <input type="text" id="wallet" required />
-      `
-    }
-  };
-
-  providerSelect.addEventListener('change', () => {
-    const selected = providerSelect.value;
-    if (!selected) {
-      formContainer.innerHTML = '';
-      return;
-    }
-
-    const { html } = formTemplates[selected];
-    formContainer.innerHTML = `
-      <form id="cashoutRequestForm">
-        ${html}
-        <button type="submit" class="submit-btn">Confirm Cashout</button>
-        <small id="form-error" style="color:#f87171; display:none; margin-top:8px;"></small>
-      </form>
-    `;
-  });
-
-  formContainer.addEventListener('submit', async function (e) {
-    if (!e.target.matches('#cashoutRequestForm')) return;
-
-    e.preventDefault();
-
-    if (!currentUser) {
-      alert("Please log in to request a cashout.");
-      return;
-    }
-
-    const selected = providerSelect.value;
-    const form = e.target;
-    const fields = form.querySelectorAll('input[required]');
-    const errorMsg = form.querySelector('#form-error');
-    const amountInput = form.querySelector('#amount');
-    const amount = parseFloat(amountInput?.value);
-    const { min, max } = formTemplates[selected];
-
-    // Validation
-    let allFilled = true;
-    fields.forEach(f => {
-      if (!f.value.trim()) {
-        allFilled = false;
-      }
-    });
-
-    if (!allFilled) {
-      errorMsg.textContent = 'Please fill in all required fields.';
-      errorMsg.style.display = 'block';
-      return;
-    }
-
-    if (isNaN(amount) || amount < min || amount > max) {
-      errorMsg.textContent = `Amount must be between $${min} and $${max}.`;
-      errorMsg.style.display = 'block';
-      return;
-    }
-
-    // For PayPal, confirm email match
-    if (selected === 'paypal') {
-      const email = form.querySelector('#email').value.trim();
-      const confirmEmail = form.querySelector('#confirmEmail').value.trim();
-      if (email.toLowerCase() !== confirmEmail.toLowerCase()) {
-        errorMsg.textContent = "Email and Confirm Email do not match.";
-        errorMsg.style.display = 'block';
-        return;
-      }
-    }
-
-    errorMsg.style.display = 'none';
-
-    try {
-      // Transactionally check and deduct balance
-      const userBalanceRef = ref(db, `users/${currentUser.uid}/balance`);
-      const cashoutRequestsRef = ref(db, `cashoutRequests`);
-
-      // Use a transaction to prevent race conditions and cheating
-      const transactionResult = await runTransaction(userBalanceRef, (currentBalance) => {
-        if (currentBalance === null || currentBalance < amount) {
-          return; // Abort transaction - insufficient balance
-        }
-        return currentBalance - amount;
-      });
-
-      if (!transactionResult.committed) {
-        errorMsg.textContent = "Insufficient balance for this cashout.";
-        errorMsg.style.display = 'block';
-        return;
-      }
-
-      // Save cashout request record
-      const cashoutData = {
-        uid: currentUser.uid,
-        provider: selected,
-        amount: amount,
-        details: {},
-        status: 'pending',
-        createdAt: serverTimestamp()
-      };
-
-      // Collect details except amount
-      fields.forEach(f => {
-        if (f.id !== 'amount') {
-          cashoutData.details[f.id] = f.value.trim();
-        }
-      });
-
-      await push(cashoutRequestsRef, cashoutData);
-
-      alert('Cashout request submitted successfully!');
-      form.reset();
-      providerSelect.value = '';
-      formContainer.innerHTML = '';
-
-    } catch (error) {
-      console.error(error);
-      errorMsg.textContent = "An error occurred while submitting your cashout request.";
-      errorMsg.style.display = 'block';
-    }
-  });
+    // Hide loader after 5 seconds
+    setTimeout(() => {
+      const loader = document.getElementById('loader-overlay');
+      loader.classList.add('fade-out');
+    }, 5000);
 </script>
 </body>
 </html>
