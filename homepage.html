@@ -1019,7 +1019,7 @@ html, body {
                   showAlert('An error occurred while updating your balance.', 'error');
                 });
               } else if (elapsedTime < 20000) {
-                alert('You did not stay on the task page long enough. No reward granted.');
+                showAlert('You did not stay on the task page long enough. No reward granted.', 'error');
               }
             }
           }, 1000);
@@ -1139,14 +1139,28 @@ html, body {
       }
 
       // Save cashout request details
-      const newRequestRef = push(cashoutRequestsRef);
-      await newRequestRef.set({
-        userId: currentUser.uid,
-        provider: selected,
-        amount: amount,
-        timestamp: serverTimestamp(),
-        status: 'pending'
-      });
+      try {
+        const newRequestRef = push(cashoutRequestsRef);
+        await newRequestRef.set({
+          userId: currentUser.uid,
+          provider: selected,
+          amount: amount,
+          timestamp: serverTimestamp(),
+          status: 'pending'
+        });
+      } catch (saveError) {
+        console.error('Error saving cashout request:', saveError);
+
+        // Refund balance if saving request fails
+        await runTransaction(userBalanceRef, currentBalance => {
+          if (currentBalance === null) return amount;
+          return currentBalance + amount;
+        });
+
+        errorMsg.textContent = 'Failed to submit cashout request. Your balance has been refunded. Please try again.';
+        errorMsg.style.display = 'block';
+        return;
+      }
 
       alert('Cashout request submitted successfully!');
       form.reset();
@@ -1159,61 +1173,65 @@ html, body {
       errorMsg.style.display = 'block';
     }
   });
-      // Hide loader after 5 seconds
-    setTimeout(() => {
-      const loader = document.getElementById('loader-overlay');
-      loader.classList.add('fade-out');
-    }, 5000);
-const makeMoneyTabBtn = document.getElementById('make-money-tab');
-const cashoutTabBtn = document.getElementById('cashout-tab');
-const makeMoneyContent = document.getElementById('make-money-content');
-const cashoutContent = document.getElementById('cashout-content');
 
-makeMoneyTabBtn.addEventListener('click', () => {
-  makeMoneyContent.removeAttribute('hidden');
-  cashoutContent.setAttribute('hidden', '');
-});
+  // Hide loader after 5 seconds
+  setTimeout(() => {
+    const loader = document.getElementById('loader-overlay');
+    loader.classList.add('fade-out');
+  }, 5000);
 
-cashoutTabBtn.addEventListener('click', () => {
-  cashoutContent.removeAttribute('hidden');
-  makeMoneyContent.setAttribute('hidden', '');
-});
-makeMoneyTabBtn.addEventListener('click', () => {
-  makeMoneyContent.removeAttribute('hidden');
-  cashoutContent.setAttribute('hidden', '');
+  const makeMoneyTabBtn = document.getElementById('make-money-tab');
+  const cashoutTabBtn = document.getElementById('cashout-tab');
+  const makeMoneyContent = document.getElementById('make-money-content');
+  const cashoutContent = document.getElementById('cashout-content');
 
-  makeMoneyTabBtn.classList.add('active');
-  cashoutTabBtn.classList.remove('active');
-});
+  makeMoneyTabBtn.addEventListener('click', () => {
+    makeMoneyContent.removeAttribute('hidden');
+    cashoutContent.setAttribute('hidden', '');
+  });
 
-cashoutTabBtn.addEventListener('click', () => {
-  cashoutContent.removeAttribute('hidden');
-  makeMoneyContent.setAttribute('hidden', '');
+  cashoutTabBtn.addEventListener('click', () => {
+    cashoutContent.removeAttribute('hidden');
+    makeMoneyContent.setAttribute('hidden', '');
+  });
 
-  cashoutTabBtn.classList.add('active');
-  makeMoneyTabBtn.classList.remove('active');
-});
-function showAlert(message, type = 'success') {
-  const backdrop = document.getElementById('customAlertBackdrop');
-  const alertBox = document.getElementById('customAlert');
-  const messageDiv = document.getElementById('customAlertMessage');
+  makeMoneyTabBtn.addEventListener('click', () => {
+    makeMoneyContent.removeAttribute('hidden');
+    cashoutContent.setAttribute('hidden', '');
 
-  messageDiv.textContent = message;
+    makeMoneyTabBtn.classList.add('active');
+    cashoutTabBtn.classList.remove('active');
+  });
 
-  alertBox.classList.remove('success', 'error');
-  alertBox.classList.add(type);
-  alertBox.classList.add('show');
+  cashoutTabBtn.addEventListener('click', () => {
+    cashoutContent.removeAttribute('hidden');
+    makeMoneyContent.setAttribute('hidden', '');
 
-  backdrop.style.display = 'flex';
-}
+    cashoutTabBtn.classList.add('active');
+    makeMoneyTabBtn.classList.remove('active');
+  });
 
-window.closeAlert = function() {
-  const backdrop = document.getElementById('customAlertBackdrop');
-  const alertBox = document.getElementById('customAlert');
+  function showAlert(message, type = 'success') {
+    const backdrop = document.getElementById('customAlertBackdrop');
+    const alertBox = document.getElementById('customAlert');
+    const messageDiv = document.getElementById('customAlertMessage');
 
-  alertBox.classList.remove('show');
-  backdrop.style.display = 'none';
-};
+    messageDiv.textContent = message;
+
+    alertBox.classList.remove('success', 'error');
+    alertBox.classList.add(type);
+    alertBox.classList.add('show');
+
+    backdrop.style.display = 'flex';
+  }
+
+  window.closeAlert = function() {
+    const backdrop = document.getElementById('customAlertBackdrop');
+    const alertBox = document.getElementById('customAlert');
+
+    alertBox.classList.remove('show');
+    backdrop.style.display = 'none';
+  };
 
   function isMobileDevice() {
     return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
