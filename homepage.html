@@ -972,11 +972,11 @@ html, body {
           if (clickedTasks[taskId]?.clickTimestamp) {
             const elapsed = now - clickedTasks[taskId].clickTimestamp;
             if (elapsed < 20000) {
-              alert(`Please stay on the task page for at least 20 seconds to earn the reward. Wait ${Math.ceil((20000 - elapsed) / 1000)} more seconds.`);
-              window.open(task.url, '_blank');
+           showAlert(`Please stay on the task page for at least 20 seconds to earn the reward. Wait ${Math.ceil((20000 - elapsed) / 1000)} more seconds.`, 'error');
+             window.open(task.url, '_blank');
               return;
-            }
           }
+            }
 
           // Register click timestamp
           clickedTasks[taskId] = {
@@ -1019,7 +1019,7 @@ html, body {
                   showAlert('An error occurred while updating your balance.', 'error');
                 });
               } else if (elapsedTime < 20000) {
-                showAlert('You did not stay on the task page long enough. No reward granted.', 'error');
+                showAlert('You did not complete the task. No reward granted.', 'error');
               }
             }
           }, 1000);
