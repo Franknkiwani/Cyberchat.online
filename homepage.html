@@ -323,6 +323,43 @@ main p {
       opacity: 0 !important;
       pointer-events: none;
     }
+    button.active {
+  background-color: #2563eb;  /* highlight color */
+  color: white;
+  /* other styling for active tab */
+}
+
+.modal {
+  display: none; 
+  position: fixed;
+  z-index: 10000;
+  left: 0; top: 0;
+  width: 100%; height: 100%;
+  background-color: rgba(0,0,0,0.7);
+  justify-content: center;
+  align-items: center;
+}
+#customAlert {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: #4caf50;       /* green for success */
+  color: white;
+  padding: 14px 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgb(0 0 0 / 0.2);
+  font-family: sans-serif;
+  font-size: 16px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  z-index: 9999;
+}
+
+#customAlert.show {
+  opacity: 1;
+  pointer-events: auto;
+}
 </style>
 </head>
 <body>
@@ -397,7 +434,7 @@ main p {
     <div class="icon"></div>
     <div class="text">Building your earnings...</div>
   </div>
-
+  <div id="customAlert"></div>
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
   import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
@@ -517,7 +554,7 @@ main p {
     }
   };
 
-  // --- Load tasks from Firebase and render ---
+  // --- Load tasks from Firebase and render with anti-cheat 20-sec timer ---
   function loadTasks() {
     if (!currentUser) {
       taskContainer.innerHTML = '<p>Please log in to see tasks.</p>';
@@ -536,13 +573,13 @@ main p {
         const taskEl = document.createElement('div');
         taskEl.className = 'task-card';
         taskEl.style.cssText = `
-          display: flex; 
-          align-items: center; 
-          border: 1px solid #ddd; 
-          padding: 12px; 
-          margin-bottom: 12px; 
+          display: flex;
+          align-items: center;
+          border: 1px solid #444;
+          padding: 12px;
+          margin-bottom: 12px;
           border-radius: 8px;
-          background: #fff;
+          background: #1e1e1e;
         `;
 
         // Image left
@@ -550,10 +587,10 @@ main p {
         img.src = task.image;
         img.alt = task.title;
         img.style.cssText = `
-          width: 120px; 
-          height: 90px; 
-          object-fit: cover; 
-          border-radius: 6px; 
+          width: 120px;
+          height: 90px;
+          object-fit: cover;
+          border-radius: 6px;
           margin-right: 16px;
           flex-shrink: 0;
         `;
@@ -569,13 +606,14 @@ main p {
         const desc = document.createElement('p');
         desc.textContent = task.description;
         desc.style.margin = '0 0 8px 0';
-        desc.style.color = '#555';
+        desc.style.color = '#22d3ee';
 
         const bottomDiv = document.createElement('div');
         bottomDiv.style.display = 'flex';
-        bottomDiv.style.justifyContent = 'space-between';
-        bottomDiv.style.alignItems = 'center';
-
+        bottomDiv.style.flexDirection = 'column';   // stack vertically
+        bottomDiv.style.alignItems = 'flex-start';  // left align
+        bottomDiv.style.gap = '8px';                 // spacing between reward and button
+        
         const reward = document.createElement('span');
         reward.textContent = `Reward: $${task.amount.toFixed(2)}`;
         reward.style.fontWeight = '600';
@@ -589,8 +627,85 @@ main p {
         btn.style.color = 'white';
         btn.style.borderRadius = '4px';
         btn.style.cursor = 'pointer';
+
         btn.addEventListener('click', () => {
-          window.open(task.url, '_blank');
+          if (!currentUser) {
+            alert('Please log in to complete tasks.');
+            return;
+          }
+          const userId = currentUser.uid;
+          const clickedTasksKey = `clickedTasks_${userId}`;
+          const now = Date.now();
+
+          // Load clicked tasks info from localStorage or default
+          let clickedTasks = {};
+          try {
+            clickedTasks = JSON.parse(localStorage.getItem(clickedTasksKey)) || {};
+          } catch {
+            clickedTasks = {};
+          }
+
+        if (clickedTasks[taskId]?.completed) {
+         showAlert('You have already completed this task and received the reward.', 'error');
+           window.open(task.url, '_blank');
+            return;
+          }
+
+          // If a timer is running and not passed 20 seconds, deny reward
+          if (clickedTasks[taskId]?.clickTimestamp) {
+            const elapsed = now - clickedTasks[taskId].clickTimestamp;
+            if (elapsed < 20000) {
+              alert(`Please stay on the task page for at least 20 seconds to earn the reward. Wait ${Math.ceil((20000 - elapsed) / 1000)} more seconds.`);
+              window.open(task.url, '_blank');
+              return;
+            }
+          }
+
+          // Register click timestamp
+          clickedTasks[taskId] = {
+            clickTimestamp: now,
+            completed: false
+          };
+          localStorage.setItem(clickedTasksKey, JSON.stringify(clickedTasks));
+
+          // Save click to Firebase for tracking
+          const clicksRef = ref(db, `taskClicks/${userId}/${taskId}`);
+          push(clicksRef, {
+            timestamp: serverTimestamp()
+          });
+
+          // Open the task URL in a new tab/window
+          const newWindow = window.open(task.url, '_blank');
+
+          // Start a timer to check if user returns after 20 seconds
+          const checkInterval = setInterval(() => {
+            // If window closed, check if 20 seconds passed
+            if (newWindow.closed) {
+              clearInterval(checkInterval);
+              const clickData = JSON.parse(localStorage.getItem(clickedTasksKey)) || {};
+              const clickTime = clickData[taskId]?.clickTimestamp || 0;
+              const elapsedTime = Date.now() - clickTime;
+
+              if (elapsedTime >= 20000 && !clickData[taskId]?.completed) {
+                // Add reward to user balance
+                const userBalanceRef = ref(db, `users/${userId}/balance`);
+                runTransaction(userBalanceRef, currentBalance => {
+                  if (currentBalance === null) return task.amount;
+                  return currentBalance + task.amount;
+                }).then(() => {
+                  // Mark task as completed locally
+                  clickData[taskId].completed = true;
+                  localStorage.setItem(clickedTasksKey, JSON.stringify(clickData));
+               showAlert(`Congrats! You earned $${task.amount.toFixed(2)} for completing the task "${task.title}".`);
+                }).catch(err => {
+                  console.error('Error updating balance:', err);
+                  showAlert('An error occurred while updating your balance.', 'error');
+                });
+              } else if (elapsedTime < 20000) {
+                alert('You did not stay on the task page long enough. No reward granted.');
+              }
+            }
+          }, 1000);
         });
 
         bottomDiv.appendChild(reward);
@@ -691,35 +806,30 @@ main p {
       const userBalanceRef = ref(db, `users/${currentUser.uid}/balance`);
       const cashoutRequestsRef = ref(db, `cashoutRequests`);
 
-      const transactionResult = await runTransaction(userBalanceRef, (currentBalance) => {
+      const transactionResult = await runTransaction(userBalanceRef, currentBalance => {
         if (currentBalance === null || currentBalance < amount) {
-          return; // Abort transaction - insufficient balance
+          // Not enough balance, abort transaction
+          return;
         }
+        // Deduct the requested amount
         return currentBalance - amount;
       });
 
       if (!transactionResult.committed) {
-        errorMsg.textContent = "Insufficient balance for this cashout.";
+        errorMsg.textContent = 'Insufficient balance to complete cashout.';
         errorMsg.style.display = 'block';
         return;
       }
 
-      // Save cashout request record
-      const cashoutData = {
-        uid: currentUser.uid,
+      // Save cashout request details
+      const newRequestRef = push(cashoutRequestsRef);
+      await newRequestRef.set({
+        userId: currentUser.uid,
         provider: selected,
         amount: amount,
-        details: {},
-        status: 'pending',
-        createdAt: serverTimestamp()
-      };
-      fields.forEach(f => {
-        if (f.id !== 'amount') {
-          cashoutData.details[f.id] = f.value.trim();
-        }
+        timestamp: serverTimestamp(),
+        status: 'pending'
       });
-
-      await push(cashoutRequestsRef, cashoutData);
 
       alert('Cashout request submitted successfully!');
       form.reset();
@@ -727,44 +837,56 @@ main p {
       formContainer.innerHTML = '';
 
     } catch (error) {
-      console.error(error);
-      errorMsg.textContent = "An error occurred while submitting your cashout request.";
+      console.error('Cashout request error:', error);
+      errorMsg.textContent = 'An error occurred while submitting your request. Please try again.';
       errorMsg.style.display = 'block';
     }
   });
-
-  // --- Tab navigation (unchanged, just kept here) ---
-  const tabs = document.querySelectorAll('.section');
-  const contents = document.querySelectorAll('main > section');
-
-  tabs.forEach(tab => {
-    tab.addEventListener('click', () => {
-      activateTab(tab.dataset.tab);
-    });
-    tab.addEventListener('keydown', e => {
-      if (e.key === 'Enter' || e.key === ' ') {
-        e.preventDefault();
-        activateTab(tab.dataset.tab);
-      }
-    });
-  });
-
-  function activateTab(tabName) {
-    tabs.forEach(t => {
-      const selected = t.dataset.tab === tabName;
-      t.classList.toggle('active', selected);
-      t.setAttribute('aria-selected', selected);
-      if (selected) t.focus();
-    });
-    contents.forEach(c => {
-      c.hidden = c.id !== tabName + '-content';
-    });
-  }
-    // Hide loader after 5 seconds
+      // Hide loader after 5 seconds
     setTimeout(() => {
       const loader = document.getElementById('loader-overlay');
       loader.classList.add('fade-out');
     }, 5000);
+const makeMoneyTabBtn = document.getElementById('make-money-tab');
+const cashoutTabBtn = document.getElementById('cashout-tab');
+const makeMoneyContent = document.getElementById('make-money-content');
+const cashoutContent = document.getElementById('cashout-content');
+
+makeMoneyTabBtn.addEventListener('click', () => {
+  makeMoneyContent.removeAttribute('hidden');
+  cashoutContent.setAttribute('hidden', '');
+});
+
+cashoutTabBtn.addEventListener('click', () => {
+  cashoutContent.removeAttribute('hidden');
+  makeMoneyContent.setAttribute('hidden', '');
+});
+makeMoneyTabBtn.addEventListener('click', () => {
+  makeMoneyContent.removeAttribute('hidden');
+  cashoutContent.setAttribute('hidden', '');
+
+  makeMoneyTabBtn.classList.add('active');
+  cashoutTabBtn.classList.remove('active');
+});
+
+cashoutTabBtn.addEventListener('click', () => {
+  cashoutContent.removeAttribute('hidden');
+  makeMoneyContent.setAttribute('hidden', '');
+
+  cashoutTabBtn.classList.add('active');
+  makeMoneyTabBtn.classList.remove('active');
+});
+function showAlert(message, type = 'success') {
+  const alertBox = document.getElementById('customAlert');
+  alertBox.textContent = message;
+  alertBox.style.background = type === 'error' ? '#f44336' : '#4caf50'; // red or green
+  alertBox.classList.add('show');
+
+  setTimeout(() => {
+    alertBox.classList.remove('show');
+  }, 3000);
+}
 </script>
+
 </body>
 </html>
