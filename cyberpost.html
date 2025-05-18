@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Upload Post</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-900 text-white min-h-screen flex items-center justify-center p-4">
+
+  <div class="w-full max-w-md bg-gray-800 rounded-xl p-4 shadow-lg">
+    <h1 class="text-xl font-bold mb-4 text-center">Preview Your Post</h1>
+
+    <img id="previewImage" class="rounded-xl w-full h-64 object-cover mb-4" alt="Uploaded image preview" />
+
+    <textarea id="captionInput" placeholder="Write a caption..." class="w-full p-3 rounded bg-gray-700 text-white mb-4 resize-none"></textarea>
+
+    <button id="postBtn" class="w-full bg-cyan-600 hover:bg-cyan-700 p-3 rounded text-white font-semibold">Post</button>
+  </div>
+
+  <script>
+    // Load uploaded image from sessionStorage
+    const imageData = sessionStorage.getItem('uploadedImage');
+    const previewImage = document.getElementById('previewImage');
+    const postBtn = document.getElementById('postBtn');
+
+    if (!imageData) {
+      alert("No image selected.");
+      window.location.href = "index.html"; // or fallback
+    } else {
+      previewImage.src = imageData;
+    }
+
+    postBtn.onclick = () => {
+      const caption = document.getElementById('captionInput').value.trim();
+      if (!caption) {
+        alert("Please enter a caption.");
+        return;
+      }
+
+      // Here you would send `imageData` + `caption` to Firebase
+      console.log("Image data:", imageData);
+      console.log("Caption:", caption);
+
+      // Placeholder alert
+      alert("Post submitted! (This is a placeholder)");
+
+      // Optionally clear session and go back
+      sessionStorage.removeItem('uploadedImage');
+      window.location.href = "index.html"; // Redirect after post
+    };
+  </script>
+
+</body>
+</html>
