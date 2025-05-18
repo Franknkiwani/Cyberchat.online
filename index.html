@@ -1,391 +1,416 @@
 <!DOCTYPE html>
-<html lang="en" >
+<html lang="en" class="bg-gray-950 text-white select-none">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Login/Register - Make Money App</title>
+  <title>CYBERCHAT</title>
+  <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body, * {
-      user-select: none;
-      -webkit-user-select: none;
-      -moz-user-select: none;
-      -ms-user-select: none;
-    }
-    * {
+    *:focus {
       outline: none !important;
-      -webkit-tap-highlight-color: transparent;
-    }
-    body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; color: #333; }
-    .container { padding: 20px; max-width: 400px; margin: 60px auto; }
-    header { text-align: center; margin-bottom: 30px; }
-    h1 { font-size: 2rem; color: #2b8a3e; }
-    .card { background: #fff; border-radius: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); padding: 20px; display: flex; flex-direction: column; }
-    .btn { display: block; width: 100%; padding: 14px; background: #2b8a3e; color: #fff; border: none; border-radius: 12px; text-align: center; font-size: 1rem; cursor: pointer; margin-top: 10px; text-decoration: none; }
-    .btn-google { background: #4285F4; display: flex; align-items: center; justify-content: center; gap: 8px; border-radius: 50px; }
-    .btn-google img.google-icon { border-radius: 50%; height: 20px; width: 20px; }
-    input { width: 100%; padding: 12px; margin-top: 10px; border: 1px solid #ccc; border-radius: 10px; }
-    .separator { text-align: center; margin: 15px 0; color: #666; font-weight: 600; }
-    .toggle-text { text-align: center; margin: 20px 0 0; color: #555; cursor: pointer; }
-    .toggle-text span { color: #2b8a3e; text-decoration: underline; }
-    .forgot-password { text-align: right; margin-top: 8px; font-size: 0.9rem; }
-    .forgot-password a {
-      color: #2b8a3e;
-      text-decoration: underline;
-      cursor: pointer;
-      user-select: text;
-      -webkit-user-select: text;
-      -moz-user-select: text;
-      -ms-user-select: text;
-    }
-    /* Message area styles */
-    #message-area {
-      margin-top: 15px;
-      padding: 12px;
-      border-radius: 10px;
-      font-weight: 600;
-      display: none;
-    }
-    #message-area.error {
-      background-color: #ffe6e6;
-      color: #cc0000;
-      border: 1px solid #cc0000;
-    }
-    #message-area.success {
-      background-color: #e6ffe6;
-      color: #006600;
-      border: 1px solid #006600;
-    }
-    #loading-spinner {
-      margin: 10px auto;
-      border: 4px solid #f3f3f3;
-      border-top: 4px solid #2b8a3e;
-      border-radius: 50%;
-      width: 30px;
-      height: 30px;
-      animation: spin 1s linear infinite;
-      display: none;
-    }
-    @keyframes spin {
-      0% { transform: rotate(0deg);}
-      100% { transform: rotate(360deg);}
-    }
-    label.remember-me {
-      display: flex;
-      align-items: center;
-      margin-top: 10px;
-      font-size: 0.9rem;
-      cursor: pointer;
-      user-select: text;
-    }
-    label.remember-me input {
-      margin-right: 8px;
+      box-shadow: none !important;
     }
   </style>
 </head>
-<body>
-  <div class="container">
-    <header>
-      <h1>Make Money</h1>
-      <p id="subtitle">Login or Register to start earning</p>
-    </header>
+<body class="font-sans min-h-screen flex flex-col">
+  <!-- Header -->
+  <header class="p-3 bg-gray-900 shadow-md sticky top-0 z-50 flex justify-between items-center">
+    <h1 class="text-xl font-mono font-bold tracking-widest text-cyan-400 drop-shadow-[0_0_4px_rgba(6,182,212,0.7)] cursor-default select-none">
+      CYBER<span class="text-pink-500">CHAT</span>
+    </h1>
+    <button class="bg-cyan-600 hover:bg-cyan-700 text-white px-3 py-1 rounded-xl text-sm">New Post</button>
+  </header>
 
-    <div class="card" id="form-container">
+  <!-- Sections -->
+  <section id="homeSection" class="p-4 space-y-6 pb-24 block">
+    <input type="text" placeholder="Search posts..." class="w-full p-3 rounded-xl bg-gray-800 text-white placeholder-gray-400 mb-4" />
+    <div id="postsContainer" class="space-y-6"></div>
+  </section>
 
-      <!-- Login Form -->
-      <form id="login-form" style="display:flex; flex-direction: column;">
-        <h2 id="form-title">Login</h2>
-        <input type="email" id="login-email" placeholder="Email" required autocomplete="email" />
-        <input type="password" id="login-password" placeholder="Password" required autocomplete="current-password" />
-        
-        <label class="remember-me"><input type="checkbox" id="remember-me" /> Remember me</label>
-        
-        <div class="forgot-password"><a href="#" id="forgot-password-link">Forgot Password?</a></div>
-        <button type="submit" class="btn">Login</button>
+  <section id="uploadSection" class="p-4 hidden">
+    <h2 class="text-xl font-bold mb-4">Upload Content</h2>
+    <p class="text-gray-400">Upload form goes here.</p>
+  </section>
 
-        <div id="loading-spinner"></div>
+  <section id="profileSection" class="p-4 hidden">
+    <div class="flex items-center gap-4 mb-4">
+      <img src="https://i.pravatar.cc/80" class="w-16 h-16 rounded-full" alt="Profile Picture" />
+      <div>
+        <h3 class="text-lg font-semibold">@username</h3>
+        <p class="text-gray-400 text-sm">123 followers</p>
+      </div>
+    </div>
+    <p class="text-gray-400">Profile details and activity go here.</p>
+  </section>
 
-        <div class="separator">or</div>
+  <!-- Bottom Navigation -->
+  <footer class="fixed bottom-0 left-0 right-0 bg-gray-900 border-t border-gray-800 flex justify-around p-3 text-sm text-gray-400 md:hidden">
+    <button onclick="showSection('homeSection')" class="flex flex-col items-center text-cyan-500">
+      <svg class="w-5 h-5 mb-1" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path d="M3 12l2-2m0 0l7-7 7 7m-9 9V3" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+      Home
+    </button>
+    <button onclick="showSection('uploadSection')" class="flex flex-col items-center relative">
+      <div class="rounded-full border-2 border-cyan-500 p-2">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M12 4v16m8-8H4" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+      </div>
+      Upload
+    </button>
+    <button onclick="showSection('profileSection')" class="flex flex-col items-center">
+      <svg class="w-5 h-5 mb-1" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path d="M5.121 17.804A7.975 7.975 0 0012 20a7.975 7.975 0 006.879-2.196M15 11a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+      Profile
+    </button>
+  </footer>
 
-        <button type="button" id="google-login-btn" class="btn btn-google" aria-label="Continue with Google">
-          <img class="google-icon" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRPbae_HqhX9hAdb4v-sMse53Uw6mvG7x0kXWT6TlmxpjheUWk-4FHHdLf_&s=10" alt="Google logo" />
-          Continue with Google
-        </button>
-      </form>
 
-      <!-- Register Form -->
-      <form id="register-form" style="display:none; flex-direction: column;">
-        <h2>Register</h2>
-        <input type="text" id="register-name" placeholder="Full Name" required autocomplete="name" />
-        <input type="email" id="register-email" placeholder="Email" required autocomplete="email" />
-        <input type="password" id="register-password" placeholder="Password" required autocomplete="new-password" />
-        <small id="password-strength" style="color:#666; margin-top: 5px;"></small>
-        <button type="submit" class="btn">Register</button>
-
-        <div id="loading-spinner-register"></div>
-      </form>
-
-      <p class="toggle-text" id="toggle-link" tabindex="0" role="button" aria-pressed="false" aria-label="Toggle between login and register">
-        Don't have an account? <span id="toggle-action" style="user-select:none;">Register</span>
-      </p>
-
-      <div id="message-area" role="alert"></div>
+  <!-- Post Modal -->
+  <div id="postModal" class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center hidden z-50">
+    <div class="bg-gray-900 rounded-xl max-w-xl w-full p-6 relative text-white max-h-[90vh] overflow-auto">
+      <button id="closeModal" class="absolute top-4 right-4 text-gray-400 hover:text-white text-2xl font-bold">&times;</button>
+      <div id="modalContent"></div>
     </div>
   </div>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+  import {
+    getDatabase, ref, onValue, onChildAdded, update, get, push, remove
+  } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-analytics.js";
+  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-    import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-analytics.js";
-    import {
-      getAuth,
-      signInWithEmailAndPassword,
-      createUserWithEmailAndPassword,
-      signInWithPopup,
-      GoogleAuthProvider,
-      sendPasswordResetEmail,
-      sendEmailVerification,
-      onAuthStateChanged,
-      setPersistence,
-      browserLocalPersistence,
-      browserSessionPersistence,
-      signOut
-    } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
-    import {
-      getDatabase,
-      ref,
-      set,
-      get,
-      child
-    } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+  const firebaseConfig = {
+    apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
+    authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
+    databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
+    projectId: "itzhoyoo-f9f7e",
+    storageBucket: "itzhoyoo-f9f7e.appspot.com",
+    messagingSenderId: "1094792075584",
+    appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
+    measurementId: "G-LLT6F9WRKH"
+  };
 
-    // Firebase config
-    const firebaseConfig = {
-      apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
-      authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
-      databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
-      projectId: "itzhoyoo-f9f7e",
-      storageBucket: "itzhoyoo-f9f7e.firebasestorage.app",
-      messagingSenderId: "1094792075584",
-      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
-      measurementId: "G-LLT6F9WRKH"
+  const app = initializeApp(firebaseConfig);
+  getAnalytics(app);
+  const db = getDatabase(app);
+  const auth = getAuth();
+
+  const postsRef = ref(db, 'posts');
+  const postsContainer = document.getElementById('postsContainer');
+  const postModal = document.getElementById('postModal');
+  const modalContent = document.getElementById('modalContent');
+  const closeModalBtn = document.getElementById('closeModal');
+
+  let currentUser = null;
+
+  // Auth state listener
+  onAuthStateChanged(auth, user => {
+    currentUser = user;
+    // Re-render posts when user changes to update UI for like/follow state
+    loadPostsRealtime();
+  });
+
+  // Section switching
+  window.showSection = function(id) {
+    ['homeSection', 'uploadSection', 'profileSection'].forEach(sec => {
+      document.getElementById(sec).classList.toggle('hidden', sec !== id);
+    });
+  };
+
+  // Share function
+  window.sharePost = function(title, text, url) {
+    if (navigator.share) {
+      navigator.share({ title, text, url })
+        .then(() => console.log('Post shared'))
+        .catch(err => console.error('Error sharing:', err));
+    } else {
+      alert(`Share this link:\n${url}`);
+    }
+  };
+
+  // Close modal
+  closeModalBtn.onclick = () => {
+    postModal.classList.add('hidden');
+    modalContent.innerHTML = '';
+  };
+
+  // Load posts with real-time listeners
+  function loadPostsRealtime() {
+    onValue(postsRef, snapshot => {
+      postsContainer.innerHTML = '';
+      const posts = snapshot.val() || {};
+      Object.entries(posts).forEach(([postId, post]) => {
+        const postEl = createPostElement(post, postId);
+        postsContainer.appendChild(postEl);
+
+        // Listen live to likes for this post
+        listenLikes(postId);
+
+        // Listen live to comments count for this post
+        listenCommentsCount(postId);
+
+        // Listen live to follow status (if logged in)
+        if (currentUser && post.userId) {
+          const followBtn = postEl.querySelector('.follow-btn');
+          listenFollowStatus(currentUser.uid, post.userId, followBtn);
+        }
+      });
+    });
+  }
+
+  // Create post element including buttons
+  function createPostElement(post, postId) {
+    const postEl = document.createElement('div');
+    postEl.className = 'bg-gray-900 rounded-2xl p-3 shadow-lg mb-4';
+    postEl.innerHTML = `
+      <div class="flex items-center justify-between mb-3">
+        <div class="flex items-center gap-3">
+          <img src="${post.userPic || 'https://i.pravatar.cc/40'}" class="w-9 h-9 rounded-full" alt="Profile Pic" />
+          <div>
+            <h3 class="font-semibold text-sm">${post.username || 'Anonymous'}</h3>
+            <p class="text-xs text-gray-400">@${post.handle || 'user'}</p>
+            <p class="text-xs text-gray-400">${post.date || 'Date unknown'}</p>
+          </div>
+        </div>
+        <button class="follow-btn bg-cyan-600 hover:bg-cyan-700 text-white px-3 py-1 rounded-full text-xs">Follow</button>
+      </div>
+      <h2 class="text-lg font-bold mb-2">${post.title || 'Untitled Post'}</h2>
+      ${post.image ? `<img src="${post.image}" class="w-full h-40 object-cover rounded-xl mb-3" alt="Post Image" />` : ''}
+      <div class="flex justify-between items-center text-sm text-gray-300 mb-2">
+        <span>Views: <span class="text-cyan-400 font-semibold">${post.views || 0}</span></span>
+        <span>Likes: <span class="text-pink-400 font-semibold" id="like-count-${postId}">${post.likes ? Object.keys(post.likes).length : 0}</span></span>
+        <span>Comments: <span class="text-green-400 font-semibold" id="comment-count-${postId}">${post.comments ? Object.keys(post.comments).length : 0}</span></span>
+      </div>
+      <div class="flex gap-4 text-sm mt-2">
+        <button class="like-btn text-white hover:text-cyan-400" data-id="${postId}">👍 Like</button>
+        <button class="text-gray-400 hover:text-green-400 view-comments-btn" data-id="${postId}">👁️ View Comments</button>
+        <button onclick="sharePost('${post.title}', 'Check this out!', window.location.href)" class="text-gray-400 hover:text-purple-400">🔗 Share</button>
+      </div>
+    `;
+
+    // Like button toggle
+    const likeBtn = postEl.querySelector('.like-btn');
+    likeBtn.onclick = async () => {
+      if (!currentUser) return alert("Please log in to like posts.");
+      const likesRef = ref(db, `posts/${postId}/likes/${currentUser.uid}`);
+      const likeSnap = await get(likesRef);
+      if (likeSnap.exists()) {
+        // User already liked, remove like (dislike)
+        await remove(likesRef);
+      } else {
+        // Add like
+        await update(likesRef, { liked: true });
+      }
     };
 
-    // Initialize Firebase
-    const app = initializeApp(firebaseConfig);
-    getAnalytics(app);
-    const auth = getAuth(app);
-    const database = getDatabase(app);
-    const googleProvider = new GoogleAuthProvider();
+    // Follow button toggle
+    const followBtn = postEl.querySelector('.follow-btn');
+    followBtn.onclick = async (e) => {
+      if (!currentUser) return alert("Please log in to follow users.");
+      const userIdToFollow = post.userId;
+      if (!userIdToFollow || userIdToFollow === currentUser.uid) return;
 
-    // Elements
-    const loginForm = document.getElementById('login-form');
-    const registerForm = document.getElementById('register-form');
-    const toggleLink = document.getElementById('toggle-link');
-    const toggleAction = document.getElementById('toggle-action');
-    const messageArea = document.getElementById('message-area');
-    const googleLoginBtn = document.getElementById('google-login-btn');
-    const forgotPasswordLink = document.getElementById('forgot-password-link');
-    const loadingSpinner = document.getElementById('loading-spinner');
-    const loadingSpinnerRegister = document.getElementById('loading-spinner-register');
-    const rememberMeCheckbox = document.getElementById('remember-me');
-    const passwordInput = document.getElementById('register-password');
-    const passwordStrengthText = document.getElementById('password-strength');
-
-    // Helper functions
-    function showMessage(msg, type = 'error') {
-      messageArea.textContent = msg;
-      messageArea.className = type;
-      messageArea.style.display = 'block';
-    }
-    function clearMessage() {
-      messageArea.textContent = '';
-      messageArea.className = '';
-      messageArea.style.display = 'none';
-    }
-    function showLoading(spinner, show = true) {
-      spinner.style.display = show ? 'block' : 'none';
-    }
-
-    // Password strength check simple version
-    passwordInput.addEventListener('input', () => {
-      // Password strength check
-      const val = passwordInput.value;
-      let strength = 'Weak';
-      let color = '#cc0000';
-
-      if(val.length >= 12 && /[A-Z]/.test(val) && /[0-9]/.test(val) && /[\W_]/.test(val)) {
-        strength = 'Strong';
-        color = '#2b8a3e';
-      } else if(val.length >= 8 && /[A-Z]/.test(val) && /[0-9]/.test(val)) {
-        strength = 'Medium';
-        color = '#d18e0f';
-      }
-
-      passwordStrengthText.textContent = `Password strength: ${strength}`;
-      passwordStrengthText.style.color = color;
-      if(val.length === 0) passwordStrengthText.textContent = '';
-    });
-
-    // Toggle between login and register forms
-    toggleLink.addEventListener('click', () => {
-      clearMessage();
-      if (loginForm.style.display !== 'none') {
-        loginForm.style.display = 'none';
-        registerForm.style.display = 'flex';
-        toggleAction.textContent = 'Login';
-        toggleLink.setAttribute('aria-pressed', 'true');
+      const followRef = ref(db, `users/${currentUser.uid}/following/${userIdToFollow}`);
+      const followSnap = await get(followRef);
+      if (followSnap.exists()) {
+        // Unfollow
+        await remove(followRef);
       } else {
-        registerForm.style.display = 'none';
-        loginForm.style.display = 'flex';
-        toggleAction.textContent = 'Register';
-        toggleLink.setAttribute('aria-pressed', 'false');
+        // Follow
+        await update(followRef, { followedAt: Date.now() });
+      }
+    };
+
+    // View comments button opens modal
+    postEl.querySelector('.view-comments-btn').onclick = () => openPostModal(postId);
+
+    return postEl;
+  }
+
+  // Listen for likes changes to update UI and animate thumbs up
+  function listenLikes(postId) {
+    const likesRef = ref(db, `posts/${postId}/likes`);
+    onValue(likesRef, snapshot => {
+      const likes = snapshot.val() || {};
+      const likeCountSpan = document.getElementById(`like-count-${postId}`);
+      if (likeCountSpan) likeCountSpan.textContent = Object.keys(likes).length;
+
+      if (!currentUser) return;
+
+      const likeBtn = document.querySelector(`.like-btn[data-id="${postId}"]`);
+      if (!likeBtn) return;
+
+      if (likes[currentUser.uid]) {
+        likeBtn.classList.add('liked');
+        animateThumbsUp(likeBtn);
+      } else {
+        likeBtn.classList.remove('liked');
       }
     });
+  }
 
-    // Login submit
-    loginForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      clearMessage();
-      showLoading(loadingSpinner);
-      try {
-        const email = document.getElementById('login-email').value.trim();
-        const password = document.getElementById('login-password').value;
-        // Persistence setting based on remember me checkbox
-        await setPersistence(auth, rememberMeCheckbox.checked ? browserLocalPersistence : browserSessionPersistence);
-        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+  // Animate thumbs up button with a small scale pulse
+  function animateThumbsUp(button) {
+    button.animate([
+      { transform: 'scale(1)' },
+      { transform: 'scale(1.3)' },
+      { transform: 'scale(1)' }
+    ], {
+      duration: 300,
+      easing: 'ease-out',
+    });
+  }
 
-        if (!userCredential.user.emailVerified) {
-          showMessage('Please verify your email before logging in. Check your inbox.', 'error');
-          await auth.signOut();
-          showLoading(loadingSpinner, false);
-          return;
-        }
-
-        showMessage('Login successful! Redirecting...', 'success');
-        showLoading(loadingSpinner, false);
-        // Redirect to homepage or app main page:
-        window.location.href = 'homepage.html';
-
-      } catch (error) {
-        showLoading(loadingSpinner, false);
-        if(error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password'){
-          showMessage('Invalid email or password.', 'error');
-        } else if(error.code === 'auth/too-many-requests'){
-          showMessage('Too many failed attempts. Please try again later.', 'error');
-        } else {
-          showMessage('Error logging in: ' + error.message, 'error');
-        }
+  // Listen for follow status to update button text & color
+  function listenFollowStatus(followerId, followedUserId, followBtn) {
+    if (!followBtn) return;
+    const followRef = ref(db, `users/${followerId}/following/${followedUserId}`);
+    onValue(followRef, snapshot => {
+      if (snapshot.exists()) {
+        followBtn.textContent = "Following";
+        followBtn.classList.add("bg-green-600");
+        followBtn.classList.remove("bg-cyan-600");
+      } else {
+        followBtn.textContent = "Follow";
+        followBtn.classList.remove("bg-green-600");
+        followBtn.classList.add("bg-cyan-600");
       }
     });
+  }
 
-    // Register submit
-    registerForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      clearMessage();
-      showLoading(loadingSpinnerRegister);
-      try {
-        const name = document.getElementById('register-name').value.trim();
-        const email = document.getElementById('register-email').value.trim();
-        const password = document.getElementById('register-password').value;
-
-        if(password.length < 8){
-          showMessage('Password must be at least 8 characters.', 'error');
-          showLoading(loadingSpinnerRegister, false);
-          return;
-        }
-
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-
-        // Save additional user info to realtime database
-        await set(ref(database, 'users/' + userCredential.user.uid), {
-          name: name,
-          email: email,
-          createdAt: Date.now()
-        });
-
-        // Send verification email
-        await sendEmailVerification(userCredential.user);
-
-        showMessage('Registration successful! A verification email has been sent to your email address. Please verify before logging in.', 'success');
-        registerForm.reset();
-        showLoading(loadingSpinnerRegister, false);
-
-        // Switch back to login form automatically after 5 seconds
-        setTimeout(() => {
-          toggleLink.click();
-        }, 5000);
-
-      } catch (error) {
-        showLoading(loadingSpinnerRegister, false);
-        if(error.code === 'auth/email-already-in-use'){
-          showMessage('This email is already registered. Please login or use a different email.', 'error');
-        } else if(error.code === 'auth/invalid-email'){
-          showMessage('Please enter a valid email address.', 'error');
-        } else if(error.code === 'auth/weak-password'){
-          showMessage('Password is too weak.', 'error');
-        } else {
-          showMessage('Error registering: ' + error.message, 'error');
-        }
-      }
+  // Listen for comments count changes to update UI count
+  function listenCommentsCount(postId) {
+    const commentsRef = ref(db, `posts/${postId}/comments`);
+    onValue(commentsRef, snapshot => {
+      const count = snapshot.exists() ? Object.keys(snapshot.val()).length : 0;
+      const commentCountSpan = document.getElementById(`comment-count-${postId}`);
+      if (commentCountSpan) commentCountSpan.textContent = count;
     });
+  }
 
-    // Google login button
-    googleLoginBtn.addEventListener('click', async () => {
-      clearMessage();
-      showLoading(loadingSpinner);
-      try {
-        await setPersistence(auth, browserLocalPersistence);
-        const result = await signInWithPopup(auth, googleProvider);
+// Open modal and load post + comments + add comment input
+async function openPostModal(postId) {
+  const postSnapshot = await get(ref(db, `posts/${postId}`));
+  if (!postSnapshot.exists()) {
+    alert('Post not found');
+    return;
+  }
+  const post = postSnapshot.val();
 
-        // Save user info on first sign in to database
-        const userRef = ref(database, 'users/' + result.user.uid);
-        const snapshot = await get(userRef);
-        if (!snapshot.exists()) {
-          await set(userRef, {
-            name: result.user.displayName,
-            email: result.user.email,
-            createdAt: Date.now()
-          });
-        }
+  modalContent.innerHTML = `
+    <div>
+      <div class="flex items-center gap-4 mb-4">
+        <img src="${post.userPic || 'https://i.pravatar.cc/40'}" class="w-12 h-12 rounded-full" alt="Profile Pic" />
+        <div>
+          <h3 class="font-semibold text-lg">${post.username || 'Anonymous'}</h3>
+          <p class="text-sm text-gray-400">@${post.handle || 'user'}</p>
+          <p class="text-xs text-gray-500">${post.date || ''}</p>
+        </div>
+      </div>
+      <h2 class="text-xl font-bold mb-3">${post.title || ''}</h2>
+      ${post.image ? `<img src="${post.image}" class="w-full h-64 object-cover rounded-lg mb-4" alt="Post Image" />` : ''}
+      <div class="mb-4 text-sm text-gray-300 flex justify-between">
+        <span>Views: <strong>${post.views || 0}</strong></span>
+        <span>Likes: <strong id="modalLikeCount">${post.likes ? Object.keys(post.likes).length : 0}</strong></span>
+        <span>Comments: <strong id="modalCommentCount">${post.comments ? Object.keys(post.comments).length : 0}</strong></span>
+      </div>
+      <div class="mb-4">
+        <h3 class="font-semibold mb-2">Comments</h3>
+        <div id="modalCommentsList" class="max-h-48 overflow-y-auto space-y-2 text-gray-300"></div>
+      </div>
+      <div>
+        <input id="modalCommentInput" type="text" placeholder="Write a comment..." class="w-full p-2 rounded bg-gray-800 text-white placeholder-gray-400 mb-2" />
+        <button id="modalSubmitComment" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded w-full">Post Comment</button>
+      </div>
+    </div>
+  `;
 
-        showMessage('Google login successful! Redirecting...', 'success');
-        showLoading(loadingSpinner, false);
-        window.location.href = 'homepage.html';
+  const commentsList = document.getElementById('modalCommentsList');
+  commentsList.innerHTML = 'Loading comments...';
 
-      } catch (error) {
-        showLoading(loadingSpinner, false);
-        showMessage('Google login failed: ' + error.message, 'error');
-      }
-    });
+  const commentsRef = ref(db, `posts/${postId}/comments`);
+  onValue(commentsRef, snapshot => {
+    const comments = snapshot.val() || {};
+    if (Object.keys(comments).length === 0) {
+      commentsList.innerHTML = '<p>No comments yet.</p>';
+    } else {
+      commentsList.innerHTML = '';
+      Object.entries(comments).forEach(([commentId, comment]) => {
+        const dateStr = comment.date ? new Date(comment.date).toLocaleString() : 'Unknown date';
+        const commenterPic = comment.userPic || 'https://i.pravatar.cc/30';
+        const commenterName = comment.username || 'Anonymous';
+        const commenterHandle = comment.handle || 'user';
 
-    // Forgot password link
-    forgotPasswordLink.addEventListener('click', async (e) => {
-      e.preventDefault();
-      clearMessage();
-      const email = document.getElementById('login-email').value.trim();
-      if(!email) {
-        showMessage('Please enter your email in the email field to reset password.', 'error');
-        return;
-      }
-      try {
-        await sendPasswordResetEmail(auth, email);
-        showMessage('Password reset email sent. Please check your inbox.', 'success');
-      } catch (error) {
-        if(error.code === 'auth/user-not-found'){
-          showMessage('No user found with that email.', 'error');
-        } else {
-          showMessage('Error sending reset email: ' + error.message, 'error');
-        }
-      }
-    });
+        const commentEl = document.createElement('div');
+        commentEl.className = 'flex items-center gap-2 bg-gray-800 p-2 rounded';
+        commentEl.innerHTML = `
+          <img src="${commenterPic}" class="w-8 h-8 rounded-full" alt="Commenter Pic" />
+          <div class="flex-1">
+            <p class="text-sm font-semibold">${commenterName} <span class="text-xs text-gray-400">@${commenterHandle}</span></p>
+            <p class="text-xs text-gray-400">${dateStr}</p>
+            <p class="mt-1 text-gray-300">${comment.text}</p>
+          </div>
+          <button class="text-cyan-400 text-xs hover:underline view-user-btn" data-userid="${comment.userId}">View User</button>
+        `;
 
-    // Optional: detect auth state and redirect if already logged in & verified
-    onAuthStateChanged(auth, user => {
-      if(user && user.emailVerified) {
-        // User logged in & verified, redirect to homepage
-        window.location.href = 'homepage.html';
-      }
-    });
-  </script>
+        commentEl.querySelector('.view-user-btn').onclick = () => {
+          alert(`User profile: ${commenterName} (@${commenterHandle})`);
+        };
+
+        commentsList.appendChild(commentEl);
+      });
+    }
+
+    const modalCommentCount = document.getElementById('modalCommentCount');
+    if (modalCommentCount) modalCommentCount.textContent = Object.keys(comments).length;
+  });
+
+  // Handle new comment submit
+  document.getElementById('modalSubmitComment').onclick = async () => {
+    if (!currentUser) {
+      alert('Please log in to comment.');
+      return;
+    }
+
+    const commentInput = document.getElementById('modalCommentInput');
+    const text = commentInput.value.trim();
+    if (text.length === 0 || text.length > 500) {
+      return alert('Comment must be between 1 and 500 characters.');
+    }
+
+    const submitBtn = document.getElementById('modalSubmitComment');
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Posting...';
+
+    try {
+      const newCommentRef = push(ref(db, `posts/${postId}/comments`));
+      await newCommentRef.set({
+        userId: currentUser.uid,
+        username: currentUser.displayName || 'Anonymous',
+        handle: (currentUser.displayName || 'user').toLowerCase().replace(/\s+/g, ''),
+        userPic: currentUser.photoURL || 'https://i.pravatar.cc/40',
+        text,
+        date: Date.now()
+      });
+
+      commentInput.value = '';
+      commentsList.scrollTop = commentsList.scrollHeight;
+    } catch (error) {
+      alert('Failed to post comment.');
+      console.error(error);
+    }
+
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Post Comment';
+  };
+
+  postModal.classList.remove('hidden');
+}
+</script>
+</body>
 </body>
 </html>
