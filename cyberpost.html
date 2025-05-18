@@ -477,6 +477,18 @@ postBtn.addEventListener('click', async () => {
     alert('Failed to publish post: ' + error.message);
   }
 });
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const imageData = sessionStorage.getItem('uploadedImage');
+    const previewImage = document.getElementById('previewImage');
+
+    if (imageData && previewImage) {
+      previewImage.src = imageData;
+    } else {
+      alert("No image found, redirecting...");
+      window.history.back();
+    }
+  });
 </script>
 </body>
 </html>
