@@ -172,92 +172,329 @@
     </div>
   </div>
   <!-- Firebase and App Script -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-    import { getAuth, onAuthStateChanged, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
-    import { getDatabase, ref, get, child } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+<script>
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+import { getAuth, onAuthStateChanged, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+import { getDatabase, ref, get, child, push, set } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+import { getStorage, ref as sRef, uploadString, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-storage.js";
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
-      authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
-      databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
-      projectId: "itzhoyoo-f9f7e",
-      storageBucket: "itzhoyoo-f9f7e.firebasestorage.app",
-      messagingSenderId: "1094792075584",
-      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
-      measurementId: "G-LLT6F9WRKH"
+const firebaseConfig = {
+  apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
+  authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
+  databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
+  projectId: "itzhoyoo-f9f7e",
+  storageBucket: "itzhoyoo-f9f7e.firebasestorage.app",
+  messagingSenderId: "1094792075584",
+  appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
+  measurementId: "G-LLT6F9WRKH"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const database = getDatabase(app);
+const storage = getStorage(app);
+const provider = new GoogleAuthProvider();
+
+const loginModal = document.getElementById('loginModal');
+const loginBtn = document.getElementById('loginBtn');
+
+const profilePic = document.getElementById('profilePic');
+const userHandle = document.getElementById('userHandle');
+const userFollowers = document.getElementById('userFollowers');
+
+function showLogin() {
+  loginModal.classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+}
+function hideLogin() {
+  loginModal.classList.add('hidden');
+  document.body.style.overflow = 'auto';
+}
+
+loginBtn.addEventListener('click', () => {
+  signInWithPopup(auth, provider)
+    .catch((error) => alert("Login failed: " + error.message));
+});
+
+onAuthStateChanged(auth, async (user) => {
+  if (user) {
+    hideLogin();
+    const uid = user.uid;
+
+    profilePic.src = user.photoURL || 'https://via.placeholder.com/40';
+    userHandle.textContent = '@' + (user.displayName?.replace(/\s+/g, '').toLowerCase() || 'user');
+
+    try {
+      const dbRef = ref(database);
+      const snapshot = await get(child(dbRef, `users/${uid}/followers`));
+      if (snapshot.exists()) {
+        userFollowers.textContent = `Followers: ${snapshot.val()}`;
+      } else {
+        userFollowers.textContent = 'Followers: 0';
+      }
+    } catch (error) {
+      console.error("Failed to fetch followers:", error);
+      userFollowers.textContent = 'Followers: --';
+    }
+  } else {
+    showLogin();
+    profilePic.src = 'https://via.placeholder.com/40';
+    userHandle.textContent = '@guest';
+    userFollowers.textContent = 'Followers: --';
+  }
+});
+
+// ---- IMAGE UPLOAD + EDIT SETUP ----
+
+// Elements (You need to add this input and modal to your HTML)
+const imageInput = document.createElement('input');
+imageInput.type = 'file';
+imageInput.accept = 'image/*';
+imageInput.classList.add('hidden');
+document.body.appendChild(imageInput);
+
+const previewImage = document.getElementById('previewImage');
+const editBtn = document.createElement('button');
+editBtn.textContent = 'Edit Image';
+editBtn.className = 'mt-2 px-4 py-1 bg-cyan-600 rounded text-white text-sm hover:bg-cyan-700';
+previewImage.parentElement.appendChild(editBtn);
+
+editBtn.style.display = 'none'; // hide until image uploaded
+
+// Create modal container for editor
+const modal = document.createElement('div');
+modal.className = 'fixed inset-0 bg-black bg-opacity-80 backdrop-blur-sm flex items-center justify-center z-50 hidden';
+modal.innerHTML = `
+  <div class="bg-gray-900 p-4 rounded max-w-3xl w-full relative">
+    <div style="max-height: 70vh; overflow: auto;">
+      <img id="cropperImage" style="max-width:100%; display:block; margin:auto;"/>
+      <canvas id="fabricCanvas" style="display:none; border:1px solid #444;"></canvas>
+    </div>
+    <div class="mt-4 flex space-x-4 justify-end">
+      <button id="addTextBtn" class="px-4 py-2 bg-cyan-600 rounded text-white hover:bg-cyan-700">Add Text</button>
+      <button id="saveEditBtn" class="px-4 py-2 bg-green-600 rounded text-white hover:bg-green-700">Save</button>
+      <button id="cancelEditBtn" class="px-4 py-2 bg-red-600 rounded text-white hover:bg-red-700">Cancel</button>
+    </div>
+  </div>
+`;
+document.body.appendChild(modal);
+
+const cropperImage = modal.querySelector('#cropperImage');
+const fabricCanvasEl = modal.querySelector('#fabricCanvas');
+const addTextBtn = modal.querySelector('#addTextBtn');
+const saveEditBtn = modal.querySelector('#saveEditBtn');
+const cancelEditBtn = modal.querySelector('#cancelEditBtn');
+
+let cropper = null;
+let fabricCanvas = null;
+let currentImageFile = null;
+let croppedDataUrl = null;
+
+// Open file selector on click
+previewImage.parentElement.addEventListener('click', () => {
+  imageInput.click();
+});
+
+// Handle file select
+imageInput.addEventListener('change', () => {
+  const file = imageInput.files[0];
+  if (!file) return;
+
+  currentImageFile = file;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    previewImage.src = e.target.result;
+    previewImage.style.objectFit = 'cover';
+
+    // Show Edit button
+    editBtn.style.display = 'inline-block';
+
+    // Reset cropped image data
+    croppedDataUrl = null;
+  };
+  reader.readAsDataURL(file);
+});
+
+// On Edit Image button click
+editBtn.addEventListener('click', () => {
+  if (!previewImage.src) return;
+
+  modal.classList.remove('hidden');
+
+  // Show cropper image, hide fabric canvas initially
+  cropperImage.style.display = 'block';
+  fabricCanvasEl.style.display = 'none';
+
+  cropperImage.src = previewImage.src;
+
+  // Wait a bit to ensure image loaded
+  cropperImage.onload = () => {
+    if (cropper) cropper.destroy();
+    cropper = new Cropper(cropperImage, {
+      aspectRatio: 16 / 9,
+      viewMode: 1,
+      autoCropArea: 1,
+      movable: true,
+      zoomable: true,
+      scalable: false,
+      cropBoxResizable: true,
+      background: false,
+    });
+
+    if (!fabricCanvas) {
+      fabricCanvas = new fabric.Canvas(fabricCanvasEl, {
+        width: cropperImage.naturalWidth,
+        height: cropperImage.naturalHeight,
+        backgroundColor: 'transparent',
+      });
+    }
+  };
+});
+
+// Add text button click
+addTextBtn.addEventListener('click', () => {
+  if (!fabricCanvas) return;
+  // Switch to fabric canvas view for text adding
+  if (cropper) {
+    // Get cropped canvas and hide cropper
+    const croppedCanvas = cropper.getCroppedCanvas();
+    const dataURL = croppedCanvas.toDataURL();
+
+    cropperImage.style.display = 'none';
+    fabricCanvasEl.style.display = 'block';
+
+    // Resize fabric canvas to cropped size
+    fabricCanvas.setWidth(croppedCanvas.width);
+    fabricCanvas.setHeight(croppedCanvas.height);
+
+    fabric.Image.fromURL(dataURL, (img) => {
+      fabricCanvas.clear();
+      fabricCanvas.setBackgroundImage(img, fabricCanvas.renderAll.bind(fabricCanvas));
+    });
+  }
+
+  // Add editable text object
+  const text = new fabric.Textbox('Enter text', {
+    left: 20,
+    top: 20,
+    fill: '#ffffff',
+    fontSize: 30,
+    fontWeight: 'bold',
+    editable: true,
+    backgroundColor: 'rgba(0,0,0,0.3)',
+    padding: 5,
+  });
+  fabricCanvas.add(text);
+  fabricCanvas.setActiveObject(text);
+  fabricCanvas.renderAll();
+});
+
+// Cancel edit
+cancelEditBtn.addEventListener('click', () => {
+  modal.classList.add('hidden');
+  if (cropper) {
+    cropper.destroy();
+    cropper = null;
+  }
+  if (fabricCanvas) {
+    fabricCanvas.clear();
+  }
+});
+
+// Save edit
+saveEditBtn.addEventListener('click', () => {
+  // Get final image data
+  if (fabricCanvasEl.style.display === 'block' && fabricCanvas) {
+    // Export canvas with text overlay
+    croppedDataUrl = fabricCanvas.toDataURL({
+      format: 'png',
+      quality: 1,
+    });
+  } else if (cropper) {
+    // Just cropped image without text
+    croppedDataUrl = cropper.getCroppedCanvas().toDataURL('image/png');
+  } else {
+    alert('No image to save.');
+    return;
+  }
+
+  previewImage.src = croppedDataUrl;
+  previewImage.style.objectFit = 'cover';
+  modal.classList.add('hidden');
+
+  if (cropper) {
+    cropper.destroy();
+    cropper = null;
+  }
+  if (fabricCanvas) {
+    fabricCanvas.clear();
+  }
+});
+
+// ---- FORM VALIDATION & PUBLISH ----
+const postBtn = document.getElementById('postBtn');
+
+postBtn.addEventListener('click', async () => {
+  const titleInput = document.getElementById('titleInput');
+  const captionInput = document.getElementById('captionInput');
+  const tagsInput = document.getElementById('tagsInput');
+  const categorySelect = document.getElementById('categorySelect');
+
+  // Validate fields
+  if (!titleInput.value.trim()) return alert('Title is required');
+  if (!captionInput.value.trim()) return alert('Caption is required');
+  if (!tagsInput.value.trim()) return alert('Tags are required');
+  if (!categorySelect.value) return alert('Please select a category');
+  if (!previewImage.src || previewImage.src.includes('placeholder')) return alert('Please upload and edit an image');
+
+  // Get current user
+  const user = auth.currentUser;
+  if (!user) return alert('You must be logged in');
+
+  try {
+    // Upload image to Firebase Storage
+    const storageRef = sRef(storage, `posts/${user.uid}/${Date.now()}.png`);
+    const base64Data = croppedDataUrl || previewImage.src;
+    // Remove prefix data:image/png;base64,
+    const base64String = base64Data.split(',')[1];
+
+    await uploadString(storageRef, base64String, 'base64', { contentType: 'image/png' });
+
+    const imageUrl = await getDownloadURL(storageRef);
+
+    // Prepare post data
+    const postData = {
+      title: titleInput.value.trim(),
+      caption: captionInput.value.trim(),
+      tags: tagsInput.value.trim().split(',').map(t => t.trim()).filter(t => t.length > 0),
+      category: categorySelect.value,
+      imageUrl,
+      authorUid: user.uid,
+      authorHandle: userHandle.textContent,
+      createdAt: Date.now()
     };
 
-    // Initialize Firebase
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const database = getDatabase(app);
-    const provider = new GoogleAuthProvider();
+    // Push to Realtime Database
+    const postsRef = ref(database, 'posts');
+    const newPostRef = push(postsRef);
+    await set(newPostRef, postData);
 
-    const loginModal = document.getElementById('loginModal');
-    const loginBtn = document.getElementById('loginBtn');
+    alert('Post published successfully!');
+    // Clear form
+    titleInput.value = '';
+    captionInput.value = '';
+    tagsInput.value = '';
+    categorySelect.value = '';
+    previewImage.src = 'https://via.placeholder.com/1280x720.png?text=Preview+Image';
+    editBtn.style.display = 'none';
+    croppedDataUrl = null;
 
-    const profilePic = document.getElementById('profilePic');
-    const userHandle = document.getElementById('userHandle');
-    const userFollowers = document.getElementById('userFollowers');
-
-    function showLogin() {
-      loginModal.classList.remove('hidden');
-      // blur main content
-      document.body.style.overflow = 'hidden';
-    }
-    function hideLogin() {
-      loginModal.classList.add('hidden');
-      document.body.style.overflow = 'auto';
-    }
-
-    loginBtn.addEventListener('click', () => {
-      signInWithPopup(auth, provider)
-        .catch((error) => alert("Login failed: " + error.message));
-    });
-
-    onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        hideLogin();
-        // Display user's info
-        // You may store extra info in Realtime DB under /users/{uid}
-        const uid = user.uid;
-
-        // Set profile pic and default handle
-        profilePic.src = user.photoURL || 'https://via.placeholder.com/40';
-        userHandle.textContent = '@' + (user.displayName?.replace(/\s+/g, '').toLowerCase() || 'user');
-
-        // Fetch followers count from DB (simulate path /users/{uid}/followers)
-        try {
-          const dbRef = ref(database);
-          const snapshot = await get(child(dbRef, `users/${uid}/followers`));
-          if (snapshot.exists()) {
-            userFollowers.textContent = `Followers: ${snapshot.val()}`;
-          } else {
-            userFollowers.textContent = 'Followers: 0';
-          }
-        } catch (error) {
-          console.error("Failed to fetch followers:", error);
-          userFollowers.textContent = 'Followers: --';
-        }
-
-      } else {
-        // Not logged in, show login modal
-        showLogin();
-        profilePic.src = 'https://via.placeholder.com/40';
-        userHandle.textContent = '@guest';
-        userFollowers.textContent = 'Followers: --';
-      }
-    });
-
-  const imageData = sessionStorage.getItem('uploadedImage');
-  const previewImage = document.getElementById('previewImage');
-  if (imageData && previewImage) {
-    previewImage.src = imageData;
-  } else {
-    alert("No image found.");
-    window.history.back();
+  } catch (err) {
+    console.error(err);
+    alert('Failed to publish post: ' + err.message);
   }
-  </script>
+});
+</script>
 </body>
 </html>
