@@ -1,55 +1,263 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" >
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Upload Post</title>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #000000;
+    }
+    input, textarea, select {
+      color: #fff;
+      font-weight: 600;
+      background-color: #151515 !important;
+    }
+    input:-webkit-autofill,
+    textarea:-webkit-autofill,
+    select:-webkit-autofill {
+      box-shadow: 0 0 0px 1000px #151515 inset;
+      -webkit-text-fill-color: #fff !important;
+      font-weight: 600;
+    }
+    header {
+      background-color: #0f0f0f;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+    }
+    .profile-pic {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+    /* Modal styles */
+    #loginModal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(6px);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+    }
+    #loginModal.hidden {
+      display: none;
+    }
+    #loginModalContent {
+      background: #111;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 0 10px #ff4444;
+      max-width: 360px;
+      width: 90%;
+      text-align: center;
+      color: white;
+    }
+    #loginModalContent button {
+      background-color: #ff4444;
+      padding: 0.75rem 1.5rem;
+      border-radius: 8px;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      margin-top: 1.5rem;
+      transition: background-color 0.3s ease;
+    }
+    #loginModalContent button:hover {
+      background-color: #cc3333;
+    }
+  </style>
 </head>
-<body class="bg-gray-900 text-white min-h-screen flex items-center justify-center p-4">
+<body class="text-white min-h-screen flex flex-col font-sans">
 
-  <div class="w-full max-w-md bg-gray-800 rounded-xl p-4 shadow-lg">
-    <h1 class="text-xl font-bold mb-4 text-center">Preview Your Post</h1>
+  <!-- Header -->
+  <header class="sticky top-0 z-30 w-full px-6 py-4 bg-[#0f0f0f] border-b border-gray-800 flex items-center justify-between shadow">
+    <div class="flex items-center space-x-4">
+      <!-- Profile Picture and Info -->
+      <img id="profilePic" src="https://via.placeholder.com/40" alt="Profile Pic" class="profile-pic" />
+      <div class="text-white">
+        <p id="userHandle" class="font-bold">@loading...</p>
+        <p id="userFollowers" class="text-sm text-gray-400">Followers: --</p>
+      </div>
+    </div>
+    <button id="postBtn"
+      class="bg-red-600 hover:bg-red-700 active:bg-red-800 transition px-5 py-2 rounded text-sm font-medium shadow">
+      Publish
+    </button>
+  </header>
 
-    <img id="previewImage" class="rounded-xl w-full h-64 object-cover mb-4" alt="Uploaded image preview" />
+  <!-- Main Content -->
+  <main class="flex-1 overflow-y-auto px-6 py-8 max-w-4xl w-full mx-auto space-y-10">
 
-    <textarea id="captionInput" placeholder="Write a caption..." class="w-full p-3 rounded bg-gray-700 text-white mb-4 resize-none"></textarea>
+    <!-- Preview Image -->
+    <section class="space-y-3">
+      <h2 class="text-base font-semibold text-gray-300 text-center">Post Image</h2>
+      <div class="w-full aspect-square max-w-md mx-auto rounded-lg overflow-hidden bg-gray-900 border border-gray-800 shadow">
+        <img id="previewImage" src="https://via.placeholder.com/720x720.png?text=Post+Image+Preview"
+          alt="Post Preview" class="w-full h-full object-cover" />
+      </div>
+    </section>
 
-    <button id="postBtn" class="w-full bg-cyan-600 hover:bg-cyan-700 p-3 rounded text-white font-semibold">Post</button>
+    <!-- Title -->
+    <section class="space-y-1 max-w-xl mx-auto">
+      <label for="titleInput" class="block text-sm text-gray-400 font-medium">Post Title</label>
+      <input 
+        id="titleInput" 
+        type="text" 
+        maxlength="100"
+        placeholder="Enter post title here (e.g. My first cyber post)" 
+        class="w-full border border-gray-700 rounded px-4 py-3 focus:outline-none focus:ring-2 focus:ring-red-500 transition"
+        aria-describedby="titleHelp"
+        autocomplete="off"
+      />
+      <p id="titleHelp" class="text-xs text-gray-500">Max 100 characters</p>
+    </section>
+
+    <!-- Description -->
+    <section class="space-y-1 max-w-xl mx-auto">
+      <label for="captionInput" class="block text-sm text-gray-400 font-medium">Description</label>
+      <textarea 
+        id="captionInput" 
+        maxlength="500" 
+        rows="5" 
+        placeholder="Write a description... (e.g. A glimpse into the neon-lit streets)" 
+        class="w-full border border-gray-700 rounded px-4 py-3 resize-none focus:outline-none focus:ring-2 focus:ring-red-500 transition"
+        aria-describedby="descHelp"
+        autocomplete="off"
+      ></textarea>
+      <p id="descHelp" class="text-xs text-gray-500">Max 500 characters</p>
+    </section>
+
+    <!-- Tags -->
+    <section class="space-y-1 max-w-xl mx-auto">
+      <label for="tagsInput" class="block text-sm text-gray-400 font-medium">Tags</label>
+      <input 
+        id="tagsInput" 
+        type="text" 
+        maxlength="100"
+        placeholder="Add tags separated by commas (e.g. tech, photography, travel)" 
+        class="w-full border border-gray-700 rounded px-4 py-3 focus:outline-none focus:ring-2 focus:ring-red-500 transition"
+        aria-describedby="tagsHelp"
+        autocomplete="off"
+      />
+      <p id="tagsHelp" class="text-xs text-gray-500">Separate tags with commas, max 100 characters</p>
+    </section>
+
+    <!-- Category -->
+    <section class="space-y-1 max-w-xl mx-auto">
+      <label for="categorySelect" class="block text-sm text-gray-400 font-medium">Category</label>
+      <select 
+        id="categorySelect"
+        class="w-full border border-gray-700 rounded px-4 py-3 focus:outline-none focus:ring-2 focus:ring-red-500 transition"
+      >
+        <option value="" disabled selected>Select a category</option>
+        <option value="Travel">Travel</option>
+        <option value="Tech">Tech</option>
+        <option value="Gaming">Gaming</option>
+        <option value="Lifestyle">Lifestyle</option>
+        <option value="Music">Music</option>
+      </select>
+    </section>
+    
+  </main>
+
+  <!-- Login Modal -->
+  <div id="loginModal">
+    <div id="loginModalContent">
+      <h2 class="text-xl font-bold mb-4">Please Log In</h2>
+      <p class="mb-6">You must be logged in to upload posts.</p>
+      <button id="loginBtn">Log In</button>
+    </div>
   </div>
+  <!-- Firebase and App Script -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+    import { getDatabase, ref, get, child } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
 
-  <script>
-    // Load uploaded image from sessionStorage
-    const imageData = sessionStorage.getItem('uploadedImage');
-    const previewImage = document.getElementById('previewImage');
-    const postBtn = document.getElementById('postBtn');
+    const firebaseConfig = {
+      apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
+      authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
+      databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
+      projectId: "itzhoyoo-f9f7e",
+      storageBucket: "itzhoyoo-f9f7e.firebasestorage.app",
+      messagingSenderId: "1094792075584",
+      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
+      measurementId: "G-LLT6F9WRKH"
+    };
 
-    if (!imageData) {
-      alert("No image selected.");
-      window.location.href = "index.html"; // or fallback
-    } else {
-      previewImage.src = imageData;
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const database = getDatabase(app);
+    const provider = new GoogleAuthProvider();
+
+    const loginModal = document.getElementById('loginModal');
+    const loginBtn = document.getElementById('loginBtn');
+
+    const profilePic = document.getElementById('profilePic');
+    const userHandle = document.getElementById('userHandle');
+    const userFollowers = document.getElementById('userFollowers');
+
+    function showLogin() {
+      loginModal.classList.remove('hidden');
+      // blur main content
+      document.body.style.overflow = 'hidden';
+    }
+    function hideLogin() {
+      loginModal.classList.add('hidden');
+      document.body.style.overflow = 'auto';
     }
 
-    postBtn.onclick = () => {
-      const caption = document.getElementById('captionInput').value.trim();
-      if (!caption) {
-        alert("Please enter a caption.");
-        return;
+    loginBtn.addEventListener('click', () => {
+      signInWithPopup(auth, provider)
+        .catch((error) => alert("Login failed: " + error.message));
+    });
+
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        hideLogin();
+        // Display user's info
+        // You may store extra info in Realtime DB under /users/{uid}
+        const uid = user.uid;
+
+        // Set profile pic and default handle
+        profilePic.src = user.photoURL || 'https://via.placeholder.com/40';
+        userHandle.textContent = '@' + (user.displayName?.replace(/\s+/g, '').toLowerCase() || 'user');
+
+        // Fetch followers count from DB (simulate path /users/{uid}/followers)
+        try {
+          const dbRef = ref(database);
+          const snapshot = await get(child(dbRef, `users/${uid}/followers`));
+          if (snapshot.exists()) {
+            userFollowers.textContent = `Followers: ${snapshot.val()}`;
+          } else {
+            userFollowers.textContent = 'Followers: 0';
+          }
+        } catch (error) {
+          console.error("Failed to fetch followers:", error);
+          userFollowers.textContent = 'Followers: --';
+        }
+
+      } else {
+        // Not logged in, show login modal
+        showLogin();
+        profilePic.src = 'https://via.placeholder.com/40';
+        userHandle.textContent = '@guest';
+        userFollowers.textContent = 'Followers: --';
       }
+    });
 
-      // Here you would send `imageData` + `caption` to Firebase
-      console.log("Image data:", imageData);
-      console.log("Caption:", caption);
-
-      // Placeholder alert
-      alert("Post submitted! (This is a placeholder)");
-
-      // Optionally clear session and go back
-      sessionStorage.removeItem('uploadedImage');
-      window.location.href = "index.html"; // Redirect after post
-    };
+  const imageData = sessionStorage.getItem('uploadedImage');
+  const previewImage = document.getElementById('previewImage');
+  if (imageData && previewImage) {
+    previewImage.src = imageData;
+  } else {
+    alert("No image found.");
+    window.history.back();
+  }
   </script>
-
 </body>
 </html>
