@@ -99,7 +99,7 @@
           alt="Post Preview" class="w-full h-full object-cover" />
       </div>
     </section>
-
+<div id="imgurUrlContainer" class="text-sm mt-2"></div>
     <!-- Title -->
     <section class="space-y-1 max-w-xl mx-auto">
       <label for="titleInput" class="block text-sm text-gray-400 font-medium">Post Title</label>
@@ -176,32 +176,30 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
 import { getDatabase, ref, get, child, push, set } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
-import { getStorage, ref as sRef, uploadString, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-storage.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
   authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
   databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
   projectId: "itzhoyoo-f9f7e",
-  storageBucket: "itzhoyoo-f9f7e.firebasestorage.app",
+  storageBucket: "itzhoyoo-f9f7e.appspot.com",
   messagingSenderId: "1094792075584",
   appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
   measurementId: "G-LLT6F9WRKH"
 };
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const database = getDatabase(app);
-const storage = getStorage(app);
 const provider = new GoogleAuthProvider();
 
 const loginModal = document.getElementById('loginModal');
 const loginBtn = document.getElementById('loginBtn');
-
 const profilePic = document.getElementById('profilePic');
 const userHandle = document.getElementById('userHandle');
 const userFollowers = document.getElementById('userFollowers');
+const previewImage = document.getElementById('previewImage');
+const imgurUrlContainer = document.getElementById('imgurUrlContainer');
 
 function showLogin() {
   loginModal.classList.remove('hidden');
@@ -228,13 +226,10 @@ onAuthStateChanged(auth, async (user) => {
     try {
       const dbRef = ref(database);
       const snapshot = await get(child(dbRef, `users/${uid}/followers`));
-      if (snapshot.exists()) {
-        userFollowers.textContent = `Followers: ${snapshot.val()}`;
-      } else {
-        userFollowers.textContent = 'Followers: 0';
-      }
+      userFollowers.textContent = snapshot.exists()
+        ? `Followers: ${snapshot.val()}`
+        : 'Followers: 0';
     } catch (error) {
-      console.error("Failed to fetch followers:", error);
       userFollowers.textContent = 'Followers: --';
     }
   } else {
@@ -245,170 +240,15 @@ onAuthStateChanged(auth, async (user) => {
   }
 });
 
-// ---- IMAGE UPLOAD + EDIT SETUP ----
-
-const imageInput = document.createElement('input');
-imageInput.type = 'file';
-imageInput.accept = 'image/*';
-imageInput.classList.add('hidden');
-document.body.appendChild(imageInput);
-
-const previewImage = document.getElementById('previewImage');
-const editBtn = document.createElement('button');
-editBtn.textContent = 'Edit Image';
-editBtn.className = 'mt-2 px-4 py-1 bg-cyan-600 rounded text-white text-sm hover:bg-cyan-700';
-previewImage.parentElement.appendChild(editBtn);
-
-editBtn.style.display = 'none'; // hide until image uploaded
-
-const modal = document.createElement('div');
-modal.className = 'fixed inset-0 bg-black bg-opacity-80 backdrop-blur-sm flex items-center justify-center z-50 hidden';
-modal.innerHTML = `
-  <div class="bg-gray-900 p-4 rounded max-w-3xl w-full relative">
-    <div style="max-height: 70vh; overflow: auto;">
-      <img id="cropperImage" style="max-width:100%; display:block; margin:auto;"/>
-      <canvas id="fabricCanvas" style="display:none; border:1px solid #444;"></canvas>
-    </div>
-    <div class="mt-4 flex space-x-4 justify-end">
-      <button id="addTextBtn" class="px-4 py-2 bg-cyan-600 rounded text-white hover:bg-cyan-700">Add Text</button>
-      <button id="saveEditBtn" class="px-4 py-2 bg-green-600 rounded text-white hover:bg-green-700">Save</button>
-      <button id="cancelEditBtn" class="px-4 py-2 bg-red-600 rounded text-white hover:bg-red-700">Cancel</button>
-    </div>
-  </div>
-`;
-document.body.appendChild(modal);
-
-const cropperImage = modal.querySelector('#cropperImage');
-const fabricCanvasEl = modal.querySelector('#fabricCanvas');
-const addTextBtn = modal.querySelector('#addTextBtn');
-const saveEditBtn = modal.querySelector('#saveEditBtn');
-const cancelEditBtn = modal.querySelector('#cancelEditBtn');
-
-let cropper = null;
-let fabricCanvas = null;
-let currentImageFile = null;
-let croppedDataUrl = null;
-
-previewImage.parentElement.addEventListener('click', () => {
-  imageInput.click();
-});
-
-imageInput.addEventListener('change', () => {
-  const file = imageInput.files[0];
-  if (!file) return;
-
-  currentImageFile = file;
-  const reader = new FileReader();
-  reader.onload = (e) => {
-    previewImage.src = e.target.result;
+// Load image from sessionStorage and disable manual upload
+document.addEventListener('DOMContentLoaded', () => {
+  const imageData = sessionStorage.getItem('uploadedImage');
+  if (imageData && previewImage) {
+    previewImage.src = imageData;
     previewImage.style.objectFit = 'cover';
-
-    editBtn.style.display = 'inline-block';
-    croppedDataUrl = null;
-  };
-  reader.readAsDataURL(file);
-});
-
-editBtn.addEventListener('click', () => {
-  if (!previewImage.src) return;
-
-  modal.classList.remove('hidden');
-  cropperImage.style.display = 'block';
-  fabricCanvasEl.style.display = 'none';
-
-  cropperImage.src = previewImage.src;
-
-  cropperImage.onload = () => {
-    if (cropper) cropper.destroy();
-    cropper = new Cropper(cropperImage, {
-      aspectRatio: 16 / 9,
-      viewMode: 1,
-      autoCropArea: 1,
-      movable: true,
-      zoomable: true,
-      scalable: false,
-      cropBoxResizable: true,
-      background: false,
-    });
-
-    if (!fabricCanvas) {
-      fabricCanvas = new fabric.Canvas(fabricCanvasEl, {
-        width: cropperImage.naturalWidth,
-        height: cropperImage.naturalHeight,
-        backgroundColor: 'transparent',
-      });
-    }
-  };
-});
-
-addTextBtn.addEventListener('click', () => {
-  if (!fabricCanvas) return;
-
-  if (cropper) {
-    const croppedCanvas = cropper.getCroppedCanvas();
-    const dataURL = croppedCanvas.toDataURL();
-
-    cropperImage.style.display = 'none';
-    fabricCanvasEl.style.display = 'block';
-
-    fabricCanvas.setWidth(croppedCanvas.width);
-    fabricCanvas.setHeight(croppedCanvas.height);
-
-    fabric.Image.fromURL(dataURL, (img) => {
-      fabricCanvas.clear();
-      fabricCanvas.setBackgroundImage(img, fabricCanvas.renderAll.bind(fabricCanvas));
-    });
-  }
-
-  const text = new fabric.Textbox('Enter text', {
-    left: 20,
-    top: 20,
-    fill: '#ffffff',
-    fontSize: 30,
-    fontWeight: 'bold',
-    editable: true,
-    backgroundColor: 'rgba(0,0,0,0.3)',
-    padding: 5,
-  });
-  fabricCanvas.add(text);
-  fabricCanvas.setActiveObject(text);
-  fabricCanvas.renderAll();
-});
-
-cancelEditBtn.addEventListener('click', () => {
-  modal.classList.add('hidden');
-  if (cropper) {
-    cropper.destroy();
-    cropper = null;
-  }
-  if (fabricCanvas) {
-    fabricCanvas.clear();
-  }
-});
-
-saveEditBtn.addEventListener('click', () => {
-  if (fabricCanvasEl.style.display === 'block' && fabricCanvas) {
-    croppedDataUrl = fabricCanvas.toDataURL({
-      format: 'png',
-      quality: 1,
-    });
-  } else if (cropper) {
-    croppedDataUrl = cropper.getCroppedCanvas().toDataURL('image/png');
   } else {
-    alert('No image to save.');
-    return;
-  }
-
-  previewImage.src = croppedDataUrl;
-  previewImage.style.objectFit = 'cover';
-  modal.classList.add('hidden');
-
-  if (cropper) {
-    cropper.destroy();
-    cropper = null;
-  }
-  if (fabricCanvas) {
-    fabricCanvas.clear();
+    alert("No image found. Redirecting...");
+    window.history.back();
   }
 });
 
@@ -424,25 +264,28 @@ postBtn.addEventListener('click', async () => {
   if (!captionInput.value.trim()) return alert('Caption is required');
   if (!tagsInput.value.trim()) return alert('Tags are required');
   if (!categorySelect.value) return alert('Please select a category');
-  if (!previewImage.src || previewImage.src.includes('placeholder')) 
-    return alert('Please upload and edit an image before posting.');
 
   const user = auth.currentUser;
-  if (!user) {
-    alert('You must be logged in to post.');
-    return;
-  }
+  if (!user) return alert('You must be logged in to post.');
+
+  const imageData = previewImage.src;
 
   try {
-    // Upload image to Firebase Storage
-    const storageRef = sRef(storage, `posts/${user.uid}/${Date.now()}.png`);
-    const imageData = croppedDataUrl || previewImage.src;
+    // Upload to Imgur
+    const imgurRes = await fetch('https://api.imgur.com/3/image', {
+      method: 'POST',
+      headers: {
+        Authorization: 'Client-ID 784e530b6023501',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ image: imageData.split(',')[1], type: 'base64' }),
+    });
 
-    // Upload the base64 image string
-    await uploadString(storageRef, imageData, 'data_url');
+    const imgurJson = await imgurRes.json();
+    if (!imgurJson.success) throw new Error('Imgur upload failed');
 
-    // Get the download URL
-    const imageUrl = await getDownloadURL(storageRef);
+    const imgurLink = imgurJson.data.link;
+    imgurUrlContainer.innerHTML = `<p class="text-green-400 mt-2">Imgur URL: <a href="${imgurLink}" target="_blank" class="underline">${imgurLink}</a></p>`;
 
     // Prepare post data
     const postData = {
@@ -451,44 +294,29 @@ postBtn.addEventListener('click', async () => {
       userPhoto: user.photoURL || '',
       title: titleInput.value.trim(),
       caption: captionInput.value.trim(),
-      tags: tagsInput.value.trim().split(',').map(t => t.trim()).filter(t => t),
+      tags: tagsInput.value.trim().split(',').map(t => t.trim()).filter(Boolean),
       category: categorySelect.value,
-      imageUrl,
+      imageUrl: imgurLink,
       createdAt: Date.now()
     };
 
-    // Push post to Realtime Database
     const postsRef = ref(database, 'posts');
     const newPostRef = push(postsRef);
     await set(newPostRef, postData);
 
     alert('Post published successfully!');
-    // Optionally clear inputs or redirect
     titleInput.value = '';
     captionInput.value = '';
     tagsInput.value = '';
     categorySelect.value = '';
+    imgurUrlContainer.innerHTML = '';
     previewImage.src = 'https://via.placeholder.com/1280x720.png?text=Preview+Image';
-    editBtn.style.display = 'none';
-    croppedDataUrl = null;
 
   } catch (error) {
-    console.error('Error posting:', error);
+    console.error('Post error:', error);
     alert('Failed to publish post: ' + error.message);
   }
 });
-
-  document.addEventListener('DOMContentLoaded', () => {
-    const imageData = sessionStorage.getItem('uploadedImage');
-    const previewImage = document.getElementById('previewImage');
-
-    if (imageData && previewImage) {
-      previewImage.src = imageData;
-    } else {
-      alert("No image found, redirecting...");
-      window.history.back();
-    }
-  });
 </script>
 </body>
 </html>
