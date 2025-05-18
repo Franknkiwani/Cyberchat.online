@@ -133,23 +133,26 @@
 
   function loadPostsRealtime() {
     onValue(postsRef, snapshot => {
-      postsContainer.innerHTML = '';
       const posts = snapshot.val() || {};
-      Object.entries(posts).forEach(([postId, post]) => {
-        const postEl = createPostElement(post, postId);
-        postsContainer.appendChild(postEl);
-        listenLikes(postId);
-        listenCommentsCount(postId);
-        if (currentUser && post.userId) {
-          const followBtn = postEl.querySelector('.follow-btn');
-          listenFollowStatus(currentUser.uid, post.userId, followBtn);
+      for (const [postId, post] of Object.entries(posts)) {
+        let postEl = document.getElementById(`post-${postId}`);
+        if (!postEl) {
+          postEl = createPostElement(post, postId);
+          postsContainer.appendChild(postEl);
+          listenLikes(postId);
+          listenCommentsCount(postId);
+          if (currentUser && post.userId) {
+            const followBtn = postEl.querySelector('.follow-btn');
+            listenFollowStatus(currentUser.uid, post.userId, followBtn);
+          }
         }
-      });
+      }
     });
   }
 
   function createPostElement(post, postId) {
     const postEl = document.createElement('div');
+    postEl.id = `post-${postId}`;
     postEl.className = 'bg-gray-900 rounded-2xl p-3 shadow-lg mb-4';
     postEl.innerHTML = `
       <div class="flex items-center justify-between mb-3">
@@ -166,7 +169,7 @@
       <h2 class="text-lg font-bold mb-2">${post.title}</h2>
       ${post.image ? `<img src="${post.image}" class="w-full h-40 object-cover rounded-xl mb-3" />` : ''}
       <div class="flex justify-between text-sm text-gray-300 mb-2">
-        <span>Views: <span class="text-cyan-400">${post.views || 0}</span></span>
+        <span>Views: <span class="text-cyan-400" id="view-count-${postId}">${post.views || 0}</span></span>
         <span>Likes: <span class="text-pink-400" id="like-count-${postId}">${post.likes ? Object.keys(post.likes).length : 0}</span></span>
         <span>Comments: <span class="text-green-400" id="comment-count-${postId}">${post.comments ? Object.keys(post.comments).length : 0}</span></span>
       </div>
@@ -236,99 +239,101 @@
     });
   }
 
-async function openPostModal(postId) {
-  if (!currentUser) return alert("Login required");
+  async function openPostModal(postId) {
+    if (!currentUser) return alert("Login required");
 
-  const postRef = ref(db, `posts/${postId}`);
-  const snap = await get(postRef);
-  if (!snap.exists()) return alert("Post not found");
+    // Always increment views first
+    await runTransaction(ref(db, `posts/${postId}/views`), val => (val || 0) + 1);
 
-  const post = snap.val();
-  await runTransaction(ref(db, `posts/${postId}/views`), val => (val || 0) + 1);
+    const postRef = ref(db, `posts/${postId}`);
+    const snap = await get(postRef);
+    if (!snap.exists()) return alert("Post not found");
 
-  modalContent.innerHTML = `
-    <div>
-      <div class="flex items-center mb-3 gap-3">
-        <img src="${post.userPic}" class="w-12 h-12 rounded-full" />
-        <div>
-          <h3 class="text-lg font-bold">${post.username}</h3>
-          <p class="text-sm text-gray-400">@${post.handle}</p>
-          <p class="text-xs text-gray-500">${new Date(post.date).toLocaleString()}</p>
+    const post = snap.val();
+
+    modalContent.innerHTML = `
+      <div>
+        <div class="flex items-center mb-3 gap-3">
+          <img src="${post.userPic}" class="w-12 h-12 rounded-full" />
+          <div>
+            <h3 class="text-lg font-bold">${post.username}</h3>
+            <p class="text-sm text-gray-400">@${post.handle}</p>
+            <p class="text-xs text-gray-500">${new Date(post.date).toLocaleString()}</p>
+          </div>
         </div>
+        <h2 class="text-xl font-bold mb-3">${post.title}</h2>
+        ${post.image ? `<img src="${post.image}" class="w-full h-64 rounded mb-3 object-cover" />` : ''}
+        <div class="text-sm text-gray-300 mb-2">Views: <b>${(post.views || 0) + 1}</b> | Likes: <b id="modalLikeCount">${post.likes ? Object.keys(post.likes).length : 0}</b> | Comments: <b id="modalCommentCount">${post.comments ? Object.keys(post.comments).length : 0}</b></div>
+        <div id="modalCommentsList" class="space-y-2 max-h-48 overflow-y-auto text-gray-200"></div>
+        <input id="modalCommentInput" class="w-full p-2 mt-3 rounded bg-gray-800 text-white" placeholder="Write a comment..." />
+        <button id="modalSubmitComment" class="w-full bg-green-600 mt-2 p-2 rounded text-white">Post Comment</button>
       </div>
-      <h2 class="text-xl font-bold mb-3">${post.title}</h2>
-      ${post.image ? `<img src="${post.image}" class="w-full h-64 rounded mb-3 object-cover" />` : ''}
-      <div class="text-sm text-gray-300 mb-2">Views: <b>${(post.views || 0) + 1}</b> | Likes: <b id="modalLikeCount">${post.likes ? Object.keys(post.likes).length : 0}</b> | Comments: <b id="modalCommentCount">${post.comments ? Object.keys(post.comments).length : 0}</b></div>
-      <div id="modalCommentsList" class="space-y-2 max-h-48 overflow-y-auto text-gray-200"></div>
-      <input id="modalCommentInput" class="w-full p-2 mt-3 rounded bg-gray-800 text-white" placeholder="Write a comment..." />
-      <button id="modalSubmitComment" class="w-full bg-green-600 mt-2 p-2 rounded text-white">Post Comment</button>
-    </div>
-  `;
+    `;
 
-  postModal.classList.remove('hidden');
+    // Update view count on main post as well
+    const viewCountSpan = document.getElementById(`view-count-${postId}`);
+    if (viewCountSpan) viewCountSpan.textContent = (post.views || 0) + 1;
 
-  const commentsList = document.getElementById('modalCommentsList');
-  const commentsRef = ref(db, `posts/${postId}/comments`);
-  onValue(commentsRef, async snap => {
-    const comments = [];
-    snap.forEach(child => {
-      comments.push({ id: child.key, ...child.val() });
-    });
+    postModal.classList.remove('hidden');
 
-    // Sort newest first
-    comments.reverse();
-    commentsList.innerHTML = comments.length === 0 ? '<p>No comments yet.</p>' : '';
+    const commentsList = document.getElementById('modalCommentsList');
+    const commentsRef = ref(db, `posts/${postId}/comments`);
+    onValue(commentsRef, async snap => {
+      const comments = [];
+      snap.forEach(child => {
+        comments.push({ id: child.key, ...child.val() });
+      });
 
-    for (const comment of comments) {
-      const commentDiv = document.createElement('div');
-      commentDiv.className = 'bg-gray-800 p-2 rounded relative';
-      commentDiv.innerHTML = `
-        <p class="text-sm font-bold">${comment.username} <span class="text-xs text-gray-400">@${comment.handle}</span></p>
-        <p class="text-xs text-gray-400">${new Date(comment.date).toLocaleString()}</p>
-        <p>${comment.text}</p>
-      `;
+      // Sort newest first
+      comments.reverse();
+      commentsList.innerHTML = comments.length === 0 ? '<p>No comments yet.</p>' : '';
 
-      // If comment belongs to current user, show delete button
-      if (comment.userId === currentUser.uid) {
-        const deleteBtn = document.createElement('button');
-        deleteBtn.innerHTML = '🗑️';
-        deleteBtn.title = 'Delete';
-        deleteBtn.className = 'absolute top-2 right-2 text-red-400 hover:text-red-600';
-        deleteBtn.onclick = () => {
-          if (confirm("Delete this comment?")) {
-            remove(ref(db, `posts/${postId}/comments/${comment.id}`));
-          }
-        };
-        commentDiv.appendChild(deleteBtn);
+      for (const comment of comments) {
+        const commentDiv = document.createElement('div');
+        commentDiv.className = 'bg-gray-800 p-2 rounded relative';
+        commentDiv.innerHTML = `
+          <p class="text-sm font-bold">${comment.username} <span class="text-xs text-gray-400">@${comment.handle}</span></p>
+          <p class="text-xs text-gray-400">${new Date(comment.date).toLocaleString()}</p>
+          <p>${comment.text}</p>
+        `;
+
+        if (comment.userId === currentUser.uid) {
+          const deleteBtn = document.createElement('button');
+          deleteBtn.innerHTML = '🗑️';
+          deleteBtn.title = 'Delete';
+          deleteBtn.className = 'absolute top-2 right-2 text-red-400 hover:text-red-600';
+          deleteBtn.onclick = () => {
+            if (confirm("Delete this comment?")) {
+              remove(ref(db, `posts/${postId}/comments/${comment.id}`));
+            }
+          };
+          commentDiv.appendChild(deleteBtn);
+        }
+
+        commentsList.appendChild(commentDiv);
       }
 
-      commentsList.appendChild(commentDiv);
-    }
+      commentsList.scrollTop = 0;
+      document.getElementById('modalCommentCount').textContent = comments.length;
+    });
 
-    // Always scroll to top
-    commentsList.scrollTop = 0;
-
-    document.getElementById('modalCommentCount').textContent = comments.length;
-  });
-
-  document.getElementById('modalSubmitComment').onclick = async () => {
-    const text = document.getElementById('modalCommentInput').value.trim();
-    if (!text) return;
-    const userSnap = await get(ref(db, `users/${currentUser.uid}`));
-    const userData = userSnap.val() || {};
-    const comment = {
-      text,
-      userId: currentUser.uid,
-      username: userData.username || currentUser.displayName || "User",
-      handle: userData.handle || currentUser.email.split('@')[0],
-      userPic: userData.profilePic || currentUser.photoURL || '',
-      date: Date.now()
+    document.getElementById('modalSubmitComment').onclick = async () => {
+      const text = document.getElementById('modalCommentInput').value.trim();
+      if (!text) return;
+      const userSnap = await get(ref(db, `users/${currentUser.uid}`));
+      const userData = userSnap.val() || {};
+      const comment = {
+        text,
+        userId: currentUser.uid,
+        username: userData.username || currentUser.displayName || "User",
+        handle: userData.handle || currentUser.email.split('@')[0],
+        userPic: userData.profilePic || currentUser.photoURL || '',
+        date: Date.now()
+      };
+      await push(ref(db, `posts/${postId}/comments`), comment);
+      document.getElementById('modalCommentInput').value = '';
     };
-    await push(ref(db, `posts/${postId}/comments`), comment);
-    document.getElementById('modalCommentInput').value = '';
-  };
-}
+  }
 </script>
-</body>
 </body>
 </html>
