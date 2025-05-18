@@ -75,7 +75,7 @@
       <div id="modalContent"></div>
     </div>
   </div>
-<script type="module">
+ <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
   import {
     getDatabase, ref, onValue, onChildAdded, update, get, push, remove
@@ -207,23 +207,59 @@
       }
     };
 
-    // Follow button toggle
-    const followBtn = postEl.querySelector('.follow-btn');
+// Make sure this runs after postEl is added to DOM
+const followBtn = postEl.querySelector('.follow-btn');
+
+if (!followBtn) {
+  console.error("Follow button not found in postEl");
+} else {
+  const userIdToFollow = post.userId;
+
+  if (!userIdToFollow || !currentUser || userIdToFollow === currentUser.uid) {
+    // If invalid user or self, disable button or hide it
+    followBtn.disabled = true;
+    followBtn.textContent = "N/A";
+  } else {
+    // Function to update button UI based on follow status
+    function listenFollowStatus(followerId, followedUserId, button) {
+      const followRef = ref(db, `users/${followerId}/following/${followedUserId}`);
+      onValue(followRef, snapshot => {
+        if (snapshot.exists()) {
+          button.textContent = "Following";
+          button.classList.add("bg-green-600");
+          button.classList.remove("bg-cyan-600");
+        } else {
+          button.textContent = "Follow";
+          button.classList.remove("bg-green-600");
+          button.classList.add("bg-cyan-600");
+        }
+      });
+    }
+
+    // Attach click handler to toggle follow/unfollow
     followBtn.onclick = async (e) => {
       if (!currentUser) return alert("Please log in to follow users.");
-      const userIdToFollow = post.userId;
-      if (!userIdToFollow || userIdToFollow === currentUser.uid) return;
+      try {
+        const followRef = ref(db, `users/${currentUser.uid}/following/${userIdToFollow}`);
+        const followSnap = await get(followRef);
 
-      const followRef = ref(db, `users/${currentUser.uid}/following/${userIdToFollow}`);
-      const followSnap = await get(followRef);
-      if (followSnap.exists()) {
-        // Unfollow
-        await remove(followRef);
-      } else {
-        // Follow
-        await update(followRef, { followedAt: Date.now() });
+        if (followSnap.exists()) {
+          // Unfollow
+          await remove(followRef);
+        } else {
+          // Follow
+          await set(followRef, { followedAt: Date.now() });
+        }
+      } catch (error) {
+        console.error("Follow/unfollow error:", error);
+        alert("An error occurred. Please try again.");
       }
     };
+
+    // Start listening to follow status to update button UI in real-time
+    listenFollowStatus(currentUser.uid, userIdToFollow, followBtn);
+  }
+}
 
     // View comments button opens modal
     postEl.querySelector('.view-comments-btn').onclick = () => openPostModal(postId);
