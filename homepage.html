@@ -304,15 +304,17 @@ async function openPostModal(postId) {
     alert('Post not found');
     return;
   }
+
   const post = postSnapshot.val();
 
-  // Increment views safely with transaction
+  // Increment views safely
   try {
     await runTransaction(ref(db, `posts/${postId}/views`), current => (current || 0) + 1);
   } catch (error) {
     console.warn('Failed to increment views:', error);
   }
 
+  // Render modal content
   modalContent.innerHTML = `
     <div>
       <div class="flex items-center gap-4 mb-4">
@@ -345,13 +347,15 @@ async function openPostModal(postId) {
   const commentsList = document.getElementById('modalCommentsList');
   commentsList.innerHTML = 'Loading comments...';
 
+  // Load comments
   const commentsRef = ref(db, `posts/${postId}/comments`);
   onValue(commentsRef, snapshot => {
     const comments = snapshot.val() || {};
+    commentsList.innerHTML = '';
+
     if (Object.keys(comments).length === 0) {
       commentsList.innerHTML = '<p>No comments yet.</p>';
     } else {
-      commentsList.innerHTML = '';
       Object.entries(comments).forEach(([commentId, comment]) => {
         const dateStr = comment.date ? new Date(comment.date).toLocaleString() : 'Unknown date';
         const commenterPic = comment.userPic || 'https://i.pravatar.cc/30';
@@ -378,10 +382,12 @@ async function openPostModal(postId) {
       });
     }
 
+    // Update comment count in UI
     const modalCommentCount = document.getElementById('modalCommentCount');
     if (modalCommentCount) modalCommentCount.textContent = Object.keys(comments).length;
   });
 
+  // Handle new comment posting
   const submitBtn = document.getElementById('modalSubmitComment');
   const commentInput = document.getElementById('modalCommentInput');
 
@@ -392,7 +398,7 @@ async function openPostModal(postId) {
     }
 
     const text = commentInput.value.trim();
-    if (text.length === 0) {
+    if (!text) {
       alert('Comment cannot be empty.');
       return;
     }
@@ -400,7 +406,7 @@ async function openPostModal(postId) {
     submitBtn.disabled = true;
     try {
       const newCommentRef = push(ref(db, `posts/${postId}/comments`));
-      await newCommentRef.set({
+      await set(newCommentRef, {
         userId: currentUser.uid,
         username: currentUser.displayName || 'Anonymous',
         handle: (currentUser.displayName || 'user').toLowerCase().replace(/\s+/g, ''),
