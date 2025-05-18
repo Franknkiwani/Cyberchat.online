@@ -75,7 +75,7 @@
       <div id="modalContent"></div>
     </div>
   </div>
- <script type="module">
+<script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
   import {
     getDatabase, ref, onValue, onChildAdded, update, get, push, remove
@@ -207,59 +207,23 @@
       }
     };
 
-// Make sure this runs after postEl is added to DOM
-const followBtn = postEl.querySelector('.follow-btn');
-
-if (!followBtn) {
-  console.error("Follow button not found in postEl");
-} else {
-  const userIdToFollow = post.userId;
-
-  if (!userIdToFollow || !currentUser || userIdToFollow === currentUser.uid) {
-    // If invalid user or self, disable button or hide it
-    followBtn.disabled = true;
-    followBtn.textContent = "N/A";
-  } else {
-    // Function to update button UI based on follow status
-    function listenFollowStatus(followerId, followedUserId, button) {
-      const followRef = ref(db, `users/${followerId}/following/${followedUserId}`);
-      onValue(followRef, snapshot => {
-        if (snapshot.exists()) {
-          button.textContent = "Following";
-          button.classList.add("bg-green-600");
-          button.classList.remove("bg-cyan-600");
-        } else {
-          button.textContent = "Follow";
-          button.classList.remove("bg-green-600");
-          button.classList.add("bg-cyan-600");
-        }
-      });
-    }
-
-    // Attach click handler to toggle follow/unfollow
+    // Follow button toggle
+    const followBtn = postEl.querySelector('.follow-btn');
     followBtn.onclick = async (e) => {
       if (!currentUser) return alert("Please log in to follow users.");
-      try {
-        const followRef = ref(db, `users/${currentUser.uid}/following/${userIdToFollow}`);
-        const followSnap = await get(followRef);
+      const userIdToFollow = post.userId;
+      if (!userIdToFollow || userIdToFollow === currentUser.uid) return;
 
-        if (followSnap.exists()) {
-          // Unfollow
-          await remove(followRef);
-        } else {
-          // Follow
-          await set(followRef, { followedAt: Date.now() });
-        }
-      } catch (error) {
-        console.error("Follow/unfollow error:", error);
-        alert("An error occurred. Please try again.");
+      const followRef = ref(db, `users/${currentUser.uid}/following/${userIdToFollow}`);
+      const followSnap = await get(followRef);
+      if (followSnap.exists()) {
+        // Unfollow
+        await remove(followRef);
+      } else {
+        // Follow
+        await update(followRef, { followedAt: Date.now() });
       }
     };
-
-    // Start listening to follow status to update button UI in real-time
-    listenFollowStatus(currentUser.uid, userIdToFollow, followBtn);
-  }
-}
 
     // View comments button opens modal
     postEl.querySelector('.view-comments-btn').onclick = () => openPostModal(postId);
@@ -328,29 +292,15 @@ if (!followBtn) {
     });
   }
 
+// Open modal and load post + comments + add comment input
 async function openPostModal(postId) {
-  if (!currentUser) {
-    alert('Please log in to view posts and comment.');
-    return;
-  }
-
-  const postRef = ref(db, `posts/${postId}`);
-  const postSnapshot = await get(postRef);
+  const postSnapshot = await get(ref(db, `posts/${postId}`));
   if (!postSnapshot.exists()) {
     alert('Post not found');
     return;
   }
-
   const post = postSnapshot.val();
 
-  // Increment views safely
-  try {
-    await runTransaction(ref(db, `posts/${postId}/views`), current => (current || 0) + 1);
-  } catch (error) {
-    console.warn('Failed to increment views:', error);
-  }
-
-  // Render modal content
   modalContent.innerHTML = `
     <div>
       <div class="flex items-center gap-4 mb-4">
@@ -358,20 +308,19 @@ async function openPostModal(postId) {
         <div>
           <h3 class="font-semibold text-lg">${post.username || 'Anonymous'}</h3>
           <p class="text-sm text-gray-400">@${post.handle || 'user'}</p>
-          <p class="text-xs text-gray-500">${post.date ? new Date(post.date).toLocaleString() : ''}</p>
-          <p class="text-xs text-gray-400">Logged in as: ${currentUser.email}</p>
+          <p class="text-xs text-gray-500">${post.date || ''}</p>
         </div>
       </div>
       <h2 class="text-xl font-bold mb-3">${post.title || ''}</h2>
       ${post.image ? `<img src="${post.image}" class="w-full h-64 object-cover rounded-lg mb-4" alt="Post Image" />` : ''}
       <div class="mb-4 text-sm text-gray-300 flex justify-between">
-        <span>Views: <strong>${(post.views || 0) + 1}</strong></span>
+        <span>Views: <strong>${post.views || 0}</strong></span>
         <span>Likes: <strong id="modalLikeCount">${post.likes ? Object.keys(post.likes).length : 0}</strong></span>
         <span>Comments: <strong id="modalCommentCount">${post.comments ? Object.keys(post.comments).length : 0}</strong></span>
       </div>
       <div class="mb-4">
         <h3 class="font-semibold mb-2">Comments</h3>
-        <div id="modalCommentsList" class="max-h-48 overflow-y-auto space-y-2 text-gray-300">Loading comments...</div>
+        <div id="modalCommentsList" class="max-h-48 overflow-y-auto space-y-2 text-gray-300"></div>
       </div>
       <div>
         <input id="modalCommentInput" type="text" placeholder="Write a comment..." class="w-full p-2 rounded bg-gray-800 text-white placeholder-gray-400 mb-2" />
@@ -383,15 +332,13 @@ async function openPostModal(postId) {
   const commentsList = document.getElementById('modalCommentsList');
   commentsList.innerHTML = 'Loading comments...';
 
-  // Load comments
   const commentsRef = ref(db, `posts/${postId}/comments`);
   onValue(commentsRef, snapshot => {
     const comments = snapshot.val() || {};
-    commentsList.innerHTML = '';
-
     if (Object.keys(comments).length === 0) {
       commentsList.innerHTML = '<p>No comments yet.</p>';
     } else {
+      commentsList.innerHTML = '';
       Object.entries(comments).forEach(([commentId, comment]) => {
         const dateStr = comment.date ? new Date(comment.date).toLocaleString() : 'Unknown date';
         const commenterPic = comment.userPic || 'https://i.pravatar.cc/30';
@@ -418,31 +365,30 @@ async function openPostModal(postId) {
       });
     }
 
-    // Update comment count in UI
     const modalCommentCount = document.getElementById('modalCommentCount');
     if (modalCommentCount) modalCommentCount.textContent = Object.keys(comments).length;
   });
 
-  // Handle new comment posting
-  const submitBtn = document.getElementById('modalSubmitComment');
-  const commentInput = document.getElementById('modalCommentInput');
-
-  submitBtn.onclick = async () => {
+  // Handle new comment submit
+  document.getElementById('modalSubmitComment').onclick = async () => {
     if (!currentUser) {
       alert('Please log in to comment.');
       return;
     }
 
+    const commentInput = document.getElementById('modalCommentInput');
     const text = commentInput.value.trim();
-    if (!text) {
-      alert('Comment cannot be empty.');
-      return;
+    if (text.length === 0 || text.length > 500) {
+      return alert('Comment must be between 1 and 500 characters.');
     }
 
+    const submitBtn = document.getElementById('modalSubmitComment');
     submitBtn.disabled = true;
+    submitBtn.textContent = 'Posting...';
+
     try {
       const newCommentRef = push(ref(db, `posts/${postId}/comments`));
-      await set(newCommentRef, {
+      await newCommentRef.set({
         userId: currentUser.uid,
         username: currentUser.displayName || 'Anonymous',
         handle: (currentUser.displayName || 'user').toLowerCase().replace(/\s+/g, ''),
@@ -454,11 +400,12 @@ async function openPostModal(postId) {
       commentInput.value = '';
       commentsList.scrollTop = commentsList.scrollHeight;
     } catch (error) {
-      console.error('Failed to post comment:', error);
-      alert('Failed to post comment, try again later.');
-    } finally {
-      submitBtn.disabled = false;
+      alert('Failed to post comment.');
+      console.error(error);
     }
+
+    submitBtn.disabled = false;
+    submitBtn.textContent = 'Post Comment';
   };
 
   postModal.classList.remove('hidden');
