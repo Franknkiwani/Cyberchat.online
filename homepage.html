@@ -292,101 +292,113 @@
     });
   }
 
-  // Open modal and load post + comments + add comment input
-  async function openPostModal(postId) {
-    const postSnapshot = await get(ref(db, `posts/${postId}`));
-    if (!postSnapshot.exists()) {
-      alert('Post not found');
-      return;
-    }
-    const post = postSnapshot.val();
+async function openPostModal(postId) {
+  if (!currentUser) {
+    alert('Please log in to view posts and comment.');
+    return;
+  }
 
-    modalContent.innerHTML = `
-      <div>
-        <div class="flex items-center gap-4 mb-4">
-          <img src="${post.userPic || 'https://i.pravatar.cc/40'}" class="w-12 h-12 rounded-full" alt="Profile Pic" />
-          <div>
-            <h3 class="font-semibold text-lg">${post.username || 'Anonymous'}</h3>
-            <p class="text-sm text-gray-400">@${post.handle || 'user'}</p>
-            <p class="text-xs text-gray-500">${post.date || ''}</p>
-          </div>
-        </div>
-        <h2 class="text-xl font-bold mb-3">${post.title || ''}</h2>
-        ${post.image ? `<img src="${post.image}" class="w-full h-64 object-cover rounded-lg mb-4" alt="Post Image" />` : ''}
-        <div class="mb-4 text-sm text-gray-300 flex justify-between">
-          <span>Views: <strong>${post.views || 0}</strong></span>
-          <span>Likes: <strong id="modalLikeCount">${post.likes ? Object.keys(post.likes).length : 0}</strong></span>
-          <span>Comments: <strong id="modalCommentCount">${post.comments ? Object.keys(post.comments).length : 0}</strong></span>
-        </div>
-        <div class="mb-4">
-          <h3 class="font-semibold mb-2">Comments</h3>
-          <div id="modalCommentsList" class="max-h-48 overflow-y-auto space-y-2 text-gray-300"></div>
-        </div>
+  const postRef = ref(db, `posts/${postId}`);
+  const postSnapshot = await get(postRef);
+  if (!postSnapshot.exists()) {
+    alert('Post not found');
+    return;
+  }
+  const post = postSnapshot.val();
+
+  // Increment views safely with transaction
+  try {
+    await runTransaction(ref(db, `posts/${postId}/views`), current => (current || 0) + 1);
+  } catch (error) {
+    console.warn('Failed to increment views:', error);
+  }
+
+  modalContent.innerHTML = `
+    <div>
+      <div class="flex items-center gap-4 mb-4">
+        <img src="${post.userPic || 'https://i.pravatar.cc/40'}" class="w-12 h-12 rounded-full" alt="Profile Pic" />
         <div>
-          <input id="modalCommentInput" type="text" placeholder="Write a comment..." class="w-full p-2 rounded bg-gray-800 text-white placeholder-gray-400 mb-2" />
-          <button id="modalSubmitComment" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded w-full">Post Comment</button>
+          <h3 class="font-semibold text-lg">${post.username || 'Anonymous'}</h3>
+          <p class="text-sm text-gray-400">@${post.handle || 'user'}</p>
+          <p class="text-xs text-gray-500">${post.date ? new Date(post.date).toLocaleString() : ''}</p>
+          <p class="text-xs text-gray-400">Logged in as: ${currentUser.email}</p>
         </div>
       </div>
-    `;
+      <h2 class="text-xl font-bold mb-3">${post.title || ''}</h2>
+      ${post.image ? `<img src="${post.image}" class="w-full h-64 object-cover rounded-lg mb-4" alt="Post Image" />` : ''}
+      <div class="mb-4 text-sm text-gray-300 flex justify-between">
+        <span>Views: <strong>${(post.views || 0) + 1}</strong></span>
+        <span>Likes: <strong id="modalLikeCount">${post.likes ? Object.keys(post.likes).length : 0}</strong></span>
+        <span>Comments: <strong id="modalCommentCount">${post.comments ? Object.keys(post.comments).length : 0}</strong></span>
+      </div>
+      <div class="mb-4">
+        <h3 class="font-semibold mb-2">Comments</h3>
+        <div id="modalCommentsList" class="max-h-48 overflow-y-auto space-y-2 text-gray-300">Loading comments...</div>
+      </div>
+      <div>
+        <input id="modalCommentInput" type="text" placeholder="Write a comment..." class="w-full p-2 rounded bg-gray-800 text-white placeholder-gray-400 mb-2" />
+        <button id="modalSubmitComment" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded w-full">Post Comment</button>
+      </div>
+    </div>
+  `;
 
-    const commentsList = document.getElementById('modalCommentsList');
-    commentsList.innerHTML = 'Loading comments...';
+  const commentsList = document.getElementById('modalCommentsList');
+  commentsList.innerHTML = 'Loading comments...';
 
-    // Load comments and listen live
-    const commentsRef = ref(db, `posts/${postId}/comments`);
-    onValue(commentsRef, snapshot => {
-      const comments = snapshot.val() || {};
-      if (Object.keys(comments).length === 0) {
-        commentsList.innerHTML = '<p>No comments yet.</p>';
-      } else {
-        commentsList.innerHTML = '';
-        Object.entries(comments).forEach(([commentId, comment]) => {
-          // Format comment date
-          const dateStr = comment.date ? new Date(comment.date).toLocaleString() : 'Unknown date';
-          // User info
-          const commenterPic = comment.userPic || 'https://i.pravatar.cc/30';
-          const commenterName = comment.username || 'Anonymous';
-          const commenterHandle = comment.handle || 'user';
+  const commentsRef = ref(db, `posts/${postId}/comments`);
+  onValue(commentsRef, snapshot => {
+    const comments = snapshot.val() || {};
+    if (Object.keys(comments).length === 0) {
+      commentsList.innerHTML = '<p>No comments yet.</p>';
+    } else {
+      commentsList.innerHTML = '';
+      Object.entries(comments).forEach(([commentId, comment]) => {
+        const dateStr = comment.date ? new Date(comment.date).toLocaleString() : 'Unknown date';
+        const commenterPic = comment.userPic || 'https://i.pravatar.cc/30';
+        const commenterName = comment.username || 'Anonymous';
+        const commenterHandle = comment.handle || 'user';
 
-          // Create comment element
-          const commentEl = document.createElement('div');
-          commentEl.className = 'flex items-center gap-2 bg-gray-800 p-2 rounded';
-          commentEl.innerHTML = `
-            <img src="${commenterPic}" class="w-8 h-8 rounded-full" alt="Commenter Pic" />
-            <div class="flex-1">
-              <p class="text-sm font-semibold">${commenterName} <span class="text-xs text-gray-400">@${commenterHandle}</span></p>
-              <p class="text-xs text-gray-400">${dateStr}</p>
-              <p class="mt-1 text-gray-300">${comment.text}</p>
-            </div>
-            <button class="text-cyan-400 text-xs hover:underline view-user-btn" data-userid="${comment.userId}">View User</button>
-          `;
+        const commentEl = document.createElement('div');
+        commentEl.className = 'flex items-center gap-2 bg-gray-800 p-2 rounded';
+        commentEl.innerHTML = `
+          <img src="${commenterPic}" class="w-8 h-8 rounded-full" alt="Commenter Pic" />
+          <div class="flex-1">
+            <p class="text-sm font-semibold">${commenterName} <span class="text-xs text-gray-400">@${commenterHandle}</span></p>
+            <p class="text-xs text-gray-400">${dateStr}</p>
+            <p class="mt-1 text-gray-300">${comment.text}</p>
+          </div>
+          <button class="text-cyan-400 text-xs hover:underline view-user-btn" data-userid="${comment.userId}">View User</button>
+        `;
 
-          // Add click for View User button (for now just alert username)
-          commentEl.querySelector('.view-user-btn').onclick = () => {
-            alert(`User profile: ${commenterName} (@${commenterHandle})`);
-            // You can extend this to open user profile modal/page
-          };
+        commentEl.querySelector('.view-user-btn').onclick = () => {
+          alert(`User profile: ${commenterName} (@${commenterHandle})`);
+        };
 
-          commentsList.appendChild(commentEl);
-        });
-      }
+        commentsList.appendChild(commentEl);
+      });
+    }
 
-      // Update comments count in modal header
-      const modalCommentCount = document.getElementById('modalCommentCount');
-      if (modalCommentCount) modalCommentCount.textContent = Object.keys(comments).length;
-    });
+    const modalCommentCount = document.getElementById('modalCommentCount');
+    if (modalCommentCount) modalCommentCount.textContent = Object.keys(comments).length;
+  });
 
-    // Handle new comment submit
-    document.getElementById('modalSubmitComment').onclick = async () => {
-      if (!currentUser) {
-        alert('Please log in to comment.');
-        return;
-      }
-      const commentInput = document.getElementById('modalCommentInput');
-      const text = commentInput.value.trim();
-      if (text.length === 0) return alert('Comment cannot be empty.');
+  const submitBtn = document.getElementById('modalSubmitComment');
+  const commentInput = document.getElementById('modalCommentInput');
 
-      // Build comment data
+  submitBtn.onclick = async () => {
+    if (!currentUser) {
+      alert('Please log in to comment.');
+      return;
+    }
+
+    const text = commentInput.value.trim();
+    if (text.length === 0) {
+      alert('Comment cannot be empty.');
+      return;
+    }
+
+    submitBtn.disabled = true;
+    try {
       const newCommentRef = push(ref(db, `posts/${postId}/comments`));
       await newCommentRef.set({
         userId: currentUser.uid,
@@ -397,17 +409,18 @@
         date: Date.now()
       });
 
-      commentInput.value = ''; // Clear input
-
-      // Optionally, scroll to bottom of comments
+      commentInput.value = '';
       commentsList.scrollTop = commentsList.scrollHeight;
-    };
+    } catch (error) {
+      console.error('Failed to post comment:', error);
+      alert('Failed to post comment, try again later.');
+    } finally {
+      submitBtn.disabled = false;
+    }
+  };
 
-    postModal.classList.remove('hidden');
-  }
-
-  // Initial load of posts
-  loadPostsRealtime();
+  postModal.classList.remove('hidden');
+}
 </script>
 </body>
 </body>
