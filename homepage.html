@@ -51,13 +51,15 @@
       </svg>
       Home
     </button>
-    <button onclick="showSection('uploadSection')" class="flex flex-col items-center relative">
-      <div class="rounded-full border-2 border-cyan-500 p-2">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-          <path d="M12 4v16m8-8H4" stroke-linecap="round" stroke-linejoin="round" />
-        </svg>
-      </div>
-      Upload
+<input type="file" id="uploadInput" accept="image/*" class="hidden" />
+<button onclick="document.getElementById('uploadInput').click()" class="flex flex-col items-center relative">
+  <div class="rounded-full border-2 border-cyan-500 p-2">
+    <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+      <path d="M12 4v16m8-8H4" stroke-linecap="round" stroke-linejoin="round" />
+    </svg>
+  </div>
+  Upload
+</button>
     </button>
     <button onclick="showSection('profileSection')" class="flex flex-col items-center">
       <svg class="w-5 h-5 mb-1" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -334,6 +336,18 @@
       document.getElementById('modalCommentInput').value = '';
     };
   }
+  document.getElementById('uploadInput').addEventListener('change', function(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      sessionStorage.setItem('uploadedImage', e.target.result);
+      window.location.href = 'cyberpost.html';
+    };
+    reader.readAsDataURL(file); // Base64 encode image for transfer
+  });
 </script>
+</body>
 </body>
 </html>
