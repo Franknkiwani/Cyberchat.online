@@ -1,292 +1,588 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" >
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Money Offers</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Cyberchat - Social</title>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
-    body { font-family: Arial, sans-serif; background: #111; color: #fff; }
-
+    :root {
+      --purple: #8a2be2;
+      --light-green: #6eff92;
+      --red: #ff4444;
+      --white: #fff;
+      --black: #000;
+      --gray-dark: #222;
+      --gray-medium: #444;
+      --gray-light: #666;
+      --input-bg: #1c1c1c;
+    }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      user-select: none;
+    }
+    html, body {
+      width: 100%;
+      height: 100%;
+      background-color: var(--black);
+      color: var(--white);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+        Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+    }
+    body {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
     header {
-      background: #000;
-      padding: 1rem 2rem;
+      position: sticky;
+      top: 0;
+      z-index: 999;
+      background-color: #111;
+      padding: 0.75rem 1rem;
+      font-size: 1.25rem;
+      font-weight: 600;
+      border-bottom: 1px solid var(--gray-dark);
       display: flex;
       justify-content: space-between;
       align-items: center;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.5);
     }
-
-    .logo { color: cyan; font-weight: bold; font-size: 1.2rem; }
-    .money-button {
-      background: #222; color: lime; border: none;
-      padding: 0.5rem 1rem; font-size: 1rem; font-weight: bold;
-      border-radius: 5px; box-shadow: 0 0 5px #0f0 inset;
+    .logo {
+      display: flex;
+      align-items: center;
+      user-select: text; /* allow copy */
     }
-
-    /* OLD Live feed style: simpler fade */
-    .live-feed {
-      text-align: center;
-      background: #222;
-      padding: 0.5rem;
-      opacity: 1;
-      transition: opacity 0.5s ease-in-out;
+    .cyber {
+      background: linear-gradient(90deg, #ff00ff, #00ffff);
+      background-size: 200% auto;
+      background-clip: text;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: textShift 5s ease-in-out infinite;
     }
-
-    .offers-container {
-      display: flex; flex-direction: column; gap: 14px;
-      max-width: 380px; margin: 20px auto;
+    .chat {
+      margin-left: 0.35rem;
+      background: linear-gradient(90deg, #00ffff, #7f00ff, #00ffff);
+      background-size: 200% auto;
+      background-clip: text;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      animation: textShift 5s ease-in-out infinite;
     }
-
-    .offer-card {
-      display: flex; background: #222;
-      border-radius: 8px; padding: 12px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.6);
+    @keyframes textShift {
+      0% { background-position: 0% center; }
+      50% { background-position: 100% center; }
+      100% { background-position: 0% center; }
     }
-
-    .offer-image-wrapper {
-      margin-right: 12px; flex-shrink: 0;
-      display: flex; flex-direction: column; align-items: center;
-    }
-
-    .offer-image {
-      width: 80px; height: 80px; object-fit: cover;
-      border-radius: 6px;
-    }
-
-    .offer-payment { margin-top: 4px; color: #4caf50; font-weight: bold; }
-    .offer-content { flex: 1; }
-    .offer-title { font-size: 1.1rem; margin-bottom: 6px; }
-    .offer-description { color: #ccc; margin-bottom: 12px; }
-    .complete-task-btn {
-      width: 100%; padding: 8px 0;
-      background: #4caf50; color: white;
-      border: none; border-radius: 5px;
-      cursor: pointer; font-weight: bold;
-    }
-
-    /* OLD Balance popup style */
-    .modal, .balance-popup {
-      position: fixed; top: 0; left: 0;
-      width: 100vw; height: 100vh;
-      display: flex; align-items: center; justify-content: center;
-      background: rgba(0, 0, 0, 0.85);
-      z-index: 9999; display: none;
-    }
-
-    .modal-content, .balance-popup-content {
-      background: #222; /* less bright */
-      padding: 1.5rem 2rem;
-      border-radius: 6px;
-      max-width: 350px;
-      text-align: center; color: #eee;
-      box-shadow: none; /* no glowing red */
-      border: 2px solid #4caf50;
-    }
-
-    .modal-content input, .modal-content button {
-      display: block; margin: 10px auto; padding: 10px;
-      width: 80%; border-radius: 5px;
-      border: 1px solid #4caf50;
-      background: #111;
-      color: #4caf50;
-      font-weight: bold;
-    }
-
-    .cashout-methods {
-      padding-left: 1rem;
-      text-align: left;
-      margin-bottom: 1rem;
-      color: #ccc;
-    }
-    .cashout-methods li {
-      margin: 0.5rem 0;
-      padding: 0.2rem 0;
-      list-style-type: disc;
-    }
-
-    .paypal { color: #03a9f4; }
-    .payee { color: #fbc02d; }
-    .bank { color: #8bc34a; }
-    .amazon { color: #ff9800; }
-    .crypto { color: #9c27b0; }
-
-    .cancel-btn {
-      margin-top: 1rem;
-      width: 100%;
-      background: #444;
-      color: #ccc;
-      padding: 10px;
+    .post-btn {
+      background-color: var(--light-green);
+      color: #000;
       border: none;
-      border-radius: 5px;
-      font-weight: bold;
+      padding: 0.45rem 1rem;
+      font-size: 0.9rem;
+      font-weight: 500;
+      border-radius: 6px;
       cursor: pointer;
+      transition: background 0.2s ease, box-shadow 0.2s ease;
+      outline: none;
+      user-select: none;
+    }
+    .post-btn:hover {
+      background-color: #52e074;
+      box-shadow: 0 0 6px rgba(110, 255, 146, 0.4);
+    }
+    .post-btn:focus {
+      outline: none;
+    }
+    main#main-content {
+      flex-grow: 1;
+      overflow-y: auto;
+      padding: 1rem;
+      background-color: #121212;
+      color: #ddd;
+      font-size: 1rem;
+      -webkit-overflow-scrolling: touch;
+      user-select: text;
+    }
+    .post {
+      background-color: #1c1c1c;
+      padding: 1rem 1.25rem;
+      margin-bottom: 1rem;
+      border-radius: 10px;
+      box-shadow: 0 0 8px rgba(255, 255, 255, 0.05);
+    }
+    .post-title {
+      font-weight: 700;
+      font-size: 1.15rem;
+      margin-bottom: 0.35rem;
+      color: #fff;
+    }
+    .post-body {
+      font-weight: 400;
+      line-height: 1.4;
+      color: #bbb;
+    }
+    /* Footer menu styles */
+    footer#bottom-menu {
+      position: sticky;
+      bottom: 0;
+      width: 100%;
+      background-color: #111;
+      border-top: 1px solid var(--gray-dark);
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      height: 56px;
+      user-select: none;
+      z-index: 1000;
+    }
+    footer#bottom-menu button {
+      background: none;
+      border: none;
+      color: #ccc;
+      font-size: 0.7rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      cursor: pointer;
+      padding: 0 0.4rem;
+      transition: color 0.2s ease;
+      outline: none;
+      flex-grow: 1;
+      max-width: 80px;
+    }
+    footer#bottom-menu button:hover,
+    footer#bottom-menu button:focus {
+      color: var(--light-green);
+      outline: none;
+    }
+    footer#bottom-menu svg {
+      width: 24px;
+      height: 24px;
+      margin-bottom: 2px;
+      transition: fill 0.3s ease;
+      fill: none;
+      stroke-width: 2;
+      stroke-linejoin: round;
+      stroke-linecap: round;
+      stroke: currentColor;
+    }
+    /* Icon colors always visible */
+    footer#bottom-menu button.home svg {
+      stroke: var(--white);
+      fill: var(--white);
+    }
+    footer#bottom-menu button.community svg {
+      stroke: var(--purple);
+      fill: var(--purple);
+    }
+    footer#bottom-menu button.following svg {
+      stroke: var(--light-green);
+      fill: var(--light-green);
+    }
+    footer#bottom-menu button.profile svg {
+      stroke: var(--red);
+      fill: var(--red);
+    }
+    /* Active states white */
+    footer#bottom-menu button.active svg {
+      stroke: var(--white);
+      fill: var(--white);
+    }
+    footer#bottom-menu button.active {
+      color: var(--white);
+    }
+    /* Non-active text color same as icon */
+    footer#bottom-menu button.home:not(.active),
+    footer#bottom-menu button.community:not(.active),
+    footer#bottom-menu button.following:not(.active),
+    footer#bottom-menu button.profile:not(.active) {
+      color: inherit;
+    }
+
+    /* === Profile section styles === */
+    .profile-container {
+      max-width: 400px;
+      margin: 0 auto;
+      text-align: center;
+      padding: 1rem 0;
+      user-select: none;
+    }
+    .profile-pic {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin: 0 auto 1rem;
+      border: 3px solid var(--light-green);
+      background-color: var(--gray-dark);
+      user-select: none;
+    }
+    .editable-field {
+      margin: 0.25rem 0;
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: var(--white);
+      cursor: pointer;
+      border-bottom: 1.5px dashed transparent;
+      transition: border-color 0.2s ease;
+      display: inline-block;
+      min-width: 160px;
+    }
+    .editable-field:hover {
+      border-color: var(--light-green);
+    }
+    .editable-field[contenteditable="true"] {
+      border-color: var(--light-green);
+      background-color: var(--input-bg);
+      outline: none;
+      cursor: text;
+      padding: 2px 6px;
+      border-radius: 5px;
+      user-select: text;
+    }
+    .handle {
+      color: var(--gray-light);
+      font-weight: 400;
+      margin-bottom: 1rem;
+    }
+    .followers-count {
+      font-weight: 500;
+      margin-bottom: 1.5rem;
+    }
+    /* Progress bars container */
+    .progress-bars {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      margin-bottom: 2rem;
+    }
+    .progress-bar {
+      flex: 1;
+      background: var(--gray-medium);
+      border-radius: 10px;
+      overflow: hidden;
+      height: 18px;
+      user-select: none;
+    }
+    .progress-fill {
+      height: 100%;
+      background: var(--light-green);
+      border-radius: 10px 0 0 10px;
+      transition: width 0.3s ease;
+    }
+    .progress-label {
+      text-align: center;
+      margin-top: 0.3rem;
+      font-size: 0.8rem;
+      color: var(--gray-light);
+      user-select: text;
+    }
+    /* Email and other profile info */
+    .profile-info {
+      margin-top: 1rem;
+      font-size: 0.9rem;
+      color: var(--gray-light);
+      user-select: text;
+      max-width: 280px;
+      margin-left: auto;
+      margin-right: auto;
+      line-height: 1.4;
+    }
+    /* Input fields for edits - hidden by default */
+    input.edit-input {
+      font-size: 1.2rem;
+      font-weight: 600;
+      text-align: center;
+      background-color: var(--input-bg);
+      border: none;
+      color: var(--white);
+      border-radius: 5px;
+      padding: 4px 8px;
+      outline: none;
+      width: 180px;
+      user-select: text;
+    }
+    /* Hide inputs by default */
+    input.edit-input.hidden {
+      display: none;
     }
   </style>
 </head>
 <body>
-
   <header>
-    <div class="logo">MONEY OFFERS</div>
-    <button class="money-button" id="balanceBtn">$0.000</button>
+    <div class="logo">
+      <span class="cyber">CYBER</span><span class="chat">CHAT</span>
+    </div>
+    <button class="post-btn">My Post</button>
   </header>
 
-  <div class="live-feed" id="liveFeed">User #A12X made $1.22 just now</div>
+  <main id="main-content">
+    <!-- Dynamic content loaded here -->
+  </main>
 
-  <div class="offers-container" id="offersContainer">
-    <!-- Offer cards inserted dynamically -->
-  </div>
-
-  <!-- Login/Register Modal -->
-  <div class="modal" id="authModal">
-    <div class="modal-content">
-      <h3>Login / Register</h3>
-      <input type="email" id="email" placeholder="Email">
-      <input type="password" id="password" placeholder="Password">
-      <button onclick="login()">Login</button>
-      <button onclick="register()">Register</button>
-    </div>
-  </div>
-
-  <!-- Balance Popup -->
-  <div class="balance-popup" id="balancePopup">
-    <div class="balance-popup-content">
-      <h3>Insufficient Balance</h3>
-      <p>You need at least $10 to cash out.</p>
-      <ul class="cashout-methods">
-        <li class="paypal">PayPal</li>
-        <li class="payee">Payoneer</li>
-        <li class="bank">Bank Transfer</li>
-        <li class="amazon">Amazon Gift Card</li>
-        <li class="crypto">Crypto Wallet</li>
-      </ul>
-      <button class="cancel-btn" onclick="hideBalancePopup()">Cancel</button>
-    </div>
-  </div>
-
+  <footer id="bottom-menu">
+    <button class="home active" aria-label="Home" title="Home">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <path d="M3 12L12 3l9 9v9a3 3 0 0 1-3 3h-12a3 3 0 0 1-3-3z"/>
+        <path d="M9 21v-6h6v6"/>
+      </svg>
+      Home
+    </button>
+    <button class="community" aria-label="Community" title="Community">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <circle cx="12" cy="12" r="10" />
+        <path d="M8 14s1.5 2 4 0" />
+      </svg>
+      Community
+    </button>
+    <button class="following" aria-label="Following" title="Following">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <circle cx="9" cy="7" r="4" />
+        <path d="M17 11v6" />
+        <path d="M20 17v-3a4 4 0 0 0-8 0v3" />
+      </svg>
+      Following
+    </button>
+    <button class="profile" aria-label="Profile" title="Profile">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <circle cx="12" cy="7" r="4" />
+        <path d="M5.5 21a8.38 8.38 0 0 1 13 0" />
+      </svg>
+      Profile
+    </button>
+  </footer>
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-  import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
-  import { getDatabase, ref, onValue, set, get, update } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+  import { getDatabase, ref, get, child } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
 
+  // Firebase config - your real project
   const firebaseConfig = {
     apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
     authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
     databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
     projectId: "itzhoyoo-f9f7e",
-    storageBucket: "itzhoyoo-f9f7e.appspot.com",
+    storageBucket: "itzhoyoo-f9f7e.firebasestorage.app",
     messagingSenderId: "1094792075584",
     appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
     measurementId: "G-LLT6F9WRKH"
   };
 
+  // Initialize Firebase
   const app = initializeApp(firebaseConfig);
-  const auth = getAuth();
-  const db = getDatabase();
+  const db = getDatabase(app);
 
-  const balanceBtn = document.getElementById("balanceBtn");
-  const balancePopup = document.getElementById("balancePopup");
-
-  balanceBtn.onclick = () => {
-    balancePopup.style.display = "flex";
+  // State, start empty, will be filled from Firebase
+  const state = {
+    currentSection: 'home',
+    user: {
+      // fallback dummy until Firebase data loads
+      profilePic: 'https://i.pravatar.cc/120',
+      username: 'Loading...',
+      handle: 'loading',
+      email: 'loading@example.com',
+      followers: 0,
+      postViews: 0,
+      followingList: [],
+      posts: [],
+      polls: []
+    }
   };
 
-  window.hideBalancePopup = () => balancePopup.style.display = "none";
+  // DOM refs
+  const main = document.getElementById('main-content');
+  const buttons = document.querySelectorAll('footer#bottom-menu button');
 
-  const authModal = document.getElementById("authModal");
-  let currentUser = null;
-
-  function login() {
-    const email = document.getElementById("email").value;
-    const password = document.getElementById("password").value;
-    signInWithEmailAndPassword(auth, email, password).then(() => {
-      authModal.style.display = "none";
-    }).catch(alert);
+  // Utils
+  function clearActive() {
+    buttons.forEach(b => b.classList.remove('active'));
   }
 
-  function register() {
-    const email = document.getElementById("email").value;
-    const password = document.getElementById("password").value;
-    createUserWithEmailAndPassword(auth, email, password).then((cred) => {
-      set(ref(db, 'users/' + cred.user.uid), { balance: 0 });
-      authModal.style.display = "none";
-    }).catch(alert);
+  // Prevent accidental text selection during editing
+  function preventSelectDuringEdit(e) {
+    e.preventDefault();
   }
 
-  window.login = login;
-  window.register = register;
+  // Enable inline editing
+  function enableEditing(div) {
+    div.contentEditable = true;
+    div.focus();
+    document.execCommand('selectAll', false, null);
+    div.addEventListener('mousedown', preventSelectDuringEdit);
+  }
 
-  onAuthStateChanged(auth, (user) => {
-    if (!user) {
-      authModal.style.display = "flex";
-    } else {
-      currentUser = user;
-      loadBalance();
+  // Disable inline editing and save changes
+  function disableEditing(div, field) {
+    div.contentEditable = false;
+    div.removeEventListener('mousedown', preventSelectDuringEdit);
+
+    const newVal = div.innerText.trim();
+    if(field === 'username') state.user.username = newVal || state.user.username;
+    else if(field === 'handle') {
+      state.user.handle = newVal.replace(/^@/, '') || state.user.handle;
+      div.innerText = '@' + state.user.handle;
     }
-  });
+    renderProfile();
+  }
 
-  function loadBalance() {
-    const balRef = ref(db, 'users/' + currentUser.uid + '/balance');
-    onValue(balRef, (snap) => {
-      const bal = parseFloat(snap.val() || 0).toFixed(3);
-      balanceBtn.textContent = "$" + bal;
+  // Render functions
+  function renderHome() {
+    main.innerHTML = '';
+    if(state.user.posts.length === 0) {
+      main.innerHTML = '<p>No posts yet.</p>';
+      return;
+    }
+    state.user.posts.forEach(post => {
+      const postEl = document.createElement('article');
+      postEl.className = 'post';
+      postEl.innerHTML = `
+        <h2 class="post-title">${post.title}</h2>
+        <p class="post-body">${post.body}</p>
+      `;
+      main.appendChild(postEl);
     });
   }
 
-  function updateBalance(amount) {
-    const userRef = ref(db, 'users/' + currentUser.uid);
-    get(userRef).then((snap) => {
-      const data = snap.val();
-      const newBal = (parseFloat(data?.balance || 0) + amount).toFixed(3);
-      update(userRef, { balance: newBal });
+  function renderCommunity() {
+    main.innerHTML = '';
+    if(state.user.polls.length === 0) {
+      main.innerHTML = '<p>No polls yet.</p>';
+      return;
+    }
+    state.user.polls.forEach(poll => {
+      const pollEl = document.createElement('div');
+      pollEl.className = 'post';
+      pollEl.innerHTML = `
+        <h3 class="post-title">${poll.question}</h3>
+        <ul>
+          ${poll.options.map(opt => `<li>${opt}</li>`).join('')}
+        </ul>
+      `;
+      main.appendChild(pollEl);
     });
   }
 
-  // Add Offer Cards
-  const offerTexts = [
-    {title: "Special Offer 1", pay: 0.10},
-    {title: "Special Offer 2", pay: 0.15},
-    {title: "Special Offer 3", pay: 0.30},
-  ];
+  function renderFollowing() {
+    main.innerHTML = '';
+    if(state.user.followingList.length === 0) {
+      main.innerHTML = '<p>No users followed yet.</p>';
+      return;
+    }
+    state.user.followingList.forEach(user => {
+      const userEl = document.createElement('div');
+      userEl.className = 'post';
+      userEl.innerHTML = `
+        <strong>${user.name}</strong><br />
+        <small>${user.handle}</small>
+      `;
+      main.appendChild(userEl);
+    });
+  }
 
-  const offersContainer = document.getElementById("offersContainer");
+  function renderProfile() {
+    main.innerHTML = `
+      <div class="profile-container">
+        <img class="profile-pic" src="${state.user.profilePic}" alt="Profile Picture" />
+        
+        <div>
+          <div id="username" class="editable-field" tabindex="0" role="textbox" contenteditable="false">${state.user.username}</div>
+          <div id="handle" class="editable-field handle" tabindex="0" role="textbox" contenteditable="false">@${state.user.handle}</div>
+        </div>
 
-  offerTexts.forEach((o, i) => {
-    const card = document.createElement("div");
-    card.className = "offer-card";
-    card.innerHTML = `
-      <div class="offer-image-wrapper">
-        <img src="https://via.placeholder.com/80" class="offer-image"/>
-        <div class="offer-payment">$${o.pay.toFixed(3)}</div>
+        <div class="followers-count">${state.user.followers} Followers</div>
+
+        <div class="progress-bars">
+          <div>
+            <div class="progress-bar">
+              <div class="progress-fill" style="width:${Math.min(100, (state.user.followers / 100) * 100)}%"></div>
+            </div>
+            <div class="progress-label">Followers (100 needed)</div>
+          </div>
+          <div>
+            <div class="progress-bar">
+              <div class="progress-fill" style="width:${Math.min(100, (state.user.postViews / 1000) * 100)}%"></div>
+            </div>
+            <div class="progress-label">Post Views (1000 needed)</div>
+          </div>
+        </div>
+
+        <div class="profile-info">
+          <strong>Email:</strong> ${state.user.email}<br /><br />
+          <small>Click username or handle to edit. Press Enter to save.</small>
+        </div>
       </div>
-      <div class="offer-content">
-        <h3 class="offer-title">${o.title}</h3>
-        <p class="offer-description">Click to complete this task and earn!</p>
-        <button class="complete-task-btn">Complete Task</button>
-      </div>`;
-    card.querySelector("button").onclick = () => updateBalance(o.pay);
-    offersContainer.appendChild(card);
+    `;
+
+    const usernameDiv = document.getElementById('username');
+    const handleDiv = document.getElementById('handle');
+
+    usernameDiv.addEventListener('click', () => enableEditing(usernameDiv));
+    handleDiv.addEventListener('click', () => enableEditing(handleDiv));
+
+    usernameDiv.addEventListener('keydown', e => {
+      if(e.key === 'Enter') {
+        e.preventDefault();
+        disableEditing(usernameDiv, 'username');
+      }
+      if(e.key === 'Escape') {
+        e.preventDefault();
+        renderProfile();
+      }
+    });
+
+    handleDiv.addEventListener('keydown', e => {
+      if(e.key === 'Enter') {
+        e.preventDefault();
+        disableEditing(handleDiv, 'handle');
+      }
+      if(e.key === 'Escape') {
+        e.preventDefault();
+        renderProfile();
+      }
+    });
+  }
+
+  // Load user data from Firebase Realtime Database
+  async function loadUserData() {
+    try {
+      const dbRef = ref(db);
+      const snapshot = await get(child(dbRef, 'users/frank_coder'));
+      if(snapshot.exists()) {
+        state.user = snapshot.val();
+      } else {
+        console.warn("No data found for user frank_coder, using dummy data.");
+      }
+    } catch(err) {
+      console.error("Firebase data load failed:", err);
+    }
+    // Render after data load
+    renderCurrentSection();
+  }
+
+  function renderCurrentSection() {
+    switch(state.currentSection) {
+      case 'home': renderHome(); break;
+      case 'community': renderCommunity(); break;
+      case 'following': renderFollowing(); break;
+      case 'profile': renderProfile(); break;
+      default: renderHome();
+    }
+  }
+
+  // Initial UI render and load firebase data
+  loadUserData();
+
+  // Section buttons
+  buttons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      if(btn.classList.contains('active')) return;
+      clearActive();
+      btn.classList.add('active');
+      state.currentSection = btn.classList[0];
+      renderCurrentSection();
+    });
   });
-
-  // Live feed animation OLD style
-  const liveFeed = document.getElementById("liveFeed");
-  const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-
-  function randomUser() {
-    return Array.from({length: 4}, () => chars[Math.floor(Math.random() * chars.length)]).join("");
-  }
-
-  function updateLiveFeed() {
-    liveFeed.style.opacity = 0; // fade out
-    setTimeout(() => {
-      const amount = (Math.random() * 4.9 + 0.1).toFixed(2);
-      liveFeed.textContent = `User #${randomUser()} made $${amount} just now`;
-      liveFeed.style.opacity = 1; // fade in
-    }, 500);
-  }
-
-  setInterval(updateLiveFeed, 3000);
-
 </script>
 </body>
 </html>
