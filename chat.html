@@ -669,6 +669,46 @@ const polls = [];
       renderCurrentSection();
     }
   });
+// Update URL without reloading and render section
+function navigateTo(section) {
+  history.pushState(null, '', '/' + section);
+  state.currentSection = section;
+  clearActive();
+  document.querySelector(`footer#bottom-menu button.${section}`).classList.add('active');
+  renderCurrentSection();
+}
+
+// On page load, decide section from URL or default to home
+function initFromURL() {
+  const path = window.location.pathname.slice(1); // remove leading /
+  const validSections = ['home', 'community', 'following', 'profile'];
+  if (validSections.includes(path)) {
+    state.currentSection = path;
+  } else {
+    state.currentSection = 'home';
+    history.replaceState(null, '', '/home');
+  }
+  clearActive();
+  document.querySelector(`footer#bottom-menu button.${state.currentSection}`).classList.add('active');
+  renderCurrentSection();
+}
+
+// Listen for back/forward browser navigation
+window.addEventListener('popstate', () => {
+  initFromURL();
+});
+
+// Hook section buttons to use navigateTo
+buttons.forEach(btn => {
+  btn.addEventListener('click', () => {
+    const section = btn.classList[0];
+    if (section === state.currentSection) return;
+    navigateTo(section);
+  });
+});
+
+// Init app
+initFromURL();
 </script>
 </body>
 </html>
