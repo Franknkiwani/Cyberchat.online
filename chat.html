@@ -1,582 +1,706 @@
 <!DOCTYPE html>
-<html lang="en" >
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Cyberchat - Social</title>
-  <style>
-    :root {
-      --purple: #8a2be2;
-      --light-green: #6eff92;
-      --red: #ff4444;
-      --white: #fff;
-      --black: #000;
-      --gray-dark: #222;
-      --gray-medium: #444;
-      --gray-light: #666;
-      --input-bg: #1c1c1c;
-    }
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      user-select: none;
-    }
-    html, body {
-      width: 100%;
-      height: 100%;
-      background-color: var(--black);
-      color: var(--white);
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
-        Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
-    }
-    body {
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh;
-    }
-    header {
-      position: sticky;
-      top: 0;
-      z-index: 999;
-      background-color: #111;
-      padding: 0.75rem 1rem;
-      font-size: 1.25rem;
-      font-weight: 600;
-      border-bottom: 1px solid var(--gray-dark);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .logo {
-      display: flex;
-      align-items: center;
-      user-select: text; /* allow copy */
-    }
-    .cyber {
-      background: linear-gradient(90deg, #ff00ff, #00ffff);
-      background-size: 200% auto;
-      background-clip: text;
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      animation: textShift 5s ease-in-out infinite;
-    }
-    .chat {
-      margin-left: 0.35rem;
-      background: linear-gradient(90deg, #00ffff, #7f00ff, #00ffff);
-      background-size: 200% auto;
-      background-clip: text;
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      animation: textShift 5s ease-in-out infinite;
-    }
-    @keyframes textShift {
-      0% { background-position: 0% center; }
-      50% { background-position: 100% center; }
-      100% { background-position: 0% center; }
-    }
-    .post-btn {
-      background-color: var(--light-green);
-      color: #000;
-      border: none;
-      padding: 0.45rem 1rem;
-      font-size: 0.9rem;
-      font-weight: 500;
-      border-radius: 6px;
-      cursor: pointer;
-      transition: background 0.2s ease, box-shadow 0.2s ease;
-      outline: none;
-      user-select: none;
-    }
-    .post-btn:hover {
-      background-color: #52e074;
-      box-shadow: 0 0 6px rgba(110, 255, 146, 0.4);
-    }
-    .post-btn:focus {
-      outline: none;
-    }
-    main#main-content {
-      flex-grow: 1;
-      overflow-y: auto;
-      padding: 1rem;
-      background-color: #121212;
-      color: #ddd;
-      font-size: 1rem;
-      -webkit-overflow-scrolling: touch;
-      user-select: text;
-    }
-    .post {
-      background-color: #1c1c1c;
-      padding: 1rem 1.25rem;
-      margin-bottom: 1rem;
-      border-radius: 10px;
-      box-shadow: 0 0 8px rgba(255, 255, 255, 0.05);
-    }
-    .post-title {
-      font-weight: 700;
-      font-size: 1.15rem;
-      margin-bottom: 0.35rem;
-      color: #fff;
-    }
-    .post-body {
-      font-weight: 400;
-      line-height: 1.4;
-      color: #bbb;
-    }
-    /* Footer menu styles */
-    footer#bottom-menu {
-      position: sticky;
-      bottom: 0;
-      width: 100%;
-      background-color: #111;
-      border-top: 1px solid var(--gray-dark);
-      display: flex;
-      justify-content: space-around;
-      align-items: center;
-      height: 56px;
-      user-select: none;
-      z-index: 1000;
-    }
-    footer#bottom-menu button {
-      background: none;
-      border: none;
-      color: #ccc;
-      font-size: 0.7rem;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      cursor: pointer;
-      padding: 0 0.4rem;
-      transition: color 0.2s ease;
-      outline: none;
-      flex-grow: 1;
-      max-width: 80px;
-    }
-    footer#bottom-menu button:hover,
-    footer#bottom-menu button:focus {
-      color: var(--light-green);
-      outline: none;
-    }
-    footer#bottom-menu svg {
-      width: 24px;
-      height: 24px;
-      margin-bottom: 2px;
-      transition: fill 0.3s ease;
-      fill: none;
-      stroke-width: 2;
-      stroke-linejoin: round;
-      stroke-linecap: round;
-      stroke: currentColor;
-    }
-    /* Icon colors always visible */
-    footer#bottom-menu button.home svg {
-      stroke: var(--white);
-      fill: var(--white);
-    }
-    footer#bottom-menu button.community svg {
-      stroke: var(--purple);
-      fill: var(--purple);
-    }
-    footer#bottom-menu button.following svg {
-      stroke: var(--light-green);
-      fill: var(--light-green);
-    }
-    footer#bottom-menu button.profile svg {
-      stroke: var(--red);
-      fill: var(--red);
-    }
-    /* Active states white */
-    footer#bottom-menu button.active svg {
-      stroke: var(--white);
-      fill: var(--white);
-    }
-    footer#bottom-menu button.active {
-      color: var(--white);
-    }
-    /* Non-active text color same as icon */
-    footer#bottom-menu button.home:not(.active),
-    footer#bottom-menu button.community:not(.active),
-    footer#bottom-menu button.following:not(.active),
-    footer#bottom-menu button.profile:not(.active) {
-      color: inherit;
-    }
-
-    /* === Profile section styles === */
-    .profile-container {
-      max-width: 400px;
-      margin: 0 auto;
-      text-align: center;
-      padding: 1rem 0;
-      user-select: none;
-    }
-    .profile-pic {
-      width: 120px;
-      height: 120px;
-      border-radius: 50%;
-      object-fit: cover;
-      margin: 0 auto 1rem;
-      border: 3px solid var(--light-green);
-      background-color: var(--gray-dark);
-      user-select: none;
-    }
-    .editable-field {
-      margin: 0.25rem 0;
-      font-size: 1.2rem;
-      font-weight: 600;
-      color: var(--white);
-      cursor: pointer;
-      border-bottom: 1.5px dashed transparent;
-      transition: border-color 0.2s ease;
-      display: inline-block;
-      min-width: 160px;
-    }
-    .editable-field:hover {
-      border-color: var(--light-green);
-    }
-    .editable-field[contenteditable="true"] {
-      border-color: var(--light-green);
-      background-color: var(--input-bg);
-      outline: none;
-      cursor: text;
-      padding: 2px 6px;
-      border-radius: 5px;
-      user-select: text;
-    }
-    .handle {
-      color: var(--gray-light);
-      font-weight: 400;
-      margin-bottom: 1rem;
-    }
-    .followers-count {
-      font-weight: 500;
-      margin-bottom: 1.5rem;
-    }
-    /* Progress bars container */
-    .progress-bars {
-      display: flex;
-      gap: 1rem;
-      justify-content: center;
-      margin-bottom: 2rem;
-    }
-    .progress-bar {
-      flex: 1;
-      background: var(--gray-medium);
-      border-radius: 10px;
-      overflow: hidden;
-      height: 18px;
-      user-select: none;
-    }
-    .progress-fill {
-      height: 100%;
-      background: var(--light-green);
-      border-radius: 10px 0 0 10px;
-      transition: width 0.3s ease;
-    }
-    .progress-label {
-      text-align: center;
-      margin-top: 0.3rem;
-      font-size: 0.8rem;
-      color: var(--gray-light);
-      user-select: text;
-    }
-    /* Email and other profile info */
-    .profile-info {
-      margin-top: 1rem;
-      font-size: 0.9rem;
-      color: var(--gray-light);
-      user-select: text;
-      max-width: 280px;
-      margin-left: auto;
-      margin-right: auto;
-      line-height: 1.4;
-    }
-    /* Input fields for edits - hidden by default */
-    input.edit-input {
-      font-size: 1.2rem;
-      font-weight: 600;
-      text-align: center;
-      background-color: var(--input-bg);
-      border: none;
-      color: var(--white);
-      border-radius: 5px;
-      padding: 4px 8px;
-      outline: none;
-      width: 180px;
-      user-select: text;
-    }
-    /* Hide inputs by default */
-    input.edit-input.hidden {
-      display: none;
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Cyberchat - Full App</title>
+<style>
+  :root {
+    --purple: #8a2be2;
+    --light-green: #6eff92;
+    --red: #ff4444;
+    --white: #fff;
+    --black: #000;
+    --gray-dark: #222;
+    --gray-medium: #444;
+    --gray-light: #888;
+    --input-bg: #222;
+  }
+  * {
+    margin: 0; padding: 0; box-sizing: border-box;
+    user-select: none;
+  }
+  html, body {
+    height: 100%;
+    background-color: var(--black);
+    color: var(--white);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+      Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+  }
+  body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 999;
+    background-color: #111;
+    padding: 0.75rem 1rem;
+    font-size: 1.25rem;
+    font-weight: 600;
+    border-bottom: 1px solid var(--gray-dark);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .logo {
+    display: flex;
+    align-items: center;
+  }
+  .cyber {
+    background: linear-gradient(90deg, #ff00ff, #00ffff);
+    background-size: 200% auto;
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: textShift 5s ease-in-out infinite;
+  }
+  .chat {
+    margin-left: 0.35rem;
+    background: linear-gradient(90deg, #00ffff, #7f00ff, #00ffff);
+    background-size: 200% auto;
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: textShift 5s ease-in-out infinite;
+  }
+  @keyframes textShift {
+    0% { background-position: 0% center; }
+    50% { background-position: 100% center; }
+    100% { background-position: 0% center; }
+  }
+  .post-btn {
+    background-color: var(--light-green);
+    color: #000;
+    border: none;
+    padding: 0.45rem 1rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.2s ease, box-shadow 0.2s ease;
+    outline: none;
+    user-select: none;
+  }
+  .post-btn:hover {
+    background-color: #52e074;
+    box-shadow: 0 0 6px rgba(110, 255, 146, 0.4);
+  }
+  .post-btn:focus {
+    outline: none;
+  }
+  main#main-content {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 1rem;
+    background-color: #121212;
+    color: #ddd;
+    font-size: 1rem;
+    -webkit-overflow-scrolling: touch;
+  }
+  /* Posts */
+  .post {
+    background-color: #1c1c1c;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1rem;
+    border-radius: 10px;
+    box-shadow: 0 0 8px rgba(255, 255, 255, 0.05);
+  }
+  .post-title {
+    font-weight: 700;
+    font-size: 1.15rem;
+    margin-bottom: 0.35rem;
+    color: #fff;
+  }
+  .post-body {
+    font-weight: 400;
+    line-height: 1.4;
+    color: #bbb;
+  }
+  /* Polls/Quizzes (Community) */
+  .poll, .quiz {
+    background-color: #222;
+    margin-bottom: 1rem;
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+  }
+  .poll-title, .quiz-title {
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    color: var(--purple);
+  }
+  /* Following list */
+  .following-list {
+    list-style: none;
+  }
+  .following-list li {
+    background-color: #222;
+    margin-bottom: 0.7rem;
+    padding: 0.8rem 1rem;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+  }
+  .user-name {
+    font-weight: 600;
+    color: var(--light-green);
+  }
+  .user-handle {
+    font-size: 0.85rem;
+    color: var(--gray-light);
+  }
+  /* Profile Section */
+  .profile-container {
+    max-width: 400px;
+    margin: 0 auto;
+    text-align: center;
+  }
+  .profile-pic {
+    width: 120px;
+    height: 120px;
+    margin: 0 auto 1rem auto;
+    border-radius: 50%;
+    background-color: var(--gray-medium);
+    background-image: url('https://i.pravatar.cc/120');
+    background-size: cover;
+    background-position: center;
+    cursor: pointer;
+  }
+  .editable-input {
+    background-color: var(--input-bg);
+    border: none;
+    border-radius: 6px;
+    color: var(--white);
+    font-size: 1.15rem;
+    font-weight: 600;
+    text-align: center;
+    padding: 0.35rem 0.75rem;
+    margin-bottom: 0.5rem;
+    width: 100%;
+    max-width: 280px;
+  }
+  .editable-input:focus {
+    outline: 2px solid var(--light-green);
+    background-color: #1a1a1a;
+  }
+  .handle-input {
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--gray-light);
+  }
+  .email {
+    margin: 1rem 0 1.5rem 0;
+    font-size: 0.9rem;
+    color: var(--gray-light);
+    word-break: break-word;
+  }
+  .followers-count {
+    font-weight: 600;
+    margin-bottom: 1rem;
+  }
+  /* Progress Bars */
+  .progress-bar-container {
+    background-color: var(--gray-dark);
+    border-radius: 12px;
+    overflow: hidden;
+    height: 16px;
+    margin-bottom: 1rem;
+  }
+  .progress-bar {
+    height: 100%;
+    background-color: var(--light-green);
+    width: 0%;
+    transition: width 0.5s ease;
+  }
+  .progress-label {
+    margin-bottom: 0.3rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-align: left;
+    color: var(--white);
+  }
+  /* Footer menu */
+  footer#bottom-menu {
+    position: sticky;
+    bottom: 0;
+    width: 100%;
+    background-color: #111;
+    border-top: 1px solid var(--gray-dark);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    height: 56px;
+    user-select: none;
+    z-index: 1000;
+  }
+  footer#bottom-menu button {
+    background: none;
+    border: none;
+    font-size: 0.7rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    padding: 0 0.4rem;
+    transition: color 0.2s ease;
+    outline: none;
+    flex-grow: 1;
+    max-width: 80px;
+  }
+  footer#bottom-menu button:hover,
+  footer#bottom-menu button:focus {
+    outline: none;
+  }
+  footer#bottom-menu svg {
+    width: 24px;
+    height: 24px;
+    margin-bottom: 2px;
+    transition: fill 0.3s ease;
+    fill: none;
+    stroke-width: 2;
+    stroke-linejoin: round;
+    stroke-linecap: round;
+    stroke: currentColor;
+  }
+  footer#bottom-menu button.home {
+    color: var(--white);
+  }
+  footer#bottom-menu button.home svg {
+    stroke: var(--white);
+    fill: var(--white);
+  }
+footer#bottom-menu button.community {
+    color: var(--purple);
+  }
+  footer#bottom-menu button.community svg {
+    stroke: var(--purple);
+    fill: var(--purple);
+  }
+  footer#bottom-menu button.following {
+    color: var(--light-green);
+  }
+  footer#bottom-menu button.following svg {
+    stroke: var(--light-green);
+    fill: var(--light-green);
+  }
+  footer#bottom-menu button.profile {
+    color: var(--red);
+  }
+  footer#bottom-menu button.profile svg {
+    stroke: var(--red);
+    fill: var(--red);
+  }
+  footer#bottom-menu button.active {
+    color: var(--white);
+  }
+  footer#bottom-menu button.active svg {
+    stroke: var(--white);
+    fill: var(--white);
+  }
+  /* Disable text selection globally */
+  * {
+    user-select: none;
+  }
+</style>
 </head>
 <body>
-  <header>
-    <div class="logo">
-      <span class="cyber">CYBER</span><span class="chat">CHAT</span>
-    </div>
-    <button class="post-btn">My Post</button>
-  </header>
+<header>
+  <div class="logo">
+    <span class="cyber">CYBER</span><span class="chat">CHAT</span>
+  </div>
+  <button class="post-btn" type="button">My Post</button>
+</header>
 
-  <main id="main-content">
-    <!-- Dynamic content loaded here -->
-  </main>
+<main id="main-content">
+  <!-- Content loaded dynamically -->
+</main>
 
-  <footer id="bottom-menu">
-    <button class="home active" aria-label="Home" title="Home">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-        <path d="M3 12L12 3l9 9v9a3 3 0 0 1-3 3h-12a3 3 0 0 1-3-3z"/>
-        <path d="M9 21v-6h6v6"/>
-      </svg>
-      Home
-    </button>
-    <button class="community" aria-label="Community" title="Community">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-        <circle cx="12" cy="12" r="10" />
-        <path d="M8 14s1.5 2 4 0" />
-      </svg>
-      Community
-    </button>
-    <button class="following" aria-label="Following" title="Following">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-        <circle cx="9" cy="7" r="4" />
-        <path d="M17 11v6" />
-        <path d="M20 17v-3a4 4 0 0 0-8 0v3" />
-      </svg>
-      Following
-    </button>
-    <button class="profile" aria-label="Profile" title="Profile">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor">
-        <circle cx="12" cy="7" r="4" />
-        <path d="M5.5 21a8.38 8.38 0 0 1 13 0" />
-      </svg>
-      Profile
-    </button>
-  </footer>
+<footer id="bottom-menu" role="navigation" aria-label="Main menu">
+  <button class="home active" aria-label="Home" data-section="home">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 12l9-9 9 9"/></svg>
+    Home
+  </button>
+  <button class="community" aria-label="Community" data-section="community">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a7.9 7.9 0 0 1 0-6"/></svg>
+    Community
+  </button>
+  <button class="following" aria-label="Following" data-section="following">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="7" r="4"/><path d="M5.5 21a7 7 0 0 1 13 0"/></svg>
+    Following
+  </button>
+  <button class="profile" aria-label="Profile" data-section="profile">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="7" r="4"/><path d="M5.5 21a7 7 0 0 1 13 0"/></svg>
+    Profile
+  </button>
+</footer>
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-  import { getDatabase, ref, get, child } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+  import { getDatabase, ref, onValue, get, set } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
 
+  // Your Firebase config - replace with your actual config
   const firebaseConfig = {
     apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
     authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
     databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
     projectId: "itzhoyoo-f9f7e",
-    storageBucket: "itzhoyoo-f9f7e.appspot.com",
+    storageBucket: "itzhoyoo-f9f7e.firebasestorage.app",
     messagingSenderId: "1094792075584",
     appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
     measurementId: "G-LLT6F9WRKH"
   };
 
   const app = initializeApp(firebaseConfig);
-  const db = getDatabase(app);
+  const database = getDatabase(app);
+  const auth = getAuth();
 
-  const state = {
-    currentSection: 'home',
-    user: {
-      profilePic: 'https://i.pravatar.cc/120',
-      username: 'No Username',
-      handle: 'unknown',
-      email: 'loading@example.com',
-      followers: 0,
-      postViews: 0,
-      followingList: [],
-    },
-    posts: [],
-    community: []
-  };
-
-  const main = document.getElementById('main-content');
+  const mainContent = document.getElementById('main-content');
   const buttons = document.querySelectorAll('footer#bottom-menu button');
 
-  function clearActive() {
-    buttons.forEach(b => b.classList.remove('active'));
+  let profileData = null;
+  let userId = null;
+
+  // MONETIZE BUTTON SETUP
+  function updateMonetizeButton(followersPercent, viewsPercent) {
+    const btn = document.getElementById('monetize-btn');
+    if (!btn) return;
+    if (followersPercent === 100 && viewsPercent === 100) {
+      btn.style.backgroundColor = '#007AFF';  // iOS blue
+      btn.style.color = 'white';
+      btn.style.pointerEvents = 'auto';
+    } else {
+      btn.style.backgroundColor = 'grey';
+      btn.style.color = '#aaa';
+      btn.style.pointerEvents = 'none';
+    }
   }
 
-  function setActiveButton(section) {
-    clearActive();
-    const btn = document.querySelector(`footer#bottom-menu button.${section}`);
-    if (btn) btn.classList.add('active');
-  }
+async function loadHome() {
+  const postsRef = ref(database, 'posts');
+  onValue(postsRef, async (snapshot) => {
+    const posts = snapshot.val();
+    mainContent.innerHTML = '';
 
-  function navigateTo(section) {
-    if (!['home', 'community', 'following', 'profile'].includes(section)) return;
-    history.pushState(null, '', '/' + section);
-    state.currentSection = section;
-    setActiveButton(section);
-    renderCurrentSection();
-  }
-
-  function initFromURL() {
-    const path = window.location.pathname.slice(1);
-    const section = ['home', 'community', 'following', 'profile'].includes(path) ? path : 'home';
-    state.currentSection = section;
-    setActiveButton(section);
-    renderCurrentSection();
-  }
-
-  window.addEventListener('popstate', initFromURL);
-
-  function renderHome() {
-    main.innerHTML = '';
-    if (state.posts.length === 0) {
-      main.innerHTML = '<p>No posts yet.</p>';
+    if (!posts) {
+      mainContent.innerHTML = '<p>No posts available.</p>';
       return;
     }
-    state.posts.forEach(post => {
-      const postEl = document.createElement('article');
-      postEl.className = 'post';
-      postEl.innerHTML = `
-        <h2 class="post-title">${post.title}</h2>
-        <p class="post-body">${post.body}</p>
-      `;
-      main.appendChild(postEl);
-    });
-  }
 
-  function renderCommunity() {
-    main.innerHTML = '';
-    if (state.community.length === 0) {
-      main.innerHTML = '<p>No polls or quizzes yet.</p>';
-      return;
-    }
-    state.community.forEach(item => {
-      const el = document.createElement('div');
-      el.className = 'post';
-      el.innerHTML = `
-        <h3 class="post-title">${item.question || item.title}</h3>
-        <ul>${(item.options || []).map(opt => `<li>${opt}</li>`).join('')}</ul>
-      `;
-      main.appendChild(el);
-    });
-  }
+    const postList = Object.entries(posts).sort(([, a], [, b]) => b.timestamp - a.timestamp);
 
-  function renderFollowing() {
-    main.innerHTML = '';
-    if (state.user.followingList.length === 0) {
-      main.innerHTML = '<p>No users followed yet.</p>';
-      return;
-    }
-    state.user.followingList.forEach(user => {
-      const userEl = document.createElement('div');
-      userEl.className = 'post';
-      userEl.innerHTML = `<strong>${user.name || 'Unknown'}</strong><br/><small>${user.handle || ''}</small>`;
-      main.appendChild(userEl);
-    });
-  }
+    for (const [postId, post] of postList) {
+      let uploader = { username: "Unknown", handle: "unknown", profilePic: "" };
+      let isFollowing = false;
+      const currentUserId = auth.currentUser ? auth.currentUser.uid : null;
 
-  function renderProfile() {
-    main.innerHTML = `
-      <div class="profile-container">
-        <img class="profile-pic" src="${state.user.profilePic}" alt="Profile Picture" style="cursor:pointer;" />
-        
-        <div>
-          <div id="username" class="editable-field" tabindex="0">${state.user.username}</div>
-          <div id="handle" class="editable-field handle" tabindex="0">@${state.user.handle}</div>
+      if (post.uid) {
+        const userSnap = await get(ref(database, `users/${post.uid}`));
+        if (userSnap.exists()) {
+          const data = userSnap.val();
+          uploader.username = data.username || "Unnamed";
+          uploader.handle = data.handle || "unknown";
+          uploader.profilePic = data.profilePic || "";
+        }
+
+        if (currentUserId && post.uid !== currentUserId) {
+          const followingSnap = await get(ref(database, `users/${currentUserId}/following/${post.uid}`));
+          isFollowing = followingSnap.exists();
+        }
+      }
+
+      const postDiv = document.createElement('div');
+      postDiv.className = 'post';
+      const date = post.timestamp ? new Date(post.timestamp).toLocaleDateString() : 'Unknown Date';
+
+      const likesObj = post.likes || {};
+      const likeCount = Object.keys(likesObj).length;
+      const commentCount = post.comments ? Object.keys(post.comments).length : 0;
+
+      const userLiked = currentUserId ? !!likesObj[currentUserId] : false;
+
+      postDiv.innerHTML = `
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+          <div style="display:flex;align-items:center;">
+            ${uploader.profilePic ? `<img src="${uploader.profilePic}" alt="pfp" style="width:40px;height:40px;border-radius:50%;margin-right:8px;">` : ''}
+            <div>
+              <strong>${uploader.username}</strong><br>
+              <small>@${uploader.handle}</small>
+            </div>
+          </div>
+          ${
+            currentUserId && post.uid !== currentUserId
+              ? `<button class="follow-btn" data-user-id="${post.uid}" style="padding:4px 10px;font-size:12px;border:none;border-radius:5px;background:${isFollowing ? '#6c757d' : '#007BFF'};color:white;cursor:pointer;">
+                  ${isFollowing ? 'Unfollow' : 'Follow'}
+                </button>`
+              : ''
+          }
         </div>
 
-        <div class="followers-count">${state.user.followers} Followers</div>
-        <div class="progress-label">Post Views: ${state.user.postViews}</div>
-        <div class="profile-info"><strong>Email:</strong> ${state.user.email}</div>
-        <small>Click username or handle to edit. Press Enter to save.</small>
-      </div>
-    `;
+        <h2>${post.title}</h2>
+        ${post.image ? `<img src="${post.image}" alt="${post.title}" style="max-width:100%;border-radius:8px;margin:8px 0;">` : ''}
+        <p>${post.description}</p>
 
-    document.getElementById('username').addEventListener('click', () => enableEditing('username'));
-    document.getElementById('handle').addEventListener('click', () => enableEditing('handle'));
-    document.querySelector('.profile-pic').addEventListener('click', handleImageUpload);
-  }
+        <div style="font-size:13px;color:gray;margin-bottom:6px;">
+          <span style="color:cyan;">Views: ${post.views ?? 0}</span> · 
+          <span>${date}</span>
+        </div>
 
-  function enableEditing(field) {
-    const div = document.getElementById(field);
-    div.contentEditable = true;
-    div.focus();
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;font-size:14px;">
+          <span class="like-btn" data-post-id="${postId}" title="Like" style="display:flex;align-items:center;gap:4px;cursor:pointer; color: ${userLiked ? 'red' : 'gray'};">
+            <svg width="20" height="20" fill="${userLiked ? 'red' : 'gray'}" viewBox="0 0 24 24">
+              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5c0-2.2 1.8-4 4-4 1.54 0 3.04.99 3.57 2.36h.87C14.46 5.49 16 4.5 17.5 4.5c2.2 0 4 1.8 4 4 0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+            </svg>
+            <span class="like-count">${likeCount}</span>
+          </span>
 
-    div.addEventListener('keydown', function handler(e) {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        div.contentEditable = false;
-        div.removeEventListener('keydown', handler);
-        state.user[field] = field === 'handle' ? div.innerText.replace(/^@/, '') : div.innerText.trim();
-        if (field === 'handle') div.innerText = '@' + state.user.handle;
+          <span title="Comment" style="display:flex;align-items:center;gap:4px;cursor:pointer;">
+            <svg width="20" height="20" fill="gray" viewBox="0 0 24 24">
+              <path d="M20 2H4c-1.1 0-2 .9-2 2v16l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/>
+            </svg>
+            ${commentCount}
+          </span>
+
+          <span title="Share" style="display:flex;align-items:center;gap:4px;cursor:pointer;">
+            <svg width="20" height="20" fill="gray" viewBox="0 0 24 24">
+              <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7a2.5 2.5 0 000-1.4l7-4.11a2.5 2.5 0 10-.91-1.47l-7 4.11a2.5 2.5 0 100 4.09l7.12 4.12a2.5 2.5 0 101.88-1.96z"/>
+            </svg>
+          </span>
+        </div>
+      `;
+
+      mainContent.appendChild(postDiv);
+    }
+
+    // Like Button
+    document.querySelectorAll('.like-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        if (!auth.currentUser) {
+          alert('You need to be logged in to like posts.');
+          return;
+        }
+
+        const postId = btn.getAttribute('data-post-id');
+        const uid = auth.currentUser.uid;
+        const postLikesRef = ref(database, `posts/${postId}/likes`);
+
+        const likesSnapshot = await get(postLikesRef);
+        const likesData = likesSnapshot.val() || {};
+
+        if (likesData[uid]) {
+          delete likesData[uid];
+        } else {
+          likesData[uid] = true;
+        }
+
+        await set(postLikesRef, likesData);
+
+        const likeCountSpan = btn.querySelector('.like-count');
+        const newLikeCount = Object.keys(likesData).length;
+        likeCountSpan.textContent = newLikeCount;
+
+        const fillColor = likesData[uid] ? 'red' : 'gray';
+        btn.style.color = fillColor;
+        btn.querySelector('svg').setAttribute('fill', fillColor);
+      });
+    });
+
+    // Follow Button
+    document.querySelectorAll('.follow-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        if (!auth.currentUser) {
+          alert('You need to be logged in to follow users.');
+          return;
+        }
+
+        const targetUid = btn.getAttribute('data-user-id');
+        const currentUid = auth.currentUser.uid;
+        const followRef = ref(database, `users/${currentUid}/following`);
+
+        const followSnap = await get(followRef);
+        const following = followSnap.val() || {};
+
+        const isNowFollowing = !following[targetUid];
+        if (isNowFollowing) {
+          following[targetUid] = true;
+        } else {
+          delete following[targetUid];
+        }
+
+        await set(followRef, following);
+
+        btn.textContent = isNowFollowing ? 'Unfollow' : 'Follow';
+        btn.style.background = isNowFollowing ? '#6c757d' : '#007BFF';
+      });
+    });
+  });
+}
+
+  // LOAD COMMUNITY POLLS & QUIZZES
+  function loadCommunity() {
+    const communityRef = ref(database, 'community');
+    onValue(communityRef, (snapshot) => {
+      const data = snapshot.val();
+      mainContent.innerHTML = '';
+      if (!data) {
+        mainContent.innerHTML = '<p>No community content available.</p>';
+        return;
+      }
+
+      if (data.polls) {
+        Object.entries(data.polls).forEach(([pollId, poll]) => {
+          const pollDiv = document.createElement('div');
+          pollDiv.className = 'poll';
+          pollDiv.innerHTML = `<h3>Poll: ${poll.question}</h3>`;
+
+          const optionsDiv = document.createElement('div');
+          optionsDiv.className = 'poll-options';
+
+          const votedPolls = JSON.parse(sessionStorage.getItem('votedPolls') || '{}');
+          const hasVoted = votedPolls[pollId];
+
+          Object.entries(poll.options || {}).forEach(([optKey, opt]) => {
+            const optionBtn = document.createElement('button');
+            optionBtn.textContent = `${opt.text} (${opt.votes ?? 0})`;
+            optionBtn.style.margin = '5px';
+            optionBtn.disabled = hasVoted;
+            optionBtn.addEventListener('click', () => {
+              if (hasVoted) return;
+
+              const voteRef = ref(database, `community/polls/${pollId}/options/${optKey}/votes`);
+              import("https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js").then(({ runTransaction }) => {
+                runTransaction(voteRef, (currentVotes) => (currentVotes || 0) + 1).then(() => {
+                  votedPolls[pollId] = true;
+                  sessionStorage.setItem('votedPolls', JSON.stringify(votedPolls));
+                  optionsDiv.querySelectorAll('button').forEach(btn => btn.disabled = true);
+                });
+              });
+            });
+            optionsDiv.appendChild(optionBtn);
+          });
+
+          pollDiv.appendChild(optionsDiv);
+          mainContent.appendChild(pollDiv);
+        });
+      }
+
+      if (data.quizzes) {
+        Object.values(data.quizzes).forEach(quiz => {
+          const div = document.createElement('div');
+          div.className = 'quiz';
+          div.innerHTML = `<h3>Quiz: ${quiz.title}</h3>`;
+          mainContent.appendChild(div);
+        });
       }
     });
   }
 
-  async function handleImageUpload() {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*';
-    input.click();
-    input.onchange = async () => {
-      const file = input.files[0];
-      const formData = new FormData();
-      formData.append('image', file);
-
-      const res = await fetch('https://api.imgur.com/3/image', {
-        method: 'POST',
-        headers: { Authorization: 'Client-ID 13738e0116c7722' },
-        body: formData
-      });
-      const data = await res.json();
-      if (data.success) {
-        state.user.profilePic = data.data.link;
-        renderProfile();
+  // LOAD FOLLOWING LIST
+  function loadFollowing() {
+    if (!userId) {
+      mainContent.innerHTML = '<p>Please log in to see following list.</p>';
+      return;
+    }
+    const followingRef = ref(database, `users/${userId}/following`);
+    onValue(followingRef, (snapshot) => {
+      const following = snapshot.val();
+      mainContent.innerHTML = '';
+      if (!following) {
+        mainContent.innerHTML = '<p>You are not following anyone yet.</p>';
+        return;
       }
-    };
+      const ul = document.createElement('ul');
+      ul.className = 'following-list';
+      Object.values(following).forEach(user => {
+        const li = document.createElement('li');
+        li.innerHTML = `<div class="user-name">${user.username}</div><div class="user-handle">${user.handle}</div>`;
+        ul.appendChild(li);
+      });
+      mainContent.appendChild(ul);
+    });
   }
 
-  async function loadUserData() {
-    const dbRef = ref(db);
-    const [userSnap, postSnap, communitySnap] = await Promise.all([
-      get(child(dbRef, 'users/frank_coder')),
-      get(child(dbRef, 'posts')),
-      get(child(dbRef, 'community'))
-    ]);
-
-    if (userSnap.exists()) {
-      const userData = userSnap.val();
-      state.user = {
-        profilePic: userData.profilePic || state.user.profilePic,
-        username: userData.username || 'No Username',
-        handle: userData.handle || 'unknown',
-        email: userData.email,
-        followers: userData.followers || 0,
-        postViews: userData.postViews || 0,
-        followingList: userData.following || []
-      };
+  // LOAD PROFILE WITH PROGRESS & EDITS
+  function loadProfile() {
+    if (!userId) {
+      mainContent.innerHTML = '<p>Please log in to view profile.</p>';
+      return;
     }
+    const profileRef = ref(database, `users/${userId}`);
+    onValue(profileRef, (snapshot) => {
+      profileData = snapshot.val();
+      if (!profileData) {
+        mainContent.innerHTML = '<p>Profile data not found.</p>';
+        return;
+      }
 
-    if (postSnap.exists()) {
-      state.posts = Object.values(postSnap.val());
-    }
+      mainContent.innerHTML = `
+        <div class="profile-container">
+          <div class="profile-pic" style="background-image: url('${profileData.profilePic ?? 'https://i.pravatar.cc/120'}');" title="Profile picture"></div>
+          <input type="text" id="username" class="editable-input" value="${profileData.username ?? ''}" maxlength="30" spellcheck="false" />
+        <input type="text" id="handle" class="editable-input handle" value="${profileData.handle ?? ''}" maxlength="30" spellcheck="false" />
+          <div class="email-display">Email: ${profileData.email ?? auth.currentUser.email}</div>
+          <button id="save-profile-btn" style="margin-top:10px; background:#007AFF; color:white; border:none; padding:8px 16px; border-radius:8px; cursor:pointer;">
+            Save Profile
+          </button>
+        </div>
+      `;
 
-    if (communitySnap.exists()) {
-      const all = Object.values(communitySnap.val());
-      state.community = all.filter(x => x.type === 'poll' || x.type === 'quiz');
-    }
+      const saveBtn = document.getElementById('save-profile-btn');
+      saveBtn.addEventListener('click', async () => {
+        const newUsername = document.getElementById('username').value.trim();
+        const newHandle = document.getElementById('handle').value.trim();
+
+        if (!newUsername) {
+          alert('Username cannot be empty.');
+          return;
+        }
+        if (!newHandle) {
+          alert('Handle cannot be empty.');
+          return;
+        }
+
+        // Update in database
+        try {
+          await set(ref(database, `users/${userId}/username`), newUsername);
+          await set(ref(database, `users/${userId}/handle`), newHandle);
+          alert('Profile updated successfully!');
+        } catch (error) {
+          console.error('Error updating profile:', error);
+          alert('Failed to update profile. Try again.');
+        }
+      });
+    });
   }
 
-  function renderCurrentSection() {
-    switch (state.currentSection) {
-      case 'home': renderHome(); break;
-      case 'community': renderCommunity(); break;
-      case 'following': renderFollowing(); break;
-      case 'profile': renderProfile(); break;
-      default: renderHome(); break;
+  // AUTH STATE HANDLER
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      userId = user.uid;
+      loadHome();
+      updateMonetizeButton(100, 100); // Simplified for demo; replace with real logic
+    } else {
+      userId = null;
+      mainContent.innerHTML = '<p>Please log in to see content.</p>';
     }
-  }
+  });
 
+  // MENU BUTTON HANDLERS
   buttons.forEach(btn => {
     btn.addEventListener('click', () => {
-      const section = btn.classList[0];
-      navigateTo(section);
+      const section = btn.getAttribute('data-section');
+      switch(section) {
+        case 'home': loadHome(); break;
+        case 'community': loadCommunity(); break;
+        case 'following': loadFollowing(); break;
+        case 'profile': loadProfile(); break;
+      }
     });
   });
 
-  loadUserData().then(() => {
-    initFromURL();
-  });
+  // Load home on initial page load
+  loadHome();
 </script>
 </body>
 </html>
