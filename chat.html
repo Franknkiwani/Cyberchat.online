@@ -355,9 +355,9 @@
   </footer>
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-  import { getDatabase, ref, get, child } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+  import { getDatabase, ref, get, child, update } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
 
-  // Firebase config - your real project
+  // Firebase config
   const firebaseConfig = {
     apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
     authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
@@ -373,31 +373,28 @@
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
 
-  // State, start empty, will be filled from Firebase
+  // Replace this with your logged-in user's ID/key in Firebase
+  const userId = "frank_coder";
+
+  // State (empty initially)
   const state = {
     currentSection: 'home',
     user: {
-      // fallback dummy until Firebase data loads
       profilePic: 'https://i.pravatar.cc/120',
-      username: 'Loading...',
-      handle: 'loading',
+      username: 'No username',
+      handle: 'nohandle',
       email: 'loading@example.com',
       followers: 0,
       postViews: 0,
       followingList: [],
-      posts: [],
-      polls: []
-    }
+    },
+    posts: [],
+    community: []
   };
 
   // DOM refs
   const main = document.getElementById('main-content');
   const buttons = document.querySelectorAll('footer#bottom-menu button');
-
-  // Utils
-  function clearActive() {
-    buttons.forEach(b => b.classList.remove('active'));
-  }
 
   // Prevent accidental text selection during editing
   function preventSelectDuringEdit(e) {
@@ -412,28 +409,64 @@
     div.addEventListener('mousedown', preventSelectDuringEdit);
   }
 
-  // Disable inline editing and save changes
-  function disableEditing(div, field) {
+  // Disable editing & save changes
+  async function disableEditing(div, field) {
     div.contentEditable = false;
     div.removeEventListener('mousedown', preventSelectDuringEdit);
 
     const newVal = div.innerText.trim();
-    if(field === 'username') state.user.username = newVal || state.user.username;
-    else if(field === 'handle') {
-      state.user.handle = newVal.replace(/^@/, '') || state.user.handle;
-      div.innerText = '@' + state.user.handle;
+    if (field === 'username') {
+      if (newVal) {
+        state.user.username = newVal;
+        await update(ref(db, `users/${userId}`), { username: newVal });
+      }
+    } else if (field === 'handle') {
+      const cleanHandle = newVal.replace(/^@/, '');
+      if (cleanHandle) {
+        state.user.handle = cleanHandle;
+        await update(ref(db, `users/${userId}`), { handle: cleanHandle });
+      }
     }
     renderProfile();
   }
 
+  // Upload profile pic to Imgur and update Firebase
+  async function uploadProfilePic(file) {
+    const formData = new FormData();
+    formData.append('image', file);
+
+    try {
+      const res = await fetch('https://api.imgur.com/3/image', {
+        method: 'POST',
+        headers: {
+          Authorization: 'Client-ID 54685e25743f274', // Your Imgur client ID
+        },
+        body: formData
+      });
+      const data = await res.json();
+      if (data.success) {
+        const imgUrl = data.data.link;
+        state.user.profilePic = imgUrl;
+        await update(ref(db, `users/${userId}`), { profilePic: imgUrl });
+        renderProfile();
+      } else {
+        alert('Imgur upload failed.');
+      }
+    } catch (e) {
+      alert('Error uploading image.');
+      console.error(e);
+    }
+  }
+
   // Render functions
+
   function renderHome() {
     main.innerHTML = '';
-    if(state.user.posts.length === 0) {
+    if (state.posts.length === 0) {
       main.innerHTML = '<p>No posts yet.</p>';
       return;
     }
-    state.user.posts.forEach(post => {
+    state.posts.forEach(post => {
       const postEl = document.createElement('article');
       postEl.className = 'post';
       postEl.innerHTML = `
@@ -446,26 +479,27 @@
 
   function renderCommunity() {
     main.innerHTML = '';
-    if(state.user.polls.length === 0) {
-      main.innerHTML = '<p>No polls yet.</p>';
+    const filtered = state.community.filter(item => item.type === 'poll' || item.type === 'quiz');
+    if (filtered.length === 0) {
+      main.innerHTML = '<p>No polls or quizzes yet.</p>';
       return;
     }
-    state.user.polls.forEach(poll => {
-      const pollEl = document.createElement('div');
-      pollEl.className = 'post';
-      pollEl.innerHTML = `
-        <h3 class="post-title">${poll.question}</h3>
+    filtered.forEach(item => {
+      const el = document.createElement('div');
+      el.className = 'post';
+      el.innerHTML = `
+        <h3 class="post-title">${item.question || item.title}</h3>
         <ul>
-          ${poll.options.map(opt => `<li>${opt}</li>`).join('')}
+          ${(item.options || []).map(opt => `<li>${opt}</li>`).join('')}
         </ul>
       `;
-      main.appendChild(pollEl);
+      main.appendChild(el);
     });
   }
 
   function renderFollowing() {
     main.innerHTML = '';
-    if(state.user.followingList.length === 0) {
+    if (!state.user.followingList || state.user.followingList.length === 0) {
       main.innerHTML = '<p>No users followed yet.</p>';
       return;
     }
@@ -483,106 +517,161 @@
   function renderProfile() {
     main.innerHTML = `
       <div class="profile-container">
-        <img class="profile-pic" src="${state.user.profilePic}" alt="Profile Picture" />
-        
+        <img id="profile-pic" class="profile-pic" src="${state.user.profilePic}" alt="Profile Picture" />
+        <input id="pic-upload" type="file" accept="image/*" style="display:none" />
+        <button id="change-pic-btn">Change Profile Picture</button>
         <div>
-          <div id="username" class="editable-field" tabindex="0" role="textbox" contenteditable="false">${state.user.username}</div>
-          <div id="handle" class="editable-field handle" tabindex="0" role="textbox" contenteditable="false">@${state.user.handle}</div>
+          <div id="username" class="editable-field" tabindex="0" role="textbox" contenteditable="false">${state.user.username || 'No username'}</div>
+          <div id="handle" class="editable-field handle" tabindex="0" role="textbox" contenteditable="false">@${state.user.handle || 'nohandle'}</div>
         </div>
-
-        <div class="followers-count">${state.user.followers} Followers</div>
-
+        <div class="followers-count">${state.user.followers || 0} Followers</div>
         <div class="progress-bars">
           <div>
             <div class="progress-bar">
-              <div class="progress-fill" style="width:${Math.min(100, (state.user.followers / 100) * 100)}%"></div>
+              <div class="progress-fill" style="width:${Math.min(100, (state.user.followers || 0) / 100 * 100)}%"></div>
             </div>
             <div class="progress-label">Followers (100 needed)</div>
           </div>
           <div>
             <div class="progress-bar">
-              <div class="progress-fill" style="width:${Math.min(100, (state.user.postViews / 1000) * 100)}%"></div>
+              <div class="progress-fill" style="width:${Math.min(100, (state.user.postViews || 0) / 1000 * 100)}%"></div>
             </div>
             <div class="progress-label">Post Views (1000 needed)</div>
           </div>
         </div>
-
         <div class="profile-info">
-          <strong>Email:</strong> ${state.user.email}<br /><br />
+          <strong>Email:</strong> ${state.user.email || 'No email'}<br /><br />
           <small>Click username or handle to edit. Press Enter to save.</small>
         </div>
       </div>
     `;
 
+    // Setup editing handlers
     const usernameDiv = document.getElementById('username');
     const handleDiv = document.getElementById('handle');
+    const changePicBtn = document.getElementById('change-pic-btn');
+    const picUpload = document.getElementById('pic-upload');
 
     usernameDiv.addEventListener('click', () => enableEditing(usernameDiv));
     handleDiv.addEventListener('click', () => enableEditing(handleDiv));
 
     usernameDiv.addEventListener('keydown', e => {
-      if(e.key === 'Enter') {
+      if (e.key === 'Enter') {
         e.preventDefault();
         disableEditing(usernameDiv, 'username');
       }
-      if(e.key === 'Escape') {
+      if (e.key === 'Escape') {
         e.preventDefault();
         renderProfile();
       }
     });
 
     handleDiv.addEventListener('keydown', e => {
-      if(e.key === 'Enter') {
+      if (e.key === 'Enter') {
         e.preventDefault();
         disableEditing(handleDiv, 'handle');
       }
-      if(e.key === 'Escape') {
+      if (e.key === 'Escape') {
         e.preventDefault();
         renderProfile();
       }
     });
+
+    changePicBtn.addEventListener('click', () => {
+      picUpload.click();
+    });
+
+    picUpload.addEventListener('change', async e => {
+      const file = e.target.files[0];
+      if (file) {
+        await uploadProfilePic(file);
+        picUpload.value = ''; // reset input
+      }
+    });
   }
 
-  // Load user data from Firebase Realtime Database
-  async function loadUserData() {
+  // Load all necessary data from Firebase
+  async function loadAllData() {
     try {
       const dbRef = ref(db);
-      const snapshot = await get(child(dbRef, 'users/frank_coder'));
-      if(snapshot.exists()) {
-        state.user = snapshot.val();
+
+      // Fetch user data
+      const userSnap = await get(child(dbRef, `users/${userId}`));
+      if (userSnap.exists()) {
+        const userData = userSnap.val();
+        state.user = {
+          ...state.user,
+          ...userData,
+          username: userData.username || 'No username',
+          handle: userData.handle || 'nohandle',
+          email: userData.email || 'no-email@example.com',
+          followers: userData.followers || 0,
+          postViews: userData.postViews || 0,
+          followingList: userData.followingList || []
+        };
       } else {
-        console.warn("No data found for user frank_coder, using dummy data.");
+        console.warn(`No user data found for ${userId}`);
       }
-    } catch(err) {
-      console.error("Firebase data load failed:", err);
+
+      // Fetch posts
+      const postsSnap = await get(child(dbRef, 'post'));
+      if (postsSnap.exists()) {
+        // Convert object to array
+        const postsObj = postsSnap.val();
+        state.posts = Object.values(postsObj);
+      } else {
+        state.posts = [];
+      }
+
+      // Fetch community (polls + quizzes)
+      const communitySnap = await get(child(dbRef, 'community'));
+      if (communitySnap.exists()) {
+        const communityObj = communitySnap.val();
+        // Convert to array
+        state.community = Object.values(communityObj);
+      } else {
+        state.community = [];
+      }
+
+    } catch (err) {
+      console.error('Error loading data:', err);
     }
-    // Render after data load
+
     renderCurrentSection();
   }
 
+  // Render current section based on state
   function renderCurrentSection() {
-    switch(state.currentSection) {
+    clearActive();
+    buttons.forEach(btn => {
+      if (btn.classList.contains(state.currentSection)) btn.classList.add('active');
+    });
+
+    switch (state.currentSection) {
       case 'home': renderHome(); break;
       case 'community': renderCommunity(); break;
-      case 'following': renderFollowing(); break;
+   case 'following': renderFollowing(); break;
       case 'profile': renderProfile(); break;
       default: renderHome();
     }
   }
 
-  // Initial UI render and load firebase data
-  loadUserData();
+  // Clear active class from buttons
+  function clearActive() {
+    buttons.forEach(b => b.classList.remove('active'));
+  }
 
-  // Section buttons
+  // Setup buttons to switch sections
   buttons.forEach(btn => {
     btn.addEventListener('click', () => {
-      if(btn.classList.contains('active')) return;
-      clearActive();
-      btn.classList.add('active');
-      state.currentSection = btn.classList[0];
+      if (btn.classList.contains('active')) return;
+      state.currentSection = btn.classList[0]; // assuming btn has class like 'home', 'profile', etc
       renderCurrentSection();
     });
   });
+
+  // Initial load
+  loadAllData();
 </script>
 </body>
 </html>
