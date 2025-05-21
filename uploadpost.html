@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Post Something Beautiful</title>
   <style>
     * {
@@ -102,12 +102,12 @@
 
   <div class="upload-card">
     <textarea class="textarea" rows="4" placeholder="What's on your mind?"></textarea>
-    
+
     <label for="fileUpload" class="file-label">Add Photo</label>
-    <input type="file" id="fileUpload" accept="image/*">
-    
+    <input type="file" id="fileUpload" accept="image/*" />
+
     <div class="image-preview" id="previewContainer" style="display:none;">
-      <img id="previewImage" src="">
+      <img id="previewImage" src="" />
       <button class="remove-btn" onclick="removeImage()">✕</button>
     </div>
 
@@ -124,6 +124,7 @@
     const fileUpload = document.getElementById('fileUpload');
     const previewContainer = document.getElementById('previewContainer');
     const previewImage = document.getElementById('previewImage');
+    const textarea = document.querySelector('.textarea');
 
     fileUpload.addEventListener('change', (e) => {
       const file = e.target.files[0];
@@ -132,7 +133,7 @@
         reader.onload = function(evt) {
           previewImage.src = evt.target.result;
           previewContainer.style.display = 'block';
-        }
+        };
         reader.readAsDataURL(file);
       }
     });
@@ -144,7 +145,21 @@
     }
 
     function uploadPost() {
-      alert("Uploading... but you’ll probably wire this up to Firebase, right?");
+      const text = textarea.value.trim();
+      const image = previewImage.src || "";
+      const privacy = document.getElementById('privacy').value;
+
+      if (!text && (!image || image === "")) {
+        alert("Please write something or add a photo before posting.");
+        return;
+      }
+
+      localStorage.setItem('postText', text);
+      localStorage.setItem('uploadedImageUrl', image);
+      localStorage.setItem('postPrivacy', privacy);
+
+      // Redirect to next page (uploadpost.html)
+      window.location.href = 'uploadpost.html';
     }
   </script>
 
