@@ -3,31 +3,24 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Post Something Beautiful</title>
+  <title>Upload Post</title>
   <style>
-    * {
-      box-sizing: border-box;
-      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-      margin: 0;
-      padding: 0;
-    }
-
     body {
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
       background: #f0f2f5;
-      padding: 16px;
-      color: #111;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
     }
-
     .upload-card {
       background: #fff;
       border-radius: 20px;
       box-shadow: 0 10px 30px rgba(0,0,0,0.08);
       padding: 20px;
       max-width: 500px;
-      margin: auto;
+      width: 100%;
     }
-
-    .textarea {
+    textarea {
       width: 100%;
       border: none;
       resize: none;
@@ -37,52 +30,26 @@
       background: #f5f5f5;
       margin-bottom: 12px;
       outline: none;
+      min-height: 100px;
     }
-
     .image-preview {
       margin-top: 10px;
       position: relative;
     }
-
     .image-preview img {
       max-width: 100%;
       border-radius: 12px;
     }
-
     .remove-btn {
       position: absolute;
       top: 10px;
       right: 10px;
-      background: rgba(255, 255, 255, 0.8);
+      background: rgba(255,255,255,0.8);
       border: none;
       border-radius: 50%;
       padding: 6px;
       cursor: pointer;
-      font-size: 16px;
-      line-height: 1;
     }
-
-    .options {
-      display: flex;
-      justify-content: space-between;
-      margin-top: 12px;
-      align-items: center;
-    }
-
-    .upload-btn {
-      background: #1877f2;
-      color: #fff;
-      border: none;
-      padding: 10px 16px;
-      border-radius: 12px;
-      font-size: 16px;
-      cursor: pointer;
-    }
-
-    input[type="file"] {
-      display: none;
-    }
-
     .file-label {
       display: inline-block;
       background: #e4e6eb;
@@ -92,64 +59,57 @@
       margin-bottom: 12px;
       font-size: 14px;
     }
-
-    select {
-      padding: 6px;
-      border-radius: 8px;
-      border: 1px solid #ccc;
+    input[type="file"] {
+      display: none;
+    }
+    .upload-btn {
+      background: #1877f2;
+      color: #fff;
+      border: none;
+      padding: 10px 16px;
+      border-radius: 12px;
+      font-size: 16px;
+      cursor: pointer;
+      margin-top: 12px;
+      width: 100%;
     }
   </style>
 </head>
 <body>
-
   <div class="upload-card">
-    <textarea class="textarea" rows="4" placeholder="What's on your mind?"></textarea>
+    <textarea id="postText" placeholder="What's on your mind?"></textarea>
 
-    <label for="fileUpload" class="file-label">Add Photo</label>
+    <label for="fileUpload" class="file-label">Change Photo</label>
     <input type="file" id="fileUpload" accept="image/*" />
 
     <div class="image-preview" id="previewContainer" style="display:none;">
-      <img id="previewImage" src="" alt="Image preview" />
+      <img id="previewImage" src="" alt="Post image preview" />
       <button class="remove-btn" onclick="removeImage()">✕</button>
     </div>
 
-    <div class="options">
-      <select id="privacy">
-        <option value="public">Public</option>
-        <option value="followers">Followers</option>
-      </select>
-      <button class="upload-btn" onclick="uploadPost()">Post</button>
-    </div>
+    <button class="upload-btn" onclick="uploadPost()">Post</button>
   </div>
 
   <script>
+    const postText = document.getElementById('postText');
     const fileUpload = document.getElementById('fileUpload');
     const previewContainer = document.getElementById('previewContainer');
     const previewImage = document.getElementById('previewImage');
-    const textarea = document.querySelector('.textarea');
-    const privacySelect = document.getElementById('privacy');
 
-    // Load saved data on page load
+    // Load stored values from sessionStorage on page load
     window.addEventListener('DOMContentLoaded', () => {
-      const savedText = localStorage.getItem('postText');
-      const savedImage = localStorage.getItem('uploadedImageUrl');
-      const savedPrivacy = localStorage.getItem('postPrivacy');
+      const savedText = sessionStorage.getItem('postText') || '';
+      const savedImage = sessionStorage.getItem('postImage') || '';
 
-      if (savedText) {
-        textarea.value = savedText;
-      }
+      postText.value = savedText;
 
-      if (savedImage && savedImage !== "") {
+      if (savedImage) {
         previewImage.src = savedImage;
         previewContainer.style.display = 'block';
       }
-
-      if (savedPrivacy) {
-        privacySelect.value = savedPrivacy;
-      }
     });
 
-    // When file selected, preview it
+    // When user selects new image, update preview and sessionStorage
     fileUpload.addEventListener('change', (e) => {
       const file = e.target.files[0];
       if (file) {
@@ -157,37 +117,35 @@
         reader.onload = function(evt) {
           previewImage.src = evt.target.result;
           previewContainer.style.display = 'block';
+          sessionStorage.setItem('postImage', evt.target.result);
         };
         reader.readAsDataURL(file);
       }
     });
 
-    // Remove selected image
+    // Remove image preview and clear from sessionStorage
     function removeImage() {
-      fileUpload.value = "";
+      previewImage.src = '';
       previewContainer.style.display = 'none';
-      previewImage.src = "";
+      fileUpload.value = '';
+      sessionStorage.removeItem('postImage');
     }
 
-    // Save and redirect
+    // When clicking Post, save text and (optionally) image, then do your upload logic
     function uploadPost() {
-      const text = textarea.value.trim();
-      const image = previewImage.src || "";
-      const privacy = privacySelect.value;
-
-      if (!text && (!image || image === "")) {
-        alert("Please write something or add a photo before posting.");
+      const textVal = postText.value.trim();
+      if (!textVal && !previewImage.src) {
+        alert('You need to add some text or an image!');
         return;
       }
 
-      localStorage.setItem('postText', text);
-      localStorage.setItem('uploadedImageUrl', image);
-      localStorage.setItem('postPrivacy', privacy);
+      sessionStorage.setItem('postText', textVal);
+      // postImage is already saved on image load or cleared on remove
 
-      // Redirect to preview page
-      window.location.href = 'postpreview.html';
+      // Here you’d hook up your Firebase upload logic or API call
+
+      alert('Ready to upload! Implement your upload logic now.');
     }
   </script>
-
 </body>
 </html>
