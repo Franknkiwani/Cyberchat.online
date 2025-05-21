@@ -1,4 +1,4 @@
-l<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
@@ -9,9 +9,36 @@ l<!DOCTYPE html>
       font-family: -apple-system, BlinkMacSystemFont, sans-serif;
       background: #0d0f14;
       color: #fff;
-      padding: 20px;
+      padding: 0;
+      margin: 0;
+    }
+    .sticky-header {
+      position: sticky;
+      top: 0;
+      background: #000;
+      padding: 12px 20px;
       display: flex;
-      justify-content: center;
+      justify-content: flex-end;
+      align-items: center;
+      z-index: 1000;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.6);
+    }
+    .header-content {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    #handleDisplay {
+      font-size: 14px;
+      color: #ccc;
+      font-weight: 500;
+    }
+    #profilePic {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid #333;
     }
     .upload-card {
       background: #1a1d24;
@@ -19,10 +46,11 @@ l<!DOCTYPE html>
       box-shadow: 0 10px 30px rgba(0,0,0,0.4);
       padding: 24px;
       max-width: 600px;
-      width: 100%;
+      width: 80%;
+      margin: 40px auto;
     }
     textarea, select, input[type="text"] {
-      width: 100%;
+      width: 90%;
       background: #2a2e38;
       color: #fff;
       border: 1px solid #3a3f4b;
@@ -70,7 +98,7 @@ l<!DOCTYPE html>
       border-radius: 14px;
       font-size: 16px;
       cursor: pointer;
-      width: 100%;
+      width: 90%;
       margin-top: 16px;
     }
     label {
@@ -82,12 +110,20 @@ l<!DOCTYPE html>
   </style>
 </head>
 <body>
+
+  <header class="sticky-header">
+    <div class="header-content">
+      <span id="handleDisplay">@loading</span>
+      <img id="profilePic" src="" alt="Profile" />
+    </div>
+  </header>
+
   <div class="upload-card">
     <label for="postText">What's on your mind, Boss?</label>
     <textarea id="postText" placeholder="Type your thoughts here..."></textarea>
 
     <label>Upload Photo</label>
-    <label for="fileUpload" class="file-label">Upload Photo</label>
+    <label for="fileUpload" class="file-label" role="button">Upload Photo</label>
     <input type="file" id="fileUpload" accept="image/*" />
     <button id="editBtn" style="display:none;">Edit</button>
 
@@ -116,62 +152,275 @@ l<!DOCTYPE html>
 
     <button class="upload-btn" onclick="uploadPost()">Post This Magic</button>
   </div>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+import { getDatabase, ref, get, child, push, set } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
 
-  <script>
-    const postText = document.getElementById('postText');
-    const fileUpload = document.getElementById('fileUpload');
-    const previewContainer = document.getElementById('previewContainer');
-    const previewImage = document.getElementById('previewImage');
-    const editBtn = document.getElementById('editBtn');
+const firebaseConfig = {
+  apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
+  authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
+  databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
+  projectId: "itzhoyoo-f9f7e",
+  storageBucket: "itzhoyoo-f9f7e.filestorage.app",
+  messagingSenderId: "1094792075584",
+  appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
+  measurementId: "G-LLT6F9WRKH"
+};
 
-    window.addEventListener('DOMContentLoaded', () => {
-      const savedText = sessionStorage.getItem('postText') || '';
-      const savedImage = sessionStorage.getItem('postImage') || '';
-      postText.value = savedText;
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
 
-      if (savedImage) {
-        previewImage.src = savedImage;
-        previewContainer.style.display = 'block';
-        editBtn.style.display = 'inline-block';
-      }
-    });
+const handleDisplay = document.getElementById("handleDisplay");
+const profilePic = document.getElementById("profilePic");
+const postText = document.getElementById('postText');
+const fileUpload = document.getElementById('fileUpload');
+const previewContainer = document.getElementById('previewContainer');
+const previewImage = document.getElementById('previewImage');
+const editBtn = document.getElementById('editBtn');
+const monetizeBar = document.getElementById('monetizeBar');
+const monetizeToggle = document.getElementById('monetizeToggle');
+const cpmDisplay = document.getElementById('cpmDisplay');
 
-    fileUpload.addEventListener('change', (e) => {
-      const file = e.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = function(evt) {
-          previewImage.src = evt.target.result;
-          previewContainer.style.display = 'block';
-          sessionStorage.setItem('postImage', evt.target.result);
-          editBtn.style.display = 'inline-block';
-        };
-        reader.readAsDataURL(file);
-      }
-    });
+let currentUser = null;
+let userCanMonetize = false;
+let cropper = null;
+let croppedImageData = null;
+let averageCPM = 0;
 
-    editBtn.addEventListener('click', () => {
-      fileUpload.click();
-    });
-
-    function uploadPost() {
-      const data = {
-        text: postText.value.trim(),
-        image: sessionStorage.getItem('postImage') || '',
-        visibility: document.getElementById('visibility').value,
-        audience: document.getElementById('audience').value,
-        description: document.getElementById('description').value.trim(),
-        tags: document.getElementById('tags').value.split(',').map(t => t.trim()).filter(Boolean),
-      };
-
-      if (!data.text && !data.image) {
-        alert('C’mon Daddy Hoyoo, you need to type something or add a pic!');
-        return;
-      }
-
-      console.log('Ready to upload this beast:', data);
-      alert('Post is staged! Now plug this into Firebase and launch it to the world.');
+// --- UTIL: Add red asterisks for required fields ---
+function markRequiredFields() {
+  // For demo, assume these IDs exist for inputs you want required
+  const requiredFields = ['postText', 'fileUpload', 'description', 'tags'];
+  requiredFields.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    let label = document.querySelector(`label[for="${id}"]`);
+    if (label && !label.querySelector('.required-star')) {
+      const star = document.createElement('span');
+      star.textContent = ' *';
+      star.className = 'required-star';
+      star.style.color = 'red';
+      label.appendChild(star);
     }
-  </script>
+  });
+}
+
+// Call it on load
+markRequiredFields();
+
+// --- AUTH & USER LOAD ---
+onAuthStateChanged(auth, async (user) => {
+  if (user) {
+    currentUser = user;
+    try {
+      const userSnap = await get(child(ref(db), `users/${user.uid}`));
+      const userData = userSnap.exists() ? userSnap.val() : {};
+      const handle = userData.handle || user.email.split("@")[0];
+      const photoURL = userData.profilepic || `https://ui-avatars.com/api/?name=${handle}`;
+      handleDisplay.textContent = `@${handle}`;
+      profilePic.src = photoURL;
+
+      userCanMonetize = !!userData.monetize;
+
+      // Load average CPM from /ads (assume stored as averageCPM in ads root)
+      const adsSnap = await get(ref(db, '/ads'));
+      if (adsSnap.exists()) {
+        const adsData = adsSnap.val();
+        // Calculate weighted average CPM or just get 'averageCPM' key if exists
+        if (adsData.averageCPM) {
+          averageCPM = parseFloat(adsData.averageCPM);
+        } else {
+          // Fallback: average all CPMs from adsData
+          const cpms = Object.values(adsData).map(ad => parseFloat(ad.cpm)).filter(cpm => !isNaN(cpm));
+          averageCPM = cpms.length ? (cpms.reduce((a,b) => a+b,0)/cpms.length) : 0;
+        }
+      }
+
+      setupMonetizeBar();
+
+    } catch (err) {
+      console.error("Failed to fetch user data or ads:", err);
+      handleDisplay.textContent = `@${user.email.split("@")[0]}`;
+      profilePic.src = `https://ui-avatars.com/api/?name=${user.email.split("@")[0]}`;
+    }
+  } else {
+    window.location.href = "/login"; // Redirect if not logged in
+  }
+});
+
+// --- CROPPER SETUP ---
+editBtn.addEventListener('click', () => {
+  if (fileUpload.files.length === 0) {
+    alert("No image uploaded yet.");
+    return;
+  }
+
+  if (cropper) cropper.destroy(); // Reset if exists
+
+  // Create a temporary image for cropping
+  const img = document.createElement('img');
+  img.src = previewImage.src;
+  img.id = 'cropperImage';
+  img.style.maxWidth = '100%';
+  previewContainer.innerHTML = '';
+  previewContainer.appendChild(img);
+
+  cropper = new Cropper(img, {
+    aspectRatio: 1,
+    viewMode: 1,
+    autoCropArea: 1,
+    movable: true,
+    zoomable: true,
+    scalable: false,
+    crop(event) {
+      // Nothing here, we'll crop on confirm
+    }
+  });
+
+  // Show crop confirm button
+  let confirmBtn = document.createElement('button');
+  confirmBtn.textContent = "Crop & Save";
+  confirmBtn.style.marginTop = '10px';
+  confirmBtn.onclick = () => {
+    const canvas = cropper.getCroppedCanvas({
+      width: 500,
+      height: 500,
+      imageSmoothingQuality: 'high',
+    });
+    croppedImageData = canvas.toDataURL('image/jpeg', 0.9);
+    previewImage.src = croppedImageData;
+    sessionStorage.setItem('postImage', croppedImageData);
+    previewContainer.innerHTML = '';
+    previewContainer.appendChild(previewImage);
+    editBtn.style.display = 'inline-block';
+    cropper.destroy();
+    cropper = null;
+    confirmBtn.remove();
+  };
+  previewContainer.appendChild(confirmBtn);
+});
+
+// --- FILE UPLOAD & PREVIEW ---
+fileUpload.addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  if (!file.type.startsWith('image/')) {
+    alert('Only images please.');
+    fileUpload.value = "";
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = function(evt) {
+    previewImage.src = evt.target.result;
+    previewContainer.style.display = 'block';
+    sessionStorage.setItem('postImage', evt.target.result);
+    editBtn.style.display = 'inline-block';
+    croppedImageData = null; // Reset cropped image since new file uploaded
+  };
+  reader.readAsDataURL(file);
+});
+
+// --- SAVE TEXT DRAFT ---
+postText.addEventListener('input', () => {
+  sessionStorage.setItem('postText', postText.value);
+});
+
+// --- MONETIZE BAR SETUP ---
+function setupMonetizeBar() {
+  monetizeBar.style.display = 'block';
+  cpmDisplay.textContent = `Estimated CPM: $${averageCPM.toFixed(2)}`;
+
+  if (userCanMonetize) {
+    monetizeToggle.disabled = false;
+    monetizeToggle.checked = false;
+    monetizeToggle.title = "Toggle Monetization On/Off";
+  } else {
+    monetizeToggle.disabled = true;
+    monetizeToggle.checked = false;
+    monetizeToggle.title = "You must enable monetization in your profile to monetize posts.";
+  }
+}
+
+// --- CALCULATE CPM FOR POST ---
+function calculateCPM(title, description) {
+  // Basic naive approach: CPM influenced by keyword count & average CPM
+  // You can get fancier with NLP later, but for now:
+  let base = averageCPM;
+
+  // Reward longer descriptive posts (max 50 words)
+  const words = (title + " " + description).split(/\s+/).filter(Boolean).slice(0,50).length;
+  const factor = 1 + (words / 100); // up to 1.5x for 50 words
+
+  // Just a multiplier on base CPM
+  return base * factor;
+}
+
+// --- POST UPLOAD HANDLER ---
+window.uploadPost = async function() {
+  const title = postText.value.trim();
+  const description = document.getElementById('description')?.value.trim() || '';
+  const tagsRaw = document.getElementById('tags')?.value || '';
+  const tags = tagsRaw
+    .split(',')
+    .map(t => t.trim().toLowerCase())
+    .filter(t => t && /^[a-z0-9\s\-]+$/.test(t));
+
+  if (!title) {
+    alert('The "What’s on your mind, Boss?" field is required.');
+    return;
+  }
+
+  // Must have at least an image or text (title)
+  const imageToSave = croppedImageData || sessionStorage.getItem('postImage') || '';
+
+  if (!title && !imageToSave) {
+    alert('You gotta say something or upload a pic!');
+    return;
+  }
+
+  const cpm = calculateCPM(title, description);
+
+  const postData = {
+    title,
+    description,
+    tags,
+    image: imageToSave,
+    authorUid: currentUser.uid,
+    authorHandle: handleDisplay.textContent.replace('@',''),
+    timestamp: Date.now(),
+    monetized: userCanMonetize && monetizeToggle.checked,
+    cpm: parseFloat(cpm.toFixed(2)),
+  };
+
+  try {
+    const newPostRef = push(ref(db, '/post'));
+    await set(newPostRef, postData);
+
+    alert(`Post uploaded! Estimated CPM: $${postData.cpm}. ${postData.monetized ? 'Monetization enabled. Nice!' : 'Monetization off.'}`);
+
+    // Clear inputs and session storage
+    postText.value = '';
+    document.getElementById('description').value = '';
+    document.getElementById('tags').value = '';
+    fileUpload.value = '';
+    previewImage.src = '';
+    previewContainer.style.display = 'none';
+    editBtn.style.display = 'none';
+    monetizeToggle.checked = false;
+    sessionStorage.removeItem('postText');
+    sessionStorage.removeItem('postImage');
+    croppedImageData = null;
+
+  } catch (e) {
+    console.error('Failed to upload post:', e);
+    alert('Upload failed, try again later.');
+  }
+};
+
+</script>
 </body>
 </html>
