@@ -240,6 +240,80 @@
   font-size: 1.2rem;
   color: #888;
 }
+.suggestion-item {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  gap: 12px;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: background-color 0.2s ease;
+  border: 1px solid white;
+  background-color: #fff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.suggestion-item:hover,
+.suggestion-item.active {
+  background-color: #f0f0f0;
+}
+
+.suggestion-thumb {
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  object-fit: cover;
+  flex-shrink: 0;
+  background-color: #eaeaea;
+  border: 2px solid black; /* Thick black edge */
+}
+
+.suggestion-text {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.suggestion-title {
+  font-weight: 600;
+  font-size: 1rem;
+  color: #222;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.suggestion-meta {
+  font-size: 0.85rem;
+  color: #666;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.suggestion-meta .views {
+  color: cyan; /* Cyan views */
+  font-weight: 500;
+}
+
+.follow-button {
+  padding: 4px 10px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background-color 0.3s ease;
+}
+
+.follow-button:hover {
+  background-color: #0056b3;
+}
 </style>
 </head>
 <body>
@@ -306,6 +380,15 @@
 <div id="search-results" class="search-results"></div>
 
 <script type="module">
+  import {
+  getAuth,
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+
+import {
+  set,
+  remove
+} from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
   import {
     getDatabase,
@@ -328,6 +411,12 @@
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
   const dbRef = ref(db);
+  const auth = getAuth();
+let currentUser = null;
+
+onAuthStateChanged(auth, user => {
+  currentUser = user;
+});
 
   const searchIcon = document.getElementById('search-icon');
   const searchBar = document.getElementById('search-bar');
@@ -371,34 +460,83 @@
     activeIndex = -1;
   }
 
-  function renderSuggestions() {
-    if (filtered.length === 0) {
-      suggestionsBox.innerHTML = `<div class="no-results">No results found</div>`;
-      suggestionsBox.classList.add('active');
-      return;
-    }
-    suggestionsBox.innerHTML = '';
-    filtered.forEach((item, i) => {
-      const div = document.createElement('div');
-      div.className = 'suggestion-item';
-      div.setAttribute('role', 'option');
-      div.setAttribute('tabindex', '0');
-      div.dataset.id = item.id;
-
-      div.innerHTML = `
-        <img src="${item.thumbnailUrl}" alt="Thumbnail" class="suggestion-thumb" />
-        <div class="suggestion-text">
-          <div class="suggestion-title">${item.title}</div>
-          <div class="suggestion-views">${item.views} views</div>
-        </div>
-      `;
-
-      if (i === activeIndex) div.classList.add('active');
-      suggestionsBox.appendChild(div);
-    });
+  async function renderSuggestions() {
+  if (filtered.length === 0) {
+    suggestionsBox.innerHTML = `<div class="no-results">No results found</div>`;
     suggestionsBox.classList.add('active');
+    return;
   }
 
+  suggestionsBox.innerHTML = '';
+
+  const user = JSON.parse(localStorage.getItem('authUser')); // assuming you store auth user here
+  const currentUserId = user?.uid;
+
+  for (let i = 0; i < filtered.length; i++) {
+    const item = filtered[i];
+    const div = document.createElement('div');
+    div.className = 'suggestion-item';
+    div.setAttribute('role', 'option');
+    div.setAttribute('tabindex', '0');
+    div.dataset.id = item.id;
+
+    const authorId = item.authorId || item.author || 'unknown_user';
+    let isFollowing = false;
+
+    // Check if already following
+    if (currentUserId && authorId !== currentUserId) {
+      try {
+        const followSnap = await get(child(dbRef, `users/${currentUserId}/following/${authorId}`));
+        isFollowing = followSnap.exists();
+      } catch (err) {
+        console.warn('Error checking follow status:', err);
+      }
+    }
+
+    div.innerHTML = `
+      <img src="${item.thumbnailUrl}" alt="Thumbnail" class="suggestion-thumb" />
+      <div class="suggestion-text">
+        <div class="suggestion-title">${item.title}</div>
+        <div class="suggestion-meta">
+          <span>${item.views} views</span>
+          <span>•</span>
+          <span>${item.author || 'Unknown'}</span>
+        </div>
+      </div>
+      ${
+        currentUserId && authorId !== currentUserId
+          ? `<button class="follow-button" data-author="${authorId}">${isFollowing ? 'Following' : 'Follow'}</button>`
+          : ''
+      }
+    `;
+
+    if (i === activeIndex) div.classList.add('active');
+    suggestionsBox.appendChild(div);
+
+    // Follow button logic
+    const btn = div.querySelector('.follow-button');
+    if (btn) {
+      btn.addEventListener('click', async e => {
+        e.stopPropagation();
+        const authorId = btn.dataset.author;
+        const followingRef = ref(db, `users/${currentUserId}/following/${authorId}`);
+        try {
+          if (btn.textContent === 'Follow') {
+            await set(followingRef, true);
+            btn.textContent = 'Following';
+          } else {
+            await remove(followingRef);
+            btn.textContent = 'Follow';
+          }
+        } catch (err) {
+          console.error('Error updating follow status:', err);
+        }
+      });
+    }
+  }
+
+  suggestionsBox.classList.add('active');
+}
   async function updateSuggestions() {
     const val = searchInput.value.trim().toLowerCase();
     if (!val) {
@@ -448,17 +586,17 @@
 
   // NEW: relevance scoring for search feed sorting
   function relevanceScore(query, text) {
-    if (!text) return 0;
-    query = query.toLowerCase();
-    text = text.toLowerCase();
-    if (text === query) return 100;
-    if (text.includes(query)) return 50;
-    let score = 0;
-    for (const c of query) {
-      if (text.includes(c)) score++;
-    }
-    return score;
+  if (!text) return 0;
+  query = query.toLowerCase();
+  text = text.toLowerCase();
+  if (text === query) return 100;
+  if (text.includes(query)) return 50;
+  let score = 0;
+  for (const c of query) {
+    if (text.includes(c)) score++;
   }
+  return score;
+}
 
   // NEW: render the full search results feed, featured post on top, related posts below
   function renderSearchResults(posts, query) {
