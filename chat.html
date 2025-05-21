@@ -515,22 +515,6 @@ body.light-theme {
     pointer-events: none;
     display: inline-block;
   }
-  /* Disable text selection globally */
-body, .post-card * {
-  user-select: none;
-}
-* {
-  outline: none !important;
-  -webkit-tap-highlight-color: transparent;
-  -webkit-focus-ring-color: transparent;
-  -moz-outline: none;
-}
-
-*:focus {
-  outline: none !important;
-  box-shadow: none !important;
-}
-
 </style>
 </head>
 <body>
@@ -599,8 +583,6 @@ body, .post-card * {
 <div class="suggestions" id="suggestions" role="listbox" aria-label="Search suggestions"></div>
 <div id="search-results" class="search-results"></div>
 <div id="posts-container"></div>
-<div id="custom-menu" style="display:none; position:absolute; background:#fff; border:1px solid #ccc; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.2); padding:8px; z-index:1000;">
-</div>
 <script type="module">
   import {
   getAuth,
@@ -1096,7 +1078,7 @@ function createPostElement(post, postId, userLikes = {}) {
   const username = post.username || 'Anonymous';
   const handle = post.handle ? '@' + post.handle : '@user';
   const profilePic = post.profilePic || 'https://via.placeholder.com/50';
-  const postImage = post.imageUrl || '';
+  const postImage = post.imageUrl || post.image || '';  // Smart fallback
   const title = post.title || 'Untitled Post';
   const description = post.description || '';
   const views = post.views || 0;
@@ -1118,7 +1100,7 @@ function createPostElement(post, postId, userLikes = {}) {
       </div>
     </div>
     <div class="post-title">${title}</div>
-    ${postImage ? `<img src="${postImage}" alt="Post image" class="post-image" />` : ''}
+    ${postImage ? `<img src="${postImage}" alt="Post image" class="post-image" style="width: 100%; height: auto;" />` : ''}
     <div class="post-description">${description}</div>
     <div class="post-stats">
       <div>${createSvgIcon('views')} ${views}</div>
@@ -1133,6 +1115,7 @@ function createPostElement(post, postId, userLikes = {}) {
     </div>
   `;
 
+  // Like button handler
   postDiv.querySelector('.like-btn').addEventListener('click', async () => {
     const btn = postDiv.querySelector('.like-btn');
     const isLiked = btn.dataset.liked === 'true';
@@ -1153,6 +1136,7 @@ function createPostElement(post, postId, userLikes = {}) {
     }
   });
 
+  // Comment button placeholder
   postDiv.querySelector('.comment-btn').addEventListener('click', () => {
     alert('Comment feature coming soon!');
   });
