@@ -58,6 +58,8 @@
       border-radius: 50%;
       padding: 6px;
       cursor: pointer;
+      font-size: 16px;
+      line-height: 1;
     }
 
     .options {
@@ -107,7 +109,7 @@
     <input type="file" id="fileUpload" accept="image/*" />
 
     <div class="image-preview" id="previewContainer" style="display:none;">
-      <img id="previewImage" src="" />
+      <img id="previewImage" src="" alt="Image preview" />
       <button class="remove-btn" onclick="removeImage()">✕</button>
     </div>
 
@@ -125,7 +127,29 @@
     const previewContainer = document.getElementById('previewContainer');
     const previewImage = document.getElementById('previewImage');
     const textarea = document.querySelector('.textarea');
+    const privacySelect = document.getElementById('privacy');
 
+    // Load saved data on page load
+    window.addEventListener('DOMContentLoaded', () => {
+      const savedText = localStorage.getItem('postText');
+      const savedImage = localStorage.getItem('uploadedImageUrl');
+      const savedPrivacy = localStorage.getItem('postPrivacy');
+
+      if (savedText) {
+        textarea.value = savedText;
+      }
+
+      if (savedImage && savedImage !== "") {
+        previewImage.src = savedImage;
+        previewContainer.style.display = 'block';
+      }
+
+      if (savedPrivacy) {
+        privacySelect.value = savedPrivacy;
+      }
+    });
+
+    // When file selected, preview it
     fileUpload.addEventListener('change', (e) => {
       const file = e.target.files[0];
       if (file) {
@@ -138,16 +162,18 @@
       }
     });
 
+    // Remove selected image
     function removeImage() {
       fileUpload.value = "";
       previewContainer.style.display = 'none';
       previewImage.src = "";
     }
 
+    // Save and redirect
     function uploadPost() {
       const text = textarea.value.trim();
       const image = previewImage.src || "";
-      const privacy = document.getElementById('privacy').value;
+      const privacy = privacySelect.value;
 
       if (!text && (!image || image === "")) {
         alert("Please write something or add a photo before posting.");
@@ -158,8 +184,8 @@
       localStorage.setItem('uploadedImageUrl', image);
       localStorage.setItem('postPrivacy', privacy);
 
-      // Redirect to next page (uploadpost.html)
-      window.location.href = 'uploadpost.html';
+      // Redirect to preview page
+      window.location.href = 'postpreview.html';
     }
   </script>
 
