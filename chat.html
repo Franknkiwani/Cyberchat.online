@@ -3,907 +3,616 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Cyberchat - Full App</title>
+<title>CYBERCHAT - Clean Feed with Top Search</title>
 <style>
   :root {
-    --purple: #8a2be2;
-    --light-green: #6eff92;
-    --red: #ff4444;
-    --white: #fff;
-    --black: #000;
-    --gray-dark: #222;
-    --gray-medium: #444;
-    --gray-light: #888;
-    --input-bg: #222;
+    --bg: #0a0a0a;
+    --panel: #161616;
+    --border: #222;
+    --text: #f1f1f1;
+    --pink: #ff2e88;
+    --blue: #1e90ff;
+    --input-bg: #1c1c1c;
+    --overlay-bg: rgba(10, 10, 10, 0.8);
   }
   * {
-    margin: 0; 
-    padding: 0; 
+    margin: 0;
+    padding: 0;
     box-sizing: border-box;
-    user-select: none;
-    -webkit-tap-highlight-color: transparent;
-    tap-highlight-color: transparent;
   }
-  html, body {
+  body, html {
     height: 100%;
-    background-color: var(--black);
-    color: var(--white);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
-      Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+    background-color: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-weight: bold;
+    overflow-x: hidden;
   }
-  body {
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
-  }
+
   header {
+    height: 56px;
+    background-color: var(--panel);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 16px;
+    border-bottom: 1px solid var(--border);
     position: sticky;
     top: 0;
-    z-index: 999;
-    background-color: #111;
-    padding: 0.75rem 1rem;
-    font-size: 1.25rem;
-    font-weight: 600;
-    border-bottom: 1px solid var(--gray-dark);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  .logo {
-    display: flex;
-    align-items: center;
-  }
-  .cyber {
-    background: linear-gradient(90deg, #ff00ff, #00ffff);
-    background-size: 200% auto;
-    background-clip: text;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    animation: textShift 5s ease-in-out infinite;
-  }
-  .chat {
-    margin-left: 0.35rem;
-    background: linear-gradient(90deg, #00ffff, #7f00ff, #00ffff);
-    background-size: 200% auto;
-    background-clip: text;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    animation: textShift 5s ease-in-out infinite;
-  }
-  @keyframes textShift {
-    0% { background-position: 0% center; }
-    50% { background-position: 100% center; }
-    100% { background-position: 0% center; }
-  }
-  .post-btn {
-    background-color: var(--light-green);
-    color: #000;
-    border: none;
-    padding: 0.45rem 1rem;
-    font-size: 0.9rem;
-    font-weight: 500;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: background 0.2s ease, box-shadow 0.2s ease;
-    outline: none;
-    user-select: none;
-  }
-  .post-btn:hover {
-    background-color: #52e074;
-    box-shadow: 0 0 6px rgba(110, 255, 146, 0.4);
-  }
-  .post-btn:focus {
-    outline: none !important;
-    box-shadow: none !important;
-  }
-  main#main-content {
-    flex-grow: 1;
-    overflow-y: auto;
-    padding: 1rem;
-    background-color: #121212;
-    color: #ddd;
-    font-size: 1rem;
-    -webkit-overflow-scrolling: touch;
-  }
-  /* Posts */
-  .post {
-    background-color: #1c1c1c;
-    padding: 1rem 1.25rem;
-    margin-bottom: 1rem;
-    border-radius: 10px;
-    box-shadow: 0 0 8px rgba(255, 255, 255, 0.05);
-  }
-  .post-title {
-    font-weight: 700;
-    font-size: 1.15rem;
-    margin-bottom: 0.35rem;
-    color: #fff;
-  }
-  .post-body {
-    font-weight: 400;
-    line-height: 1.4;
-    color: #bbb;
-  }
-  /* Polls/Quizzes (Community) */
-  .poll, .quiz {
-    background-color: #222;
-    margin-bottom: 1rem;
-    border-radius: 10px;
-    padding: 1rem 1.25rem;
-  }
-  .poll-title, .quiz-title {
-    font-weight: 700;
-    margin-bottom: 0.5rem;
-    color: var(--purple);
-  }
-  /* Following list */
-  .following-list {
-    list-style: none;
-  }
-  .following-list li {
-    background-color: #222;
-    margin-bottom: 0.7rem;
-    padding: 0.8rem 1rem;
-    border-radius: 8px;
-    display: flex;
-    flex-direction: column;
-  }
-  .user-name {
-    font-weight: 600;
-    color: var(--light-green);
-  }
-  .user-handle {
-    font-size: 0.85rem;
-    color: var(--gray-light);
-  }
-  /* Profile Section */
-  .profile-container {
-    max-width: 400px;
-    margin: 0 auto;
-    text-align: center;
-  }
-  .profile-pic {
-    width: 120px;
-    height: 120px;
-    margin: 0 auto 1rem auto;
-    border-radius: 50%;
-    background-color: var(--gray-medium);
-    background-image: url('https://i.pravatar.cc/120');
-    background-size: cover;
-    background-position: center;
-    cursor: pointer;
-  }
-  .editable-input {
-    background-color: var(--input-bg);
-    border: none;
-    border-radius: 6px;
-    color: var(--white);
-    font-size: 1.15rem;
-    font-weight: 600;
-    text-align: center;
-    padding: 0.35rem 0.75rem;
-    margin-bottom: 0.5rem;
-    width: 100%;
-    max-width: 280px;
-  }
-  .editable-input:focus {
-    outline: 2px solid var(--light-green);
-    background-color: #1a1a1a;
-  }
-  .handle-input {
-    font-size: 1rem;
-    font-weight: 500;
-    color: var(--gray-light);
-  }
-  .email {
-    margin: 1rem 0 1.5rem 0;
-    font-size: 0.9rem;
-    color: var(--gray-light);
-    word-break: break-word;
-  }
-  .followers-count {
-    font-weight: 600;
-    margin-bottom: 1rem;
-  }
-  /* Progress Bars */
-  .progress-bar-container {
-    background-color: var(--gray-dark);
-    border-radius: 12px;
-    overflow: hidden;
-    height: 16px;
-    margin-bottom: 1rem;
-  }
-  .progress-bar {
-    height: 100%;
-    background-color: var(--light-green);
-    width: 0%;
-    transition: width 0.5s ease;
-  }
-  .progress-label {
-    margin-bottom: 0.3rem;
-    font-size: 0.9rem;
-    font-weight: 600;
-    text-align: left;
-    color: var(--white);
-  }
-  /* Footer menu */
-  footer#bottom-menu {
-    position: sticky;
-    bottom: 0;
-    width: 100%;
-    background-color: #111;
-    border-top: 1px solid var(--gray-dark);
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    height: 56px;
-    user-select: none;
     z-index: 1000;
+    transition: opacity 0.3s ease;
   }
-  footer#bottom-menu button {
-    background: none;
-    border: none;
-    font-size: 0.7rem;
+
+  .left-icons, .right-icons {
     display: flex;
-    flex-direction: column;
     align-items: center;
+    gap: 16px;
+  }
+
+  .icon svg {
+    width: 20px;
+    height: 20px;
+    fill: var(--text);
     cursor: pointer;
-    padding: 0 0.4rem;
-    transition: color 0.2s ease;
-    outline: none !important;
-    flex-grow: 1;
-    max-width: 80px;
+    transition: fill 0.2s;
   }
-  footer#bottom-menu button:hover,
-  footer#bottom-menu button:focus {
-    outline: none !important;
-    box-shadow: none !important;
+  .icon svg:hover {
+    fill: var(--pink);
   }
-  footer#bottom-menu svg {
+
+  .brand {
+    font-size: 20px;
+    letter-spacing: 1px;
+    color: var(--text);
+  }
+  .brand .cyber {
+    color: var(--pink);
+  }
+  .brand .chat {
+    color: var(--blue);
+  }
+
+  main.feed {
+    max-width: 700px;
+    margin: 24px auto;
+    padding: 0 16px;
+    transition: filter 0.3s ease;
+  }
+
+  /* Composer */
+  .composer {
+    background-color: var(--input-bg);
+    padding: 12px 16px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .composer .left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+  }
+  .composer img {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+  .composer input {
+    width: 100%;
+    background: transparent;
+    border: none;
+    outline: none;
+    font-size: 16px;
+    color: var(--text);
+    font-weight: bold;
+  }
+  .composer input::placeholder {
+    color: #777;
+  }
+  .composer .gallery-icon svg {
+    width: 22px;
+    height: 22px;
+    fill: var(--blue);
+    cursor: pointer;
+    transition: fill 0.2s;
+  }
+  .composer .gallery-icon svg:hover {
+    fill: var(--pink);
+  }
+
+  /* Top search bar */
+  .search-bar {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 56px;
+    background: var(--panel);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--pink);
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    gap: 12px;
+    transform: translateY(-100%);
+    transition: transform 0.3s ease;
+    z-index: 1500;
+  }
+  .search-bar.active {
+    transform: translateY(0);
+  }
+  .search-bar svg {
     width: 24px;
     height: 24px;
-    margin-bottom: 2px;
-    transition: fill 0.3s ease;
-    fill: none;
-    stroke-width: 2;
-    stroke-linejoin: round;
-    stroke-linecap: round;
-    stroke: currentColor;
+    fill: var(--pink);
   }
-  footer#bottom-menu button.home {
-    color: var(--white);
+  .search-bar input {
+    flex: 1;
+    background: var(--input-bg);
+    border: none;
+    border-radius: 12px;
+    padding: 8px 16px;
+    font-size: 18px;
+    color: var(--text);
+    font-weight: bold;
+    outline: none;
+    caret-color: var(--pink);
   }
-  footer#bottom-menu button.home svg {
-    stroke: var(--white);
-    fill: var(--white);
+  .search-bar input::placeholder {
+    color: #777;
   }
-  footer#bottom-menu button.community {
-    color: var(--purple);
-  }
-  footer#bottom-menu button.community svg {
-    stroke: var(--purple);
-    fill: var(--purple);
-  }
-  footer#bottom-menu button.following {
-    color: var(--light-green);
-  }
-  footer#bottom-menu button.following svg {
-    stroke: var(--light-green);
-    fill: var(--light-green);
-  }
-  footer#bottom-menu button.profile {
-    color: var(--red);
-  }
-  footer#bottom-menu button.profile svg {
-    stroke: var(--red);
-    fill: var(--red);
-  }
-  footer#bottom-menu button.active {
-    color: var(--white);
-  }
-  footer#bottom-menu button.active svg {
-    stroke: var(--white);
-    fill: var(--white);
-  }
-  /* Remove all focus outlines and native tap highlights for a native app feel */
-  :focus {
-    outline: none !important;
-    box-shadow: none !important;
-  }
-#bottom-menu button {
-  position: relative;
-  overflow: hidden;
-}
 
-/* Base ripple style */
-.sound-wave-ripple {
-  position: absolute;
-  border: 2px solid rgba(110, 255, 146, 0.7);
-  border-radius: 50%;
-  pointer-events: none;
-  width: 100px;
-  height: 100px;
-  top: 50%;
-  left: 50%;
-  margin-left: -50px;
-  margin-top: -50px;
-  opacity: 0.7;
-  transform: scale(0);
-  animation: rippleExpand 1.2s ease-out forwards;
-  z-index: 1000;
-  animation-fill-mode: forwards;
-  /* Each ripple will have its own delay via JS */
-}
-
-@keyframes rippleExpand {
-  to {
-    transform: scale(3);
+  /* Background blur overlay while search open */
+  .blur-overlay {
+    position: fixed;
+    top: 56px; /* below the search bar */
+    left: 0; right: 0; bottom: 0;
+    backdrop-filter: blur(6px);
+    background: rgba(0,0,0,0.6);
+    z-index: 1400;
     opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
   }
-}
-.sound-wave-ripple {
-  /* same as before */
-  animation: rippleExpand 2.5s ease-out forwards;
-}
-@keyframes rippleExpand {
-  to {
-    transform: scale(3);
-    opacity: 0;
+  .blur-overlay.active {
+    opacity: 1;
+    pointer-events: auto;
   }
-}
-/* Overlay with blur */
-#section-loader {
-  position: fixed;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  backdrop-filter: blur(10px);
-  background: rgba(0, 0, 0, 0.3);
-  z-index: 2000;
-  display: none;
-  align-items: center;
-  justify-content: center;
-}
 
-/* Neon loading text */
-#section-loader .neon-text {
-  font-size: 2rem;
-  font-weight: 700;
-  color: #00fff7;
-  text-shadow:
-    0 0 5px #00fff7,
-    0 0 10px #00fff7,
-    0 0 20px #00fff7,
-    0 0 40px #00e0ff;
-  animation: flicker 1.5s infinite;
+  /* Suggestions box */
+  .suggestions {
+    position: fixed;
+    top: 56px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 100%;
+    max-width: 600px;
+    background: var(--panel);
+    border-radius: 12px;
+    padding: 12px 16px;
+    box-shadow: 0 0 12px var(--blue);
+    max-height: 300px;
+    overflow-y: auto;
+    z-index: 1600;
+    color: var(--text);
+    font-weight: normal;
+    display: none;
+  }
+  .suggestions.active {
+    display: block;
+  }
+  .suggestion-item {
+    padding: 8px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .suggestion-item:hover, .suggestion-item:focus {
+    background: var(--pink);
+    color: var(--bg);
+    outline: none;
+  }
+  .no-results {
+    color: #777;
+    text-align: center;
+    padding: 20px 0;
+  }
+  .search-results {
+  margin-top: 1rem;
+  padding: 1rem;
 }
-
-/* Flickering neon effect */
-@keyframes flicker {
-  0%, 100% { opacity: 1; }
-  45% { opacity: 0.8; }
-  50% { opacity: 0.4; }
-  55% { opacity: 0.9; }
-  70% { opacity: 0.6; }
+.post-card {
+  border: 1px solid #ccc;
+  border-radius: 12px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  background: white;
+}
+.not-found, .error {
+  padding: 2rem;
+  text-align: center;
+  font-size: 1.2rem;
+  color: #888;
 }
 </style>
 </head>
 <body>
+
 <header>
-  <div class="logo">
+  <div class="left-icons icon" id="search-icon" tabindex="0" role="button" aria-label="Open search">
+    <!-- Search SVG -->
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+      <path d="M10 2a8 8 0 105.293 14.707l5 5a1 1 0 001.414-1.414l-5-5A8 8 0 0010 2zm0 2a6 6 0 110 12 6 6 0 010-12z"/>
+    </svg>
+    <span style="margin-left:6px; font-weight: normal; font-size: 16px; color: var(--text);">Search</span>
+  </div>
+
+  <div class="brand">
     <span class="cyber">CYBER</span><span class="chat">CHAT</span>
   </div>
-  <button class="post-btn" type="button">My Post</button>
+
+  <div class="right-icons icon" tabindex="0" role="button" aria-label="Settings">
+    <!-- Settings SVG -->
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+      <path d="M12 15a3 3 0 100-6 3 3 0 000 6zm9-3a7.986 7.986 0 01-.535 2.915l2.122 1.652-1.5 2.598-2.512-.647A7.986 7.986 0 0112 21a7.986 7.986 0 01-2.915-.535l-1.652 2.122-2.598-1.5.647-2.512A7.986 7.986 0 013 12c0-.997.181-1.953.535-2.915L1.413 7.433l1.5-2.598 2.512.647A7.986 7.986 0 0112 3a7.986 7.986 0 012.915.535l1.652-2.122 2.598 1.5-.647 2.512A7.986 7.986 0 0121 12z"/>
+    </svg>
+  </div>
 </header>
 
-<main id="main-content">
-  <!-- Content loaded dynamically -->
+<main class="feed">
+  <div class="composer">
+    <div class="left">
+      <img src="https://i.pravatar.cc/150?u=user" alt="User" />
+      <input type="text" placeholder="What's on your mind?" />
+    </div>
+    <div class="gallery-icon" tabindex="0" role="button" aria-label="Upload from gallery">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+        <path d="M21 19V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2zM5 5h14v9.586l-3.293-3.293a1 1 0 00-1.414 0L12 14.586l-2.293-2.293a1 1 0 00-1.414 0L5 15.586V5zm0 14v-.586l5-5 2.293 2.293a1 1 0 001.414 0L19 10.414V19H5z"/>
+      </svg>
+    </div>
+  </div>
+
+  <!-- Your feed posts would go here -->
 </main>
 
-<footer id="bottom-menu" role="navigation" aria-label="Main menu">
-  <button class="home active" aria-label="Home" data-section="home">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 12l9-9 9 9"/></svg>
-    Home
-  </button>
-  <button class="community" aria-label="Community" data-section="community">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a7.9 7.9 0 0 1 0-6"/></svg>
-    Community
-  </button>
-  <button class="following" aria-label="Following" data-section="following">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="7" r="4"/><path d="M5.5 21a7 7 0 0 1 13 0"/></svg>
-    Following
-  </button>
-  <button class="profile" aria-label="Profile" data-section="profile">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="12" cy="7" r="4"/><path d="M5.5 21a7 7 0 0 1 13 0"/></svg>
-    Profile
-  </button>
-</footer>
-<div id="section-loader">
-  <div class="neon-text">Loading...</div>
+<!-- continuing inside body, after main.feed -->
+
+<!-- Top Search Bar -->
+<div class="search-bar" id="search-bar" aria-hidden="true" role="search">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+    <path d="M10 2a8 8 0 105.293 14.707l5 5a1 1 0 001.414-1.414l-5-5A8 8 0 0010 2zm0 2a6 6 0 110 12 6 6 0 010-12z"/>
+  </svg>
+  <input
+    type="search"
+    id="search-input"
+    placeholder="Search CYBERCHAT..."
+    aria-label="Search CYBERCHAT"
+    autocomplete="off"
+    spellcheck="false"
+  />
 </div>
+
+<!-- Background blur overlay while search open -->
+<div class="blur-overlay" id="blur-overlay" tabindex="-1" aria-hidden="true"></div>
+
+<!-- Suggestions Box -->
+<div class="suggestions" id="suggestions" role="listbox" aria-label="Search suggestions"></div>
+<div id="search-results" class="search-results"></div>
+
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-  import { getDatabase, ref, onValue, get, set } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
-  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+  import {
+    getDatabase,
+    ref,
+    get,
+    child
+  } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
 
-  // Your Firebase config - replace with your actual config
   const firebaseConfig = {
     apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
     authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
     databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
     projectId: "itzhoyoo-f9f7e",
-    storageBucket: "itzhoyoo-f9f7e.firebasestorage.app",
+    storageBucket: "itzhoyoo-f9f7e.filestorage.app",
     messagingSenderId: "1094792075584",
     appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
     measurementId: "G-LLT6F9WRKH"
   };
 
   const app = initializeApp(firebaseConfig);
-  const database = getDatabase(app);
-  const auth = getAuth();
+  const db = getDatabase(app);
+  const dbRef = ref(db);
 
-  const mainContent = document.getElementById('main-content');
-  const buttons = document.querySelectorAll('footer#bottom-menu button');
+  const searchIcon = document.getElementById('search-icon');
+  const searchBar = document.getElementById('search-bar');
+  const blurOverlay = document.getElementById('blur-overlay');
+  const searchInput = document.getElementById('search-input');
+  const suggestionsBox = document.getElementById('suggestions');
+  const header = document.querySelector('header');
+  const mainFeed = document.querySelector('main.feed');
+  const resultsBox = document.getElementById('search-results');
 
-  let profileData = null;
-  let userId = null;
+  let activeIndex = -1;
+  let filtered = []; // will hold {id, title, views, thumbnailUrl}
 
-  // MONETIZE BUTTON SETUP
-  function updateMonetizeButton(followersPercent, viewsPercent) {
-    const btn = document.getElementById('monetize-btn');
-    if (!btn) return;
-    if (followersPercent === 100 && viewsPercent === 100) {
-      btn.style.backgroundColor = '#007AFF';  // iOS blue
-      btn.style.color = 'white';
-      btn.style.pointerEvents = 'auto';
-    } else {
-      btn.style.backgroundColor = 'grey';
-      btn.style.color = '#aaa';
-      btn.style.pointerEvents = 'none';
-    }
+  function openSearch() {
+    searchBar.classList.add('active');
+    blurOverlay.classList.add('active');
+    searchBar.setAttribute('aria-hidden', 'false');
+    blurOverlay.setAttribute('aria-hidden', 'false');
+    header.style.opacity = '0';
+    mainFeed.style.filter = 'blur(6px) brightness(0.7)';
+    searchInput.focus();
+    clearSuggestions();
+    resultsBox.innerHTML = '';
   }
 
-
-async function loadHome() {  
-  const postsRef = ref(database, 'posts');  
-  onValue(postsRef, async (snapshot) => {  
-    const posts = snapshot.val();  
-    mainContent.innerHTML = '';  
-  
-    if (!posts) {  
-      mainContent.innerHTML = '<p>No posts available.</p>';  
-      return;  
-    }  
-  
-    const postList = Object.entries(posts).sort(([, a], [, b]) => b.timestamp - a.timestamp);  
-  
-    for (const [postId, post] of postList) {  
-      let uploader = { username: "Unknown", handle: "unknown", profilePic: "" };  
-      let isFollowing = false;  
-      const currentUserId = auth.currentUser ? auth.currentUser.uid : null;  
-  
-      if (post.uid) {  
-        const userSnap = await get(ref(database, `users/${post.uid}`));  
-        if (userSnap.exists()) {  
-          const data = userSnap.val();  
-          uploader.username = data.username || "Unnamed";  
-          uploader.handle = data.handle || "unknown";  
-          uploader.profilePic = data.profilePic || "";  
-        }  
-  
-        if (currentUserId && post.uid !== currentUserId) {  
-          const followingSnap = await get(ref(database, `users/${currentUserId}/following/${post.uid}`));  
-          isFollowing = followingSnap.exists();  
-        }  
-      }  
-  
-      const postDiv = document.createElement('div');  
-      postDiv.className = 'post';  
-      const date = post.timestamp ? new Date(post.timestamp).toLocaleDateString() : 'Unknown Date';  
-  
-      const likesObj = post.likes || {};  
-      const likeCount = Object.keys(likesObj).length;  
-      const commentCount = post.comments ? Object.keys(post.comments).length : 0;  
-  
-      const userLiked = currentUserId ? !!likesObj[currentUserId] : false;  
-  
-      postDiv.innerHTML = `  
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">  
-          <div style="display:flex;align-items:center;">  
-            ${uploader.profilePic ? `<img src="${escapeHtml(uploader.profilePic)}" alt="pfp" style="width:40px;height:40px;border-radius:50%;margin-right:8px;">` : ''}  
-            <div>  
-              <strong>${escapeHtml(uploader.username)}</strong><br>  
-              <small>@${escapeHtml(uploader.handle)}</small>  
-            </div>  
-          </div>  
-          ${  
-            currentUserId && post.uid !== currentUserId  
-              ? `<button class="follow-btn" data-user-id="${post.uid}" style="padding:4px 10px;font-size:12px;border:none;border-radius:5px;background:${isFollowing ? '#6c757d' : '#007BFF'};color:white;cursor:pointer;">  
-                  ${isFollowing ? 'Following' : 'Follow'}  
-                </button>`  
-              : ''  
-          }  
-        </div>  
-  
-        <h2>${escapeHtml(post.title)}</h2>  
-        ${post.image ? `<img src="${escapeHtml(post.image)}" alt="${escapeHtml(post.title)}" style="max-width:100%;border-radius:8px;margin:8px 0;">` : ''}  
-        <p>${escapeHtml(post.description)}</p>  
-  
-        <div style="font-size:13px;color:gray;margin-bottom:6px;">  
-          <span style="color:cyan;">Views: ${post.views ?? 0}</span> ·   
-          <span>${date}</span>  
-        </div>  
-  
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;font-size:14px;position:relative;">  
-          <span class="like-btn" data-post-id="${postId}" title="Like" style="display:flex;align-items:center;gap:4px;cursor:pointer; color: ${userLiked ? 'red' : 'gray'};">  
-            <svg width="20" height="20" fill="${userLiked ? 'red' : 'gray'}" viewBox="0 0 24 24">  
-              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5c0-2.2 1.8-4 4-4 1.54 0 3.04.99 3.57 2.36h.87C14.46 5.49 16 4.5 17.5 4.5c2.2 0 4 1.8 4 4 0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>  
-            </svg>  
-            <span class="like-count">${likeCount}</span>  
-          </span>  
-  
-          <span title="Comment" style="display:flex;align-items:center;gap:4px;cursor:pointer; color:gray; transition: color 0.2s;" class="comment-btn">  
-            <svg width="20" height="20" fill="none" stroke="gray" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">  
-              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2z"></path>  
-            </svg>  
-            ${commentCount}  
-          </span>  
-  
-          <div style="position:relative; user-select:none;">  
-            <button class="post-menu-btn" aria-label="Post options" style="background:none; border:none; cursor:pointer; padding:4px; display:flex; align-items:center; justify-content:center;">  
-              <svg width="24" height="24" fill="gray" viewBox="0 0 24 24">  
-                <circle cx="12" cy="5" r="2"/>  
-                <circle cx="12" cy="12" r="2"/>  
-                <circle cx="12" cy="19" r="2"/>  
-              </svg>  
-            </button>  
-            <div class="post-menu" style="display:none; position:absolute; right:0; top:28px; background:white; border:1px solid #ccc; border-radius:6px; box-shadow:0 2px 8px rgba(0,0,0,0.15); z-index:10; min-width:120px;">  
-              <button class="menu-item report-btn" style="width:100%; padding:8px 12px; border:none; background:none; text-align:left; cursor:pointer; font-size:14px; color:#dc3545;">Report</button>  
-              <button class="menu-item share-btn" style="width:100%; padding:8px 12px; border:none; background:none; text-align:left; cursor:pointer; font-size:14px;">Share</button>  
-            </div>  
-          </div>  
-        </div>  
-      `;  
-  
-      mainContent.appendChild(postDiv);  
-    }  
-  
-    // Like Button Listeners  
-    document.querySelectorAll('.like-btn').forEach(btn => {  
-      btn.addEventListener('click', async () => {  
-        if (!auth.currentUser) {  
-          alert('You need to be logged in to like posts.');  
-          return;  
-        }  
-  
-        const postId = btn.getAttribute('data-post-id');  
-        const uid = auth.currentUser.uid;  
-        const postLikesRef = ref(database, `posts/${postId}/likes`);  
-  
-        const likesSnapshot = await get(postLikesRef);  
-        const likesData = likesSnapshot.val() || {};  
-  
-        if (likesData[uid]) {  
-          delete likesData[uid];  
-        } else {  
-          likesData[uid] = true;  
-        }  
-  
-        await set(postLikesRef, likesData);  
-  
-        const likeCountSpan = btn.querySelector('.like-count');  
-        const newLikeCount = Object.keys(likesData).length;  
-        likeCountSpan.textContent = newLikeCount;  
-  
-        const fillColor = likesData[uid] ? 'red' : 'gray';  
-        btn.style.color = fillColor;  
-        btn.querySelector('svg').setAttribute('fill', fillColor);  
-      });  
-    });  
-  
-    // Follow Button Listeners with animation & hover effect  
-    document.querySelectorAll('.follow-btn').forEach(btn => {  
-      const targetUid = btn.getAttribute('data-user-id');  
-  
-      btn.addEventListener('click', async () => {  
-        if (!auth.currentUser) {  
-          alert('You need to be logged in to follow users.');  
-          return;  
-        }  
-  
-        const currentUid = auth.currentUser.uid;  
-        if (currentUid === targetUid) {  
-          alert("You can't follow yourself.");  
-          return;  
-        }  
-  
-        btn.style.opacity = '0.6';  
-        btn.style.pointerEvents = 'none';  
-        const originalText = btn.textContent;  
-        btn.textContent = originalText === 'Follow' ? 'Following...' : 'Unfollowing...';  
-  
-        const followRef = ref(database, `users/${currentUid}/following`);  
-        const snap = await get(followRef);  
-        const following = snap.val() || {};  
-        const isNowFollowing = !following[targetUid];  
-  
-        if (isNowFollowing) {  
-          following[targetUid] = true;  
-        } else {  
-          delete following[targetUid];  
-        }  
-  
-        await set(followRef, following);  
-  
-        btn.textContent = isNowFollowing ? 'Following' : 'Follow';  
-        btn.style.background = isNowFollowing ? '#6c757d' : '#007BFF';  
-        btn.style.opacity = '1';  
-        btn.style.pointerEvents = 'auto';  
-  
-        btn.onmouseenter = () => {  
-          if (btn.textContent === 'Following') {  
-            btn.textContent = 'Unfollow';  
-            btn.style.background = '#dc3545'; // red on hover  
-          }  
-        };  
-  
-        btn.onmouseleave = () => {  
-          if (btn.textContent === 'Unfollow') {  
-            btn.textContent = 'Following';  
-            btn.style.background = '#6c757d'; // back to gray  
-          }  
-        };  
-      });  
-    });  
-  
-    // Post menu toggle  
-    document.querySelectorAll('.post-menu-btn').forEach(btn => {  
-      btn.addEventListener('click', (e) => {  
-        e.stopPropagation();  
-        const menu = btn.nextElementSibling;  
-        const isVisible = menu.style.display === 'block';  
-        // Close all menus first  
-        document.querySelectorAll('.post-menu').forEach(m => m.style.display = 'none');  
-        menu.style.display = isVisible ? 'none' : 'block';  
-      });  
-    });  
-  
-    // Close menus if clicked outside  
-    document.addEventListener('click', () => {  
-      document.querySelectorAll('.post-menu').forEach(m => m.style.display = 'none');  
-    });  
-  
-    // Report and Share buttons  
-    document.querySelectorAll('.report-btn').forEach(btn => {  
-      btn.addEventListener('click', () => {  
-        alert('Report functionality coming soon!');  
-        btn.closest('.post-menu').style.display = 'none';  
-      });  
-    });  
-  
-    document.querySelectorAll('.share-btn').forEach(btn => {  
-      btn.addEventListener('click', () => {  
-        alert('Share functionality coming soon!');  
-        btn.closest('.post-menu').style.display = 'none';  
-      });  
-    });  
-  });  
-}  
-  
-// Helper function for escaping user content to avoid injection risks  
-function escapeHtml(text) {  
-  if (!text) return '';  
-  return text.replace(/[&<>"']/g, (match) => {  
-    const escapeMap = {  
-      '&': '&amp;',  
-      '<': '&lt;',  
-      '>': '&gt;',  
-      '"': '&quot;',  
-      "'": '&#39;',  
-    };  
-    return escapeMap[match];  
-  });  
-}
-
-  // LOAD COMMUNITY POLLS & QUIZZES
-  function loadCommunity() {
-    const communityRef = ref(database, 'community');
-    onValue(communityRef, (snapshot) => {
-      const data = snapshot.val();
-      mainContent.innerHTML = '';
-      if (!data) {
-        mainContent.innerHTML = '<p>No community content available.</p>';
-        return;
-      }
-
-      if (data.polls) {
-        Object.entries(data.polls).forEach(([pollId, poll]) => {
-          const pollDiv = document.createElement('div');
-          pollDiv.className = 'poll';
-          pollDiv.innerHTML = `<h3>Poll: ${poll.question}</h3>`;
-
-          const optionsDiv = document.createElement('div');
-          optionsDiv.className = 'poll-options';
-
-          const votedPolls = JSON.parse(sessionStorage.getItem('votedPolls') || '{}');
-          const hasVoted = votedPolls[pollId];
-
-          Object.entries(poll.options || {}).forEach(([optKey, opt]) => {
-            const optionBtn = document.createElement('button');
-            optionBtn.textContent = `${opt.text} (${opt.votes ?? 0})`;
-            optionBtn.style.margin = '5px';
-            optionBtn.disabled = hasVoted;
-            optionBtn.addEventListener('click', () => {
-              if (hasVoted) return;
-
-              const voteRef = ref(database, `community/polls/${pollId}/options/${optKey}/votes`);
-              import("https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js").then(({ runTransaction }) => {
-                runTransaction(voteRef, (currentVotes) => (currentVotes || 0) + 1).then(() => {
-                  votedPolls[pollId] = true;
-                  sessionStorage.setItem('votedPolls', JSON.stringify(votedPolls));
-                  optionsDiv.querySelectorAll('button').forEach(btn => btn.disabled = true);
-                });
-              });
-            });
-            optionsDiv.appendChild(optionBtn);
-          });
-
-          pollDiv.appendChild(optionsDiv);
-          mainContent.appendChild(pollDiv);
-        });
-      }
-
-      if (data.quizzes) {
-        Object.values(data.quizzes).forEach(quiz => {
-          const div = document.createElement('div');
-          div.className = 'quiz';
-          div.innerHTML = `<h3>Quiz: ${quiz.title}</h3>`;
-          mainContent.appendChild(div);
-        });
-      }
-    });
+  function closeSearch() {
+    searchBar.classList.remove('active');
+    blurOverlay.classList.remove('active');
+    searchBar.setAttribute('aria-hidden', 'true');
+    blurOverlay.setAttribute('aria-hidden', 'true');
+    header.style.opacity = '1';
+    mainFeed.style.filter = 'none';
+    searchInput.value = '';
+    clearSuggestions();
+    resultsBox.innerHTML = '';
   }
 
-  // LOAD FOLLOWING LIST
-  function loadFollowing() {
-    if (!userId) {
-      mainContent.innerHTML = '<p>Please log in to see following list.</p>';
+  function clearSuggestions() {
+    suggestionsBox.classList.remove('active');
+    suggestionsBox.innerHTML = '';
+    activeIndex = -1;
+  }
+
+  function renderSuggestions() {
+    if (filtered.length === 0) {
+      suggestionsBox.innerHTML = `<div class="no-results">No results found</div>`;
+      suggestionsBox.classList.add('active');
       return;
     }
-    const followingRef = ref(database, `users/${userId}/following`);
-    onValue(followingRef, (snapshot) => {
-      const following = snapshot.val();
-      mainContent.innerHTML = '';
-      if (!following) {
-        mainContent.innerHTML = '<p>You are not following anyone yet.</p>';
-        return;
-      }
-      const ul = document.createElement('ul');
-      ul.className = 'following-list';
-      Object.values(following).forEach(user => {
-        const li = document.createElement('li');
-        li.innerHTML = `<div class="user-name">${user.username}</div><div class="user-handle">${user.handle}</div>`;
-        ul.appendChild(li);
-      });
-      mainContent.appendChild(ul);
-    });
-  }
+    suggestionsBox.innerHTML = '';
+    filtered.forEach((item, i) => {
+      const div = document.createElement('div');
+      div.className = 'suggestion-item';
+      div.setAttribute('role', 'option');
+      div.setAttribute('tabindex', '0');
+      div.dataset.id = item.id;
 
-  // LOAD PROFILE WITH PROGRESS & EDITS
-  function loadProfile() {
-    if (!userId) {
-      mainContent.innerHTML = '<p>Please log in to view profile.</p>';
-      return;
-    }
-    const profileRef = ref(database, `users/${userId}`);
-    onValue(profileRef, (snapshot) => {
-      profileData = snapshot.val();
-      if (!profileData) {
-        mainContent.innerHTML = '<p>Profile data not found.</p>';
-        return;
-      }
-
-      mainContent.innerHTML = `
-        <div class="profile-container">
-          <div class="profile-pic" style="background-image: url('${profileData.profilePic ?? 'https://i.pravatar.cc/120'}');" title="Profile picture"></div>
-          <input type="text" id="username" class="editable-input" value="${profileData.username ?? ''}" maxlength="30" spellcheck="false" />
-        <input type="text" id="handle" class="editable-input handle" value="${profileData.handle ?? ''}" maxlength="30" spellcheck="false" />
-          <div class="email-display">Email: ${profileData.email ?? auth.currentUser.email}</div>
-          <button id="save-profile-btn" style="margin-top:10px; background:#007AFF; color:white; border:none; padding:8px 16px; border-radius:8px; cursor:pointer;">
-            Save Profile
-          </button>
+      div.innerHTML = `
+        <img src="${item.thumbnailUrl}" alt="Thumbnail" class="suggestion-thumb" />
+        <div class="suggestion-text">
+          <div class="suggestion-title">${item.title}</div>
+          <div class="suggestion-views">${item.views} views</div>
         </div>
       `;
 
-      const saveBtn = document.getElementById('save-profile-btn');
-      saveBtn.addEventListener('click', async () => {
-        const newUsername = document.getElementById('username').value.trim();
-        const newHandle = document.getElementById('handle').value.trim();
+      if (i === activeIndex) div.classList.add('active');
+      suggestionsBox.appendChild(div);
+    });
+    suggestionsBox.classList.add('active');
+  }
 
-        if (!newUsername) {
-          alert('Username cannot be empty.');
-          return;
-        }
-        if (!newHandle) {
-          alert('Handle cannot be empty.');
-          return;
-        }
+  async function updateSuggestions() {
+    const val = searchInput.value.trim().toLowerCase();
+    if (!val) {
+      clearSuggestions();
+      return;
+    }
 
-        // Update in database
-        try {
-          await set(ref(database, `users/${userId}/username`), newUsername);
-          await set(ref(database, `users/${userId}/handle`), newHandle);
-          alert('Profile updated successfully!');
-        } catch (error) {
-          console.error('Error updating profile:', error);
-          alert('Failed to update profile. Try again.');
+    try {
+      const snapshot = await get(child(dbRef, 'post'));
+      if (!snapshot.exists()) {
+        clearSuggestions();
+        return;
+      }
+      const data = snapshot.val();
+
+      filtered = Object.entries(data)
+        .filter(([id, post]) => post.title && post.title.toLowerCase().includes(val))
+        .map(([id, post]) => ({
+          id,
+          title: post.title,
+          views: post.views || 0,
+          thumbnailUrl: post.thumbnailUrl || 'https://via.placeholder.com/48?text=No+Img'
+        }));
+
+      activeIndex = -1;
+      renderSuggestions();
+
+    } catch (err) {
+      console.error('Error fetching suggestions:', err);
+      clearSuggestions();
+    }
+  }
+
+  function debounce(func, delay = 300) {
+    let timeout;
+    return (...args) => {
+      clearTimeout(timeout);
+      timeout = setTimeout(() => func.apply(this, args), delay);
+    };
+  }
+
+  function triggerSearch(query) {
+    console.log('Search triggered for:', query);
+    const event = new CustomEvent('search', { detail: query });
+    document.dispatchEvent(event);
+  }
+
+  // NEW: relevance scoring for search feed sorting
+  function relevanceScore(query, text) {
+    if (!text) return 0;
+    query = query.toLowerCase();
+    text = text.toLowerCase();
+    if (text === query) return 100;
+    if (text.includes(query)) return 50;
+    let score = 0;
+    for (const c of query) {
+      if (text.includes(c)) score++;
+    }
+    return score;
+  }
+
+  // NEW: render the full search results feed, featured post on top, related posts below
+  function renderSearchResults(posts, query) {
+    if (!posts.length) {
+      resultsBox.innerHTML = `<div class="no-results">No posts found for "${query}"</div>`;
+      return;
+    }
+
+    // Sort posts by relevance descending
+    posts.sort((a,b) => relevanceScore(query, b.title) - relevanceScore(query, a.title));
+
+    // Featured post is the top one
+    const featured = posts[0];
+    const others = posts.slice(1);
+
+    let html = `
+      <h2>Search results for "${query}"</h2>
+      <section class="featured-post">
+        <h3>${featured.title}</h3>
+        <img src="${featured.thumbnailUrl || 'https://via.placeholder.com/200?text=No+Image'}" alt="Thumbnail" />
+        <p>${featured.body || 'No content available'}</p>
+        <small>By ${featured.author || 'Unknown'} | ${featured.views || 0} views</small>
+      </section>
+      <hr/>
+      <section class="other-posts">
+        <h4>Related posts</h4>
+        <ul>
+    `;
+
+    others.forEach(post => {
+      html += `
+        <li class="search-post-item" data-id="${post.id}" tabindex="0" role="button" aria-pressed="false">
+          <img src="${post.thumbnailUrl || 'https://via.placeholder.com/48?text=No+Img'}" alt="Thumbnail" />
+          <div>
+            <strong>${post.title}</strong><br/>
+            <small>${post.views || 0} views</small>
+          </div>
+        </li>
+      `;
+    });
+
+    html += '</ul></section>';
+    resultsBox.innerHTML = html;
+
+    // Click & keyboard to feature other posts
+    document.querySelectorAll('.search-post-item').forEach(item => {
+      item.addEventListener('click', () => {
+        const id = item.dataset.id;
+        const post = posts.find(p => p.id === id);
+        if (!post) return;
+        renderSearchResults([post, ...posts.filter(p => p.id !== id)], query);
+      });
+      item.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          item.click();
         }
       });
     });
   }
 
-  // AUTH STATE HANDLER
-  onAuthStateChanged(auth, (user) => {
-    if (user) {
-      userId = user.uid;
-      loadHome();
-      updateMonetizeButton(100, 100); // Simplified for demo; replace with real logic
-    } else {
-      userId = null;
-      mainContent.innerHTML = '<p>Please log in to see content.</p>';
+  // NEW: full search triggered on search input Enter or suggestion click
+  async function doFullSearch(query) {
+    closeSearch(); // unblur & hide search UI
+    try {
+      const snapshot = await get(child(dbRef, 'post'));
+      if (!snapshot.exists()) {
+        resultsBox.innerHTML = `<div class="no-results">No posts found</div>`;
+        return;
+      }
+      const data = snapshot.val();
+      const allPosts = Object.entries(data).map(([id, post]) => ({
+        id,
+        title: post.title || '',
+        views: post.views || 0,
+        thumbnailUrl: post.thumbnailUrl || 'https://via.placeholder.com/48?text=No+Img',
+        body: post.body || '',
+        author: post.author || 'Unknown'
+      }));
+
+      renderSearchResults(allPosts, query);
+
+    } catch (err) {
+      console.error('Search error:', err);
+      resultsBox.innerHTML = `<div class="error">Error loading search results</div>`;
+    }
+  }
+
+  // Replace old fetchAndShowPost to do nothing now (we use renderSearchResults instead)
+  async function fetchAndShowPost(postId) {
+    // Intentionally blank because we're handling full feed rendering now
+  }
+
+  // Event listeners wiring
+
+  searchIcon.addEventListener('click', openSearch);
+  blurOverlay.addEventListener('click', closeSearch);
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape' && searchBar.classList.contains('active')) {
+      closeSearch();
     }
   });
 
-  // MENU BUTTON HANDLERS
-  buttons.forEach(btn => {
-    btn.addEventListener('click', () => {
-      const section = btn.getAttribute('data-section');
-      switch(section) {
-        case 'home': loadHome(); break;
-        case 'community': loadCommunity(); break;
-        case 'following': loadFollowing(); break;
-        case 'profile': loadProfile(); break;
+  searchInput.addEventListener('input', debounce(updateSuggestions));
+
+  searchInput.addEventListener('keydown', e => {
+    if (!filtered.length) return;
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      activeIndex = (activeIndex + 1) % filtered.length;
+      renderSuggestions();
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      activeIndex = (activeIndex - 1 + filtered.length) % filtered.length;
+      renderSuggestions();
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      if (activeIndex >= 0) {
+        const selected = filtered[activeIndex];
+        searchInput.value = selected.title;
+        doFullSearch(selected.title);
+        clearSuggestions();
+        triggerSearch(selected.title);
+      } else {
+        const query = searchInput.value.trim();
+        if (query) {
+          doFullSearch(query);
+          clearSuggestions();
+          triggerSearch(query);
+        }
       }
-    });
+    }
   });
 
-document.addEventListener('DOMContentLoaded', () => {
-  const buttons = document.querySelectorAll('#bottom-menu button');
-  const loader = document.getElementById('section-loader');
-
-  buttons.forEach(btn => {
-    btn.addEventListener('click', () => {
-      // Sound wave effect (same as before)
-      for (let i = 0; i < 3; i++) {
-        const ripple = document.createElement('span');
-        ripple.classList.add('sound-wave-ripple');
-        ripple.style.animationDelay = `${i * 0.7}s`;
-        btn.appendChild(ripple);
-        ripple.addEventListener('animationend', () => ripple.remove());
-      }
-
-      // Loading overlay
-      loader.style.display = 'flex';
-
-      // Remove active class from all buttons
-      buttons.forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-
-      // Simulate section load
-      setTimeout(() => {
-        loader.style.display = 'none';
-        const section = btn.getAttribute('data-section');
-        switchSection(section);
-      }, 3000);
-    });
+  suggestionsBox.addEventListener('click', e => {
+    const item = e.target.closest('.suggestion-item');
+    if (!item) return;
+    const title = item.querySelector('.suggestion-title').textContent;
+    searchInput.value = title;
+    doFullSearch(title);
+    clearSuggestions();
+    triggerSearch(title);
   });
 
-  function switchSection(section) {
-    const allSections = document.querySelectorAll('main > section');
-    allSections.forEach(sec => {
-      sec.style.display = sec.id === section ? 'block' : 'none';
-    });
-  }
-});
+  suggestionsBox.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && e.target.classList.contains('suggestion-item')) {
+      const title = e.target.querySelector('.suggestion-title').textContent;
+      searchInput.value = title;
+      doFullSearch(title);
+      clearSuggestions();
+      triggerSearch(title);
+    }
+  });
 </script>
 </body>
 </html>
