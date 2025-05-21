@@ -314,6 +314,69 @@
 .follow-button:hover {
   background-color: #0056b3;
 }
+.settings-dropdown {
+  position: absolute;
+  top: 60px; /* Adjust based on header height */
+  right: 16px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  z-index: 999;
+  width: 200px;
+  transition: all 0.2s ease;
+  padding: 10px 0;
+}
+
+.settings-dropdown.dark {
+  background: #1e1e1e;
+  color: #fff;
+}
+
+.settings-option {
+  padding: 12px 16px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.settings-option:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.settings-dropdown.hidden {
+  display: none;
+}
+body.light-theme {
+  --bg: #f9f9f9;
+  --panel: #fff;
+  --border: #ccc;
+  --text: #111;
+  --pink: #d9006c;
+  --blue: #007bff;
+  --input-bg: #eee;
+  --overlay-bg: rgba(255, 255, 255, 0.8);
+}
+
+.send-btn {
+  background-color: #007AFF; /* iOS Blue */
+  color: white;
+  border: none;
+  border-radius: 999px;
+  padding: 8px 16px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  margin-left: 8px;
+}
+
+.send-btn:hover {
+  background-color: #005fcb;
+}
+
+.send-btn:active {
+  background-color: #004bb1;
+  transform: scale(0.98);
+}
 </style>
 </head>
 <body>
@@ -330,8 +393,8 @@
   <div class="brand">
     <span class="cyber">CYBER</span><span class="chat">CHAT</span>
   </div>
-
-  <div class="right-icons icon" tabindex="0" role="button" aria-label="Settings">
+     
+     <div class="right-icons icon" tabindex="0" role="button" aria-label="Settings" id="settings-icon">
     <!-- Settings SVG -->
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
       <path d="M12 15a3 3 0 100-6 3 3 0 000 6zm9-3a7.986 7.986 0 01-.535 2.915l2.122 1.652-1.5 2.598-2.512-.647A7.986 7.986 0 0112 21a7.986 7.986 0 01-2.915-.535l-1.652 2.122-2.598-1.5.647-2.512A7.986 7.986 0 013 12c0-.997.181-1.953.535-2.915L1.413 7.433l1.5-2.598 2.512.647A7.986 7.986 0 0112 3a7.986 7.986 0 012.915.535l1.652-2.122 2.598 1.5-.647 2.512A7.986 7.986 0 0121 12z"/>
@@ -345,12 +408,13 @@
       <img src="https://i.pravatar.cc/150?u=user" alt="User" />
       <input type="text" placeholder="What's on your mind?" />
     </div>
-    <div class="gallery-icon" tabindex="0" role="button" aria-label="Upload from gallery">
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-        <path d="M21 19V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2zM5 5h14v9.586l-3.293-3.293a1 1 0 00-1.414 0L12 14.586l-2.293-2.293a1 1 0 00-1.414 0L5 15.586V5zm0 14v-.586l5-5 2.293 2.293a1 1 0 001.414 0L19 10.414V19H5z"/>
-      </svg>
-    </div>
-  </div>
+<button id="sendPostBtn">UPLOAD</button>
+<div class="gallery-icon" tabindex="0" role="button" aria-label="Upload from gallery">
+  <img src="https://img.icons8.com/?size=100&id=4nhOwJ1RGNj0&format=png&color=000000" alt="Upload" width="28" height="28" style="cursor: pointer;" />
+  <input type="file" accept="image/*" id="uploadInput" style="display: none;" />
+</div>
+  <input type="file" accept="image/*" id="uploadInput" style="display: none;">
+</div>
 
   <!-- Your feed posts would go here -->
 </main>
@@ -371,13 +435,16 @@
     spellcheck="false"
   />
 </div>
-
+<div id="settings-dropdown" class="settings-dropdown hidden">
+  <div class="settings-option" id="toggle-theme">Toggle Theme</div>
+</div>
 <!-- Background blur overlay while search open -->
 <div class="blur-overlay" id="blur-overlay" tabindex="-1" aria-hidden="true"></div>
 
 <!-- Suggestions Box -->
 <div class="suggestions" id="suggestions" role="listbox" aria-label="Search suggestions"></div>
 <div id="search-results" class="search-results"></div>
+
 
 <script type="module">
   import {
@@ -751,6 +818,90 @@ onAuthStateChanged(auth, user => {
       triggerSearch(title);
     }
   });
+  const settingsIcon = document.getElementById("settings-icon");
+  const dropdown = document.getElementById("settings-dropdown");
+  const toggleThemeBtn = document.getElementById("toggle-theme");
+
+  // Show/Hide settings dropdown
+  settingsIcon.addEventListener("click", () => {
+    dropdown.classList.toggle("hidden");
+    updateDropdownTheme(); // Make sure dropdown follows the current theme
+  });
+
+  // Toggle theme logic
+  toggleThemeBtn.addEventListener("click", () => {
+    document.body.classList.toggle("dark");
+    localStorage.setItem("theme", document.body.classList.contains("dark") ? "dark" : "light");
+    updateDropdownTheme();
+  });
+
+  // Apply saved theme on load
+  window.addEventListener("DOMContentLoaded", () => {
+    if (localStorage.getItem("theme") === "dark") {
+      document.body.classList.add("dark");
+    }
+  });
+
+  function updateDropdownTheme() {
+    if (document.body.classList.contains("dark")) {
+      dropdown.classList.add("dark");
+    } else {
+      dropdown.classList.remove("dark");
+    }
+  }
+
+  // Click outside to close dropdown
+  document.addEventListener("click", (e) => {
+    if (!settingsIcon.contains(e.target) && !dropdown.contains(e.target)) {
+      dropdown.classList.add("hidden");
+    }
+  });
+  toggleThemeBtn.addEventListener("click", () => {
+  document.body.classList.toggle("light-theme");
+});
+
+const galleryIcon = document.querySelector('.gallery-icon');
+const uploadInput = document.getElementById('uploadInput');
+
+galleryIcon.addEventListener('click', () => {
+  uploadInput.click();
+});
+
+uploadInput.addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (file && file.type.startsWith('image/')) {
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const uploadedImage = ev.target.result; // base64 string
+
+      // Save image to sessionStorage
+      sessionStorage.setItem('postImage', uploadedImage);
+      sessionStorage.removeItem('postText'); // optional reset
+
+      // Instantly redirect
+      window.location.href = 'uploadpost.html';
+    };
+    reader.readAsDataURL(file);
+  } else {
+    alert("That's not a valid image, bro.");
+  }
+});
+const sendBtn = document.getElementById('sendPostBtn');
+
+sendBtn.addEventListener('click', () => {
+  const textInput = document.querySelector('.composer input[type="text"]');
+  const text = textInput.value.trim();
+
+  if (!text) {
+    alert("Type something first.");
+    return;
+  }
+
+  // Store in sessionStorage and go
+  sessionStorage.setItem('postText', text);
+  sessionStorage.removeItem('postImage'); // Optional: clear any stale image
+  window.location.href = 'uploadpost.html';
+});
 </script>
 </body>
 </html>
