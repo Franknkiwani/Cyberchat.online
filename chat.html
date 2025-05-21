@@ -15,6 +15,18 @@
     --input-bg: #1c1c1c;
     --overlay-bg: rgba(10, 10, 10, 0.8);
   }
+  body.light-theme .post-title,
+body.light-theme .post-description,
+body.light-theme .post-stats,
+body.light-theme .username,
+body.light-theme .handle,
+body.light-theme .post-time {
+  color: #111 !important;
+}
+
+body.light-theme .post-stats svg {
+  stroke: #111 !important;
+}
   * {
     margin: 0;
     padding: 0;
@@ -354,29 +366,171 @@ body.light-theme {
   --blue: #007bff;
   --input-bg: #eee;
   --overlay-bg: rgba(255, 255, 255, 0.8);
+  background: var(--bg);
+  color: var(--text);
+}
+  #posts-container {
+    padding: 2rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    align-items: center;
+  }
+
+  .post-card {
+    width: 95%;
+    max-width: 700px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(15px);
+    border-radius: 1.5rem;
+    padding: 1.5rem;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+    transition: transform 0.3s ease;
+  }
+
+  .post-card:hover {
+    transform: translateY(-2px);
+  }
+
+  .post-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+
+  .profile-pic {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #444;
+  }
+
+  .user-info {
+    margin-left: 1rem;
+    flex-grow: 1;
+  }
+
+  .username {
+    font-size: 1rem;
+    font-weight: bold;
+    color: #fff;
+  }
+
+  .handle {
+    font-size: 0.85rem;
+    color: #aaa;
+  }
+
+  .post-meta {
+    text-align: right;
+  }
+
+  .follow-btn {
+    background: linear-gradient(to right, #6a11cb, #2575fc);
+    color: white;
+    border: none;
+    padding: 0.4rem 0.9rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    cursor: pointer;
+    margin-bottom: 0.3rem;
+    transition: background 0.3s ease;
+  }
+
+  .follow-btn:hover {
+    background: linear-gradient(to right, #8e2de2, #4a00e0);
+  }
+
+  .post-time {
+    font-size: 0.75rem;
+    color: #888;
+  }
+
+  .post-title {
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-top: 1rem;
+    color: #fff;
+  }
+
+  .post-image {
+    width: 100%;
+    max-height: 400px;
+    object-fit: cover;
+    border-radius: 1rem;
+    margin: 1rem 0;
+  }
+
+  .post-description {
+    font-size: 1rem;
+    color: #ccc;
+    margin-bottom: 1rem;
+  }
+
+  .post-stats {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    padding-top: 1rem;
+    font-size: 0.9rem;
+    color: #aaa;
+  }
+
+  .like-wrapper, .comment-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .like-btn,
+  .comment-btn {
+    background: none;
+    border: none;
+    color: inherit;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    padding: 0.2rem;
+    transition: transform 0.2s ease;
+  }
+
+  .like-btn:hover,
+  .comment-btn:hover {
+    transform: scale(1.1);
+  }
+
+  .like-btn.liked svg {
+    filter: drop-shadow(0 0 6px #ff2e88);
+  }
+
+  .like-count {
+    color: #ff2e88;
+    font-weight: 500;
+  }
+
+  svg {
+    pointer-events: none;
+    display: inline-block;
+  }
+  /* Disable text selection globally */
+body, .post-card * {
+  user-select: none;
+}
+* {
+  outline: none !important;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-focus-ring-color: transparent;
+  -moz-outline: none;
 }
 
-.send-btn {
-  background-color: #007AFF; /* iOS Blue */
-  color: white;
-  border: none;
-  border-radius: 999px;
-  padding: 8px 16px;
-  font-size: 15px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.2s ease;
-  margin-left: 8px;
+*:focus {
+  outline: none !important;
+  box-shadow: none !important;
 }
 
-.send-btn:hover {
-  background-color: #005fcb;
-}
-
-.send-btn:active {
-  background-color: #004bb1;
-  transform: scale(0.98);
-}
 </style>
 </head>
 <body>
@@ -444,8 +598,9 @@ body.light-theme {
 <!-- Suggestions Box -->
 <div class="suggestions" id="suggestions" role="listbox" aria-label="Search suggestions"></div>
 <div id="search-results" class="search-results"></div>
-
-
+<div id="posts-container"></div>
+<div id="custom-menu" style="display:none; position:absolute; background:#fff; border:1px solid #ccc; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.2); padding:8px; z-index:1000;">
+</div>
 <script type="module">
   import {
   getAuth,
@@ -818,46 +973,51 @@ onAuthStateChanged(auth, user => {
       triggerSearch(title);
     }
   });
-  const settingsIcon = document.getElementById("settings-icon");
-  const dropdown = document.getElementById("settings-dropdown");
-  const toggleThemeBtn = document.getElementById("toggle-theme");
+ const settingsIcon = document.getElementById("settings-icon");
+const dropdown = document.getElementById("settings-dropdown");
+const toggleThemeBtn = document.getElementById("toggle-theme");
 
-  // Show/Hide settings dropdown
-  settingsIcon.addEventListener("click", () => {
-    dropdown.classList.toggle("hidden");
-    updateDropdownTheme(); // Make sure dropdown follows the current theme
-  });
+// Show/Hide settings dropdown
+settingsIcon.addEventListener("click", () => {
+  dropdown.classList.toggle("hidden");
+  updateDropdownTheme();
+});
 
-  // Toggle theme logic
-  toggleThemeBtn.addEventListener("click", () => {
-    document.body.classList.toggle("dark");
-    localStorage.setItem("theme", document.body.classList.contains("dark") ? "dark" : "light");
-    updateDropdownTheme();
-  });
+// Toggle theme logic
+toggleThemeBtn.addEventListener("click", () => {
+  document.body.classList.toggle("light-theme");
 
-  // Apply saved theme on load
-  window.addEventListener("DOMContentLoaded", () => {
-    if (localStorage.getItem("theme") === "dark") {
-      document.body.classList.add("dark");
-    }
-  });
+  const currentTheme = document.body.classList.contains("light-theme") ? "light" : "dark";
+  localStorage.setItem("theme", currentTheme);
 
-  function updateDropdownTheme() {
-    if (document.body.classList.contains("dark")) {
-      dropdown.classList.add("dark");
-    } else {
-      dropdown.classList.remove("dark");
-    }
+  updateDropdownTheme();
+});
+
+// Apply saved theme on load
+window.addEventListener("DOMContentLoaded", () => {
+  const savedTheme = localStorage.getItem("theme");
+  if (savedTheme === "light") {
+    document.body.classList.add("light-theme");
+  } else {
+    document.body.classList.remove("light-theme");
   }
 
-  // Click outside to close dropdown
-  document.addEventListener("click", (e) => {
-    if (!settingsIcon.contains(e.target) && !dropdown.contains(e.target)) {
-      dropdown.classList.add("hidden");
-    }
-  });
-  toggleThemeBtn.addEventListener("click", () => {
-  document.body.classList.toggle("light-theme");
+  updateDropdownTheme();
+});
+
+function updateDropdownTheme() {
+  if (document.body.classList.contains("light-theme")) {
+    dropdown.classList.remove("dark");
+  } else {
+    dropdown.classList.add("dark");
+  }
+}
+
+// Click outside to close dropdown
+document.addEventListener("click", (e) => {
+  if (!settingsIcon.contains(e.target) && !dropdown.contains(e.target)) {
+    dropdown.classList.add("hidden");
+  }
 });
 
 const galleryIcon = document.querySelector('.gallery-icon');
@@ -902,6 +1062,150 @@ sendBtn.addEventListener('click', () => {
   sessionStorage.removeItem('postImage'); // Optional: clear any stale image
   window.location.href = 'uploadpost.html';
 });
+function createSvgIcon(type, filled = false) {
+  switch (type) {
+    case 'views':
+      return `
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8S1 12 1 12z"/>
+          <circle cx="12" cy="12" r="3"/>
+        </svg>`;
+    case 'likes':
+      return filled
+        ? `<svg viewBox="0 0 24 24" width="20" height="20" fill="#ff2e88" stroke="#ff2e88" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+             <path d="M20.84 4.61c-1.69-1.69-4.44-1.69-6.13 0L12 7.34l-2.71-2.73a4.36 4.36 0 00-6.13 6.2l8.3 8.39 8.3-8.39a4.36 4.36 0 000-6.2z"/>
+           </svg>`
+        : `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+             <path d="M20.84 4.61c-1.69-1.69-4.44-1.69-6.13 0L12 7.34l-2.71-2.73a4.36 4.36 0 00-6.13 6.2l8.3 8.39 8.3-8.39a4.36 4.36 0 000-6.2z"/>
+           </svg>`;
+    case 'comments':
+      return `
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+        </svg>`;
+    default:
+      return '';
+  }
+}
+
+function createPostElement(post, postId, userLikes = {}) {
+  const postDiv = document.createElement('div');
+  postDiv.classList.add('post-card');
+  postDiv.dataset.id = postId;
+
+  const username = post.username || 'Anonymous';
+  const handle = post.handle ? '@' + post.handle : '@user';
+  const profilePic = post.profilePic || 'https://via.placeholder.com/50';
+  const postImage = post.imageUrl || '';
+  const title = post.title || 'Untitled Post';
+  const description = post.description || '';
+  const views = post.views || 0;
+  const likes = post.likes || 0;
+  const comments = post.comments || 0;
+  const timestamp = post.timestamp || Date.now();
+  const liked = userLikes[postId] === true;
+
+  postDiv.innerHTML = `
+    <div class="post-header">
+      <img src="${profilePic}" alt="${username} profile" class="profile-pic"/>
+      <div class="user-info">
+        <div class="username">${username}</div>
+        <div class="handle">${handle}</div>
+      </div>
+      <div class="post-meta">
+        <button class="follow-btn">Follow</button>
+        <div class="post-time">${new Date(timestamp).toLocaleString()}</div>
+      </div>
+    </div>
+    <div class="post-title">${title}</div>
+    ${postImage ? `<img src="${postImage}" alt="Post image" class="post-image" />` : ''}
+    <div class="post-description">${description}</div>
+    <div class="post-stats">
+      <div>${createSvgIcon('views')} ${views}</div>
+      <div class="like-wrapper">
+        <button class="like-btn ${liked ? 'liked' : ''}" data-liked="${liked}">${createSvgIcon('likes', liked)}</button>
+        <span class="like-count">${likes}</span>
+      </div>
+      <div class="comment-wrapper">
+        <div>${createSvgIcon('comments')} ${comments}</div>
+        <button class="comment-btn">Comment</button>
+      </div>
+    </div>
+  `;
+
+  postDiv.querySelector('.like-btn').addEventListener('click', async () => {
+    const btn = postDiv.querySelector('.like-btn');
+    const isLiked = btn.dataset.liked === 'true';
+    const newLiked = !isLiked;
+    btn.dataset.liked = newLiked;
+    btn.classList.toggle('liked', newLiked);
+    btn.innerHTML = createSvgIcon('likes', newLiked);
+
+    const countEl = postDiv.querySelector('.like-count');
+    const newLikes = Math.max(0, parseInt(countEl.textContent) + (newLiked ? 1 : -1));
+    countEl.textContent = newLikes;
+
+    await set(ref(db, `post/${postId}/likes`), newLikes);
+
+    const uid = auth.currentUser?.uid;
+    if (uid) {
+      await set(ref(db, `likes/${uid}/${postId}`), newLiked);
+    }
+  });
+
+  postDiv.querySelector('.comment-btn').addEventListener('click', () => {
+    alert('Comment feature coming soon!');
+  });
+
+  return postDiv;
+}
+
+async function loadPosts() {
+  try {
+    const snapshot = await get(child(dbRef, 'post'));
+    if (!snapshot.exists()) {
+      console.log('No posts found');
+      return;
+    }
+
+    const posts = snapshot.val();
+    const container = document.getElementById('posts-container');
+    container.innerHTML = '';
+
+    let userLikes = {};
+    const uid = auth.currentUser?.uid;
+    if (uid) {
+      const likesSnap = await get(ref(db, `likes/${uid}`));
+      if (likesSnap.exists()) {
+        userLikes = likesSnap.val();
+      }
+    }
+
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting && !entry.target.dataset.viewed) {
+          entry.target.dataset.viewed = 'true';
+          const postId = entry.target.dataset.id;
+          const viewsRef = ref(db, `post/${postId}/views`);
+          get(viewsRef).then(snap => {
+            const currentViews = snap.val() || 0;
+            set(viewsRef, currentViews + 1);
+          });
+        }
+      });
+    }, { threshold: 0.5 });
+
+    for (const postId in posts) {
+      const postElement = createPostElement(posts[postId], postId, userLikes);
+      container.appendChild(postElement);
+      observer.observe(postElement);
+    }
+  } catch (error) {
+    console.error('Error loading posts:', error);
+  }
+}
+
+loadPosts();
 </script>
 </body>
 </html>
