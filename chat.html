@@ -17,8 +17,12 @@
     --input-bg: #222;
   }
   * {
-    margin: 0; padding: 0; box-sizing: border-box;
+    margin: 0; 
+    padding: 0; 
+    box-sizing: border-box;
     user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    tap-highlight-color: transparent;
   }
   html, body {
     height: 100%;
@@ -89,7 +93,8 @@
     box-shadow: 0 0 6px rgba(110, 255, 146, 0.4);
   }
   .post-btn:focus {
-    outline: none;
+    outline: none !important;
+    box-shadow: none !important;
   }
   main#main-content {
     flex-grow: 1;
@@ -245,13 +250,14 @@
     cursor: pointer;
     padding: 0 0.4rem;
     transition: color 0.2s ease;
-    outline: none;
+    outline: none !important;
     flex-grow: 1;
     max-width: 80px;
   }
   footer#bottom-menu button:hover,
   footer#bottom-menu button:focus {
-    outline: none;
+    outline: none !important;
+    box-shadow: none !important;
   }
   footer#bottom-menu svg {
     width: 24px;
@@ -271,7 +277,7 @@
     stroke: var(--white);
     fill: var(--white);
   }
-footer#bottom-menu button.community {
+  footer#bottom-menu button.community {
     color: var(--purple);
   }
   footer#bottom-menu button.community svg {
@@ -299,10 +305,86 @@ footer#bottom-menu button.community {
     stroke: var(--white);
     fill: var(--white);
   }
-  /* Disable text selection globally */
-  * {
-    user-select: none;
+  /* Remove all focus outlines and native tap highlights for a native app feel */
+  :focus {
+    outline: none !important;
+    box-shadow: none !important;
   }
+#bottom-menu button {
+  position: relative;
+  overflow: hidden;
+}
+
+/* Base ripple style */
+.sound-wave-ripple {
+  position: absolute;
+  border: 2px solid rgba(110, 255, 146, 0.7);
+  border-radius: 50%;
+  pointer-events: none;
+  width: 100px;
+  height: 100px;
+  top: 50%;
+  left: 50%;
+  margin-left: -50px;
+  margin-top: -50px;
+  opacity: 0.7;
+  transform: scale(0);
+  animation: rippleExpand 1.2s ease-out forwards;
+  z-index: 1000;
+  animation-fill-mode: forwards;
+  /* Each ripple will have its own delay via JS */
+}
+
+@keyframes rippleExpand {
+  to {
+    transform: scale(3);
+    opacity: 0;
+  }
+}
+.sound-wave-ripple {
+  /* same as before */
+  animation: rippleExpand 2.5s ease-out forwards;
+}
+@keyframes rippleExpand {
+  to {
+    transform: scale(3);
+    opacity: 0;
+  }
+}
+/* Overlay with blur */
+#section-loader {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  backdrop-filter: blur(10px);
+  background: rgba(0, 0, 0, 0.3);
+  z-index: 2000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Neon loading text */
+#section-loader .neon-text {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #00fff7;
+  text-shadow:
+    0 0 5px #00fff7,
+    0 0 10px #00fff7,
+    0 0 20px #00fff7,
+    0 0 40px #00e0ff;
+  animation: flicker 1.5s infinite;
+}
+
+/* Flickering neon effect */
+@keyframes flicker {
+  0%, 100% { opacity: 1; }
+  45% { opacity: 0.8; }
+  50% { opacity: 0.4; }
+  55% { opacity: 0.9; }
+  70% { opacity: 0.6; }
+}
 </style>
 </head>
 <body>
@@ -335,6 +417,9 @@ footer#bottom-menu button.community {
     Profile
   </button>
 </footer>
+<div id="section-loader">
+  <div class="neon-text">Loading...</div>
+</div>
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
   import { getDatabase, ref, onValue, get, set } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
@@ -377,164 +462,246 @@ footer#bottom-menu button.community {
     }
   }
 
-async function loadHome() {
-  const postsRef = ref(database, 'posts');
-  onValue(postsRef, async (snapshot) => {
-    const posts = snapshot.val();
-    mainContent.innerHTML = '';
 
-    if (!posts) {
-      mainContent.innerHTML = '<p>No posts available.</p>';
-      return;
-    }
-
-    const postList = Object.entries(posts).sort(([, a], [, b]) => b.timestamp - a.timestamp);
-
-    for (const [postId, post] of postList) {
-      let uploader = { username: "Unknown", handle: "unknown", profilePic: "" };
-      let isFollowing = false;
-      const currentUserId = auth.currentUser ? auth.currentUser.uid : null;
-
-      if (post.uid) {
-        const userSnap = await get(ref(database, `users/${post.uid}`));
-        if (userSnap.exists()) {
-          const data = userSnap.val();
-          uploader.username = data.username || "Unnamed";
-          uploader.handle = data.handle || "unknown";
-          uploader.profilePic = data.profilePic || "";
-        }
-
-        if (currentUserId && post.uid !== currentUserId) {
-          const followingSnap = await get(ref(database, `users/${currentUserId}/following/${post.uid}`));
-          isFollowing = followingSnap.exists();
-        }
-      }
-
-      const postDiv = document.createElement('div');
-      postDiv.className = 'post';
-      const date = post.timestamp ? new Date(post.timestamp).toLocaleDateString() : 'Unknown Date';
-
-      const likesObj = post.likes || {};
-      const likeCount = Object.keys(likesObj).length;
-      const commentCount = post.comments ? Object.keys(post.comments).length : 0;
-
-      const userLiked = currentUserId ? !!likesObj[currentUserId] : false;
-
-      postDiv.innerHTML = `
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-          <div style="display:flex;align-items:center;">
-            ${uploader.profilePic ? `<img src="${uploader.profilePic}" alt="pfp" style="width:40px;height:40px;border-radius:50%;margin-right:8px;">` : ''}
-            <div>
-              <strong>${uploader.username}</strong><br>
-              <small>@${uploader.handle}</small>
-            </div>
-          </div>
-          ${
-            currentUserId && post.uid !== currentUserId
-              ? `<button class="follow-btn" data-user-id="${post.uid}" style="padding:4px 10px;font-size:12px;border:none;border-radius:5px;background:${isFollowing ? '#6c757d' : '#007BFF'};color:white;cursor:pointer;">
-                  ${isFollowing ? 'Unfollow' : 'Follow'}
-                </button>`
-              : ''
-          }
-        </div>
-
-        <h2>${post.title}</h2>
-        ${post.image ? `<img src="${post.image}" alt="${post.title}" style="max-width:100%;border-radius:8px;margin:8px 0;">` : ''}
-        <p>${post.description}</p>
-
-        <div style="font-size:13px;color:gray;margin-bottom:6px;">
-          <span style="color:cyan;">Views: ${post.views ?? 0}</span> · 
-          <span>${date}</span>
-        </div>
-
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;font-size:14px;">
-          <span class="like-btn" data-post-id="${postId}" title="Like" style="display:flex;align-items:center;gap:4px;cursor:pointer; color: ${userLiked ? 'red' : 'gray'};">
-            <svg width="20" height="20" fill="${userLiked ? 'red' : 'gray'}" viewBox="0 0 24 24">
-              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5c0-2.2 1.8-4 4-4 1.54 0 3.04.99 3.57 2.36h.87C14.46 5.49 16 4.5 17.5 4.5c2.2 0 4 1.8 4 4 0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-            </svg>
-            <span class="like-count">${likeCount}</span>
-          </span>
-
-          <span title="Comment" style="display:flex;align-items:center;gap:4px;cursor:pointer;">
-            <svg width="20" height="20" fill="gray" viewBox="0 0 24 24">
-              <path d="M20 2H4c-1.1 0-2 .9-2 2v16l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/>
-            </svg>
-            ${commentCount}
-          </span>
-
-          <span title="Share" style="display:flex;align-items:center;gap:4px;cursor:pointer;">
-            <svg width="20" height="20" fill="gray" viewBox="0 0 24 24">
-              <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7a2.5 2.5 0 000-1.4l7-4.11a2.5 2.5 0 10-.91-1.47l-7 4.11a2.5 2.5 0 100 4.09l7.12 4.12a2.5 2.5 0 101.88-1.96z"/>
-            </svg>
-          </span>
-        </div>
-      `;
-
-      mainContent.appendChild(postDiv);
-    }
-
-    // Like Button
-    document.querySelectorAll('.like-btn').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        if (!auth.currentUser) {
-          alert('You need to be logged in to like posts.');
-          return;
-        }
-
-        const postId = btn.getAttribute('data-post-id');
-        const uid = auth.currentUser.uid;
-        const postLikesRef = ref(database, `posts/${postId}/likes`);
-
-        const likesSnapshot = await get(postLikesRef);
-        const likesData = likesSnapshot.val() || {};
-
-        if (likesData[uid]) {
-          delete likesData[uid];
-        } else {
-          likesData[uid] = true;
-        }
-
-        await set(postLikesRef, likesData);
-
-        const likeCountSpan = btn.querySelector('.like-count');
-        const newLikeCount = Object.keys(likesData).length;
-        likeCountSpan.textContent = newLikeCount;
-
-        const fillColor = likesData[uid] ? 'red' : 'gray';
-        btn.style.color = fillColor;
-        btn.querySelector('svg').setAttribute('fill', fillColor);
-      });
-    });
-
-    // Follow Button
-    document.querySelectorAll('.follow-btn').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        if (!auth.currentUser) {
-          alert('You need to be logged in to follow users.');
-          return;
-        }
-
-        const targetUid = btn.getAttribute('data-user-id');
-        const currentUid = auth.currentUser.uid;
-        const followRef = ref(database, `users/${currentUid}/following`);
-
-        const followSnap = await get(followRef);
-        const following = followSnap.val() || {};
-
-        const isNowFollowing = !following[targetUid];
-        if (isNowFollowing) {
-          following[targetUid] = true;
-        } else {
-          delete following[targetUid];
-        }
-
-        await set(followRef, following);
-
-        btn.textContent = isNowFollowing ? 'Unfollow' : 'Follow';
-        btn.style.background = isNowFollowing ? '#6c757d' : '#007BFF';
-      });
-    });
-  });
+async function loadHome() {  
+  const postsRef = ref(database, 'posts');  
+  onValue(postsRef, async (snapshot) => {  
+    const posts = snapshot.val();  
+    mainContent.innerHTML = '';  
+  
+    if (!posts) {  
+      mainContent.innerHTML = '<p>No posts available.</p>';  
+      return;  
+    }  
+  
+    const postList = Object.entries(posts).sort(([, a], [, b]) => b.timestamp - a.timestamp);  
+  
+    for (const [postId, post] of postList) {  
+      let uploader = { username: "Unknown", handle: "unknown", profilePic: "" };  
+      let isFollowing = false;  
+      const currentUserId = auth.currentUser ? auth.currentUser.uid : null;  
+  
+      if (post.uid) {  
+        const userSnap = await get(ref(database, `users/${post.uid}`));  
+        if (userSnap.exists()) {  
+          const data = userSnap.val();  
+          uploader.username = data.username || "Unnamed";  
+          uploader.handle = data.handle || "unknown";  
+          uploader.profilePic = data.profilePic || "";  
+        }  
+  
+        if (currentUserId && post.uid !== currentUserId) {  
+          const followingSnap = await get(ref(database, `users/${currentUserId}/following/${post.uid}`));  
+          isFollowing = followingSnap.exists();  
+        }  
+      }  
+  
+      const postDiv = document.createElement('div');  
+      postDiv.className = 'post';  
+      const date = post.timestamp ? new Date(post.timestamp).toLocaleDateString() : 'Unknown Date';  
+  
+      const likesObj = post.likes || {};  
+      const likeCount = Object.keys(likesObj).length;  
+      const commentCount = post.comments ? Object.keys(post.comments).length : 0;  
+  
+      const userLiked = currentUserId ? !!likesObj[currentUserId] : false;  
+  
+      postDiv.innerHTML = `  
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">  
+          <div style="display:flex;align-items:center;">  
+            ${uploader.profilePic ? `<img src="${escapeHtml(uploader.profilePic)}" alt="pfp" style="width:40px;height:40px;border-radius:50%;margin-right:8px;">` : ''}  
+            <div>  
+              <strong>${escapeHtml(uploader.username)}</strong><br>  
+              <small>@${escapeHtml(uploader.handle)}</small>  
+            </div>  
+          </div>  
+          ${  
+            currentUserId && post.uid !== currentUserId  
+              ? `<button class="follow-btn" data-user-id="${post.uid}" style="padding:4px 10px;font-size:12px;border:none;border-radius:5px;background:${isFollowing ? '#6c757d' : '#007BFF'};color:white;cursor:pointer;">  
+                  ${isFollowing ? 'Following' : 'Follow'}  
+                </button>`  
+              : ''  
+          }  
+        </div>  
+  
+        <h2>${escapeHtml(post.title)}</h2>  
+        ${post.image ? `<img src="${escapeHtml(post.image)}" alt="${escapeHtml(post.title)}" style="max-width:100%;border-radius:8px;margin:8px 0;">` : ''}  
+        <p>${escapeHtml(post.description)}</p>  
+  
+        <div style="font-size:13px;color:gray;margin-bottom:6px;">  
+          <span style="color:cyan;">Views: ${post.views ?? 0}</span> ·   
+          <span>${date}</span>  
+        </div>  
+  
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;font-size:14px;position:relative;">  
+          <span class="like-btn" data-post-id="${postId}" title="Like" style="display:flex;align-items:center;gap:4px;cursor:pointer; color: ${userLiked ? 'red' : 'gray'};">  
+            <svg width="20" height="20" fill="${userLiked ? 'red' : 'gray'}" viewBox="0 0 24 24">  
+              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5c0-2.2 1.8-4 4-4 1.54 0 3.04.99 3.57 2.36h.87C14.46 5.49 16 4.5 17.5 4.5c2.2 0 4 1.8 4 4 0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>  
+            </svg>  
+            <span class="like-count">${likeCount}</span>  
+          </span>  
+  
+          <span title="Comment" style="display:flex;align-items:center;gap:4px;cursor:pointer; color:gray; transition: color 0.2s;" class="comment-btn">  
+            <svg width="20" height="20" fill="none" stroke="gray" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">  
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2z"></path>  
+            </svg>  
+            ${commentCount}  
+          </span>  
+  
+          <div style="position:relative; user-select:none;">  
+            <button class="post-menu-btn" aria-label="Post options" style="background:none; border:none; cursor:pointer; padding:4px; display:flex; align-items:center; justify-content:center;">  
+              <svg width="24" height="24" fill="gray" viewBox="0 0 24 24">  
+                <circle cx="12" cy="5" r="2"/>  
+                <circle cx="12" cy="12" r="2"/>  
+                <circle cx="12" cy="19" r="2"/>  
+              </svg>  
+            </button>  
+            <div class="post-menu" style="display:none; position:absolute; right:0; top:28px; background:white; border:1px solid #ccc; border-radius:6px; box-shadow:0 2px 8px rgba(0,0,0,0.15); z-index:10; min-width:120px;">  
+              <button class="menu-item report-btn" style="width:100%; padding:8px 12px; border:none; background:none; text-align:left; cursor:pointer; font-size:14px; color:#dc3545;">Report</button>  
+              <button class="menu-item share-btn" style="width:100%; padding:8px 12px; border:none; background:none; text-align:left; cursor:pointer; font-size:14px;">Share</button>  
+            </div>  
+          </div>  
+        </div>  
+      `;  
+  
+      mainContent.appendChild(postDiv);  
+    }  
+  
+    // Like Button Listeners  
+    document.querySelectorAll('.like-btn').forEach(btn => {  
+      btn.addEventListener('click', async () => {  
+        if (!auth.currentUser) {  
+          alert('You need to be logged in to like posts.');  
+          return;  
+        }  
+  
+        const postId = btn.getAttribute('data-post-id');  
+        const uid = auth.currentUser.uid;  
+        const postLikesRef = ref(database, `posts/${postId}/likes`);  
+  
+        const likesSnapshot = await get(postLikesRef);  
+        const likesData = likesSnapshot.val() || {};  
+  
+        if (likesData[uid]) {  
+          delete likesData[uid];  
+        } else {  
+          likesData[uid] = true;  
+        }  
+  
+        await set(postLikesRef, likesData);  
+  
+        const likeCountSpan = btn.querySelector('.like-count');  
+        const newLikeCount = Object.keys(likesData).length;  
+        likeCountSpan.textContent = newLikeCount;  
+  
+        const fillColor = likesData[uid] ? 'red' : 'gray';  
+        btn.style.color = fillColor;  
+        btn.querySelector('svg').setAttribute('fill', fillColor);  
+      });  
+    });  
+  
+    // Follow Button Listeners with animation & hover effect  
+    document.querySelectorAll('.follow-btn').forEach(btn => {  
+      const targetUid = btn.getAttribute('data-user-id');  
+  
+      btn.addEventListener('click', async () => {  
+        if (!auth.currentUser) {  
+          alert('You need to be logged in to follow users.');  
+          return;  
+        }  
+  
+        const currentUid = auth.currentUser.uid;  
+        if (currentUid === targetUid) {  
+          alert("You can't follow yourself.");  
+          return;  
+        }  
+  
+        btn.style.opacity = '0.6';  
+        btn.style.pointerEvents = 'none';  
+        const originalText = btn.textContent;  
+        btn.textContent = originalText === 'Follow' ? 'Following...' : 'Unfollowing...';  
+  
+        const followRef = ref(database, `users/${currentUid}/following`);  
+        const snap = await get(followRef);  
+        const following = snap.val() || {};  
+        const isNowFollowing = !following[targetUid];  
+  
+        if (isNowFollowing) {  
+          following[targetUid] = true;  
+        } else {  
+          delete following[targetUid];  
+        }  
+  
+        await set(followRef, following);  
+  
+        btn.textContent = isNowFollowing ? 'Following' : 'Follow';  
+        btn.style.background = isNowFollowing ? '#6c757d' : '#007BFF';  
+        btn.style.opacity = '1';  
+        btn.style.pointerEvents = 'auto';  
+  
+        btn.onmouseenter = () => {  
+          if (btn.textContent === 'Following') {  
+            btn.textContent = 'Unfollow';  
+            btn.style.background = '#dc3545'; // red on hover  
+          }  
+        };  
+  
+        btn.onmouseleave = () => {  
+          if (btn.textContent === 'Unfollow') {  
+            btn.textContent = 'Following';  
+            btn.style.background = '#6c757d'; // back to gray  
+          }  
+        };  
+      });  
+    });  
+  
+    // Post menu toggle  
+    document.querySelectorAll('.post-menu-btn').forEach(btn => {  
+      btn.addEventListener('click', (e) => {  
+        e.stopPropagation();  
+        const menu = btn.nextElementSibling;  
+        const isVisible = menu.style.display === 'block';  
+        // Close all menus first  
+        document.querySelectorAll('.post-menu').forEach(m => m.style.display = 'none');  
+        menu.style.display = isVisible ? 'none' : 'block';  
+      });  
+    });  
+  
+    // Close menus if clicked outside  
+    document.addEventListener('click', () => {  
+      document.querySelectorAll('.post-menu').forEach(m => m.style.display = 'none');  
+    });  
+  
+    // Report and Share buttons  
+    document.querySelectorAll('.report-btn').forEach(btn => {  
+      btn.addEventListener('click', () => {  
+        alert('Report functionality coming soon!');  
+        btn.closest('.post-menu').style.display = 'none';  
+      });  
+    });  
+  
+    document.querySelectorAll('.share-btn').forEach(btn => {  
+      btn.addEventListener('click', () => {  
+        alert('Share functionality coming soon!');  
+        btn.closest('.post-menu').style.display = 'none';  
+      });  
+    });  
+  });  
+}  
+  
+// Helper function for escaping user content to avoid injection risks  
+function escapeHtml(text) {  
+  if (!text) return '';  
+  return text.replace(/[&<>"']/g, (match) => {  
+    const escapeMap = {  
+      '&': '&amp;',  
+      '<': '&lt;',  
+      '>': '&gt;',  
+      '"': '&quot;',  
+      "'": '&#39;',  
+    };  
+    return escapeMap[match];  
+  });  
 }
 
   // LOAD COMMUNITY POLLS & QUIZZES
@@ -699,8 +866,44 @@ async function loadHome() {
     });
   });
 
-  // Load home on initial page load
-  loadHome();
+document.addEventListener('DOMContentLoaded', () => {
+  const buttons = document.querySelectorAll('#bottom-menu button');
+  const loader = document.getElementById('section-loader');
+
+  buttons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      // Sound wave effect (same as before)
+      for (let i = 0; i < 3; i++) {
+        const ripple = document.createElement('span');
+        ripple.classList.add('sound-wave-ripple');
+        ripple.style.animationDelay = `${i * 0.7}s`;
+        btn.appendChild(ripple);
+        ripple.addEventListener('animationend', () => ripple.remove());
+      }
+
+      // Loading overlay
+      loader.style.display = 'flex';
+
+      // Remove active class from all buttons
+      buttons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+
+      // Simulate section load
+      setTimeout(() => {
+        loader.style.display = 'none';
+        const section = btn.getAttribute('data-section');
+        switchSection(section);
+      }, 3000);
+    });
+  });
+
+  function switchSection(section) {
+    const allSections = document.querySelectorAll('main > section');
+    allSections.forEach(sec => {
+      sec.style.display = sec.id === section ? 'block' : 'none';
+    });
+  }
+});
 </script>
 </body>
 </html>
