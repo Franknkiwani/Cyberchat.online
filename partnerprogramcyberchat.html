@@ -1,28 +1,75 @@
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html><html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Monetization Application</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Apply for Monetization</title>
   <style>
-    body { font-family: sans-serif; max-width: 500px; margin: auto; padding: 2em; background: #111; color: white; }
-    input, textarea, button { width: 100%; margin: 0.5em 0; padding: 0.8em; border-radius: 8px; border: none; }
-    button { background: dodgerblue; color: white; font-weight: bold; cursor: pointer; }
-    .disabled { opacity: 0.5; pointer-events: none; }
-    .progress-box { margin-bottom: 1em; }
-    .bar { height: 8px; background: #333; border-radius: 5px; overflow: hidden; }
-    .fill { height: 100%; background: lime; width: 0%; transition: width 0.5s; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      max-width: 600px;
+      margin: auto;
+      padding: 2em 1em;
+      background: #0f0f0f;
+      color: white;
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 1em;
+      font-size: 1.8rem;
+    }
+    input, button {
+      width: 100%;
+      padding: 0.75em;
+      margin: 0.75em 0;
+      border: none;
+      border-radius: 12px;
+      font-size: 1rem;
+    }
+    input {
+      background: #1f1f1f;
+      color: white;
+    }
+    button {
+      background: #2563eb;
+      color: white;
+      font-weight: bold;
+      transition: background 0.3s ease;
+    }
+    button:hover:not(.disabled) {
+      background: #1d4ed8;
+    }
+    .disabled {
+      opacity: 0.5;
+      pointer-events: none;
+    }
+    .progress-box {
+      margin-bottom: 1em;
+    }
+    .bar {
+      height: 10px;
+      background: #2a2a2a;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .fill {
+      height: 100%;
+      background: #10b981;
+      width: 0%;
+      transition: width 0.4s ease;
+    }
+    label {
+      font-size: 0.9rem;
+      margin-bottom: 0.3em;
+      display: block;
+    }
   </style>
 </head>
 <body>
   <h2>Apply for Monetization</h2>
-  <div id="requirements"></div>
-
-  <input type="text" id="fullName" placeholder="Full Name" required>
+  <div id="requirements"></div>  <input type="text" id="fullName" placeholder="Full Name" required>
   <input type="text" id="address" placeholder="Address" required>
   <input type="file" id="selfie" accept="image/*" required>
-  <input type="hidden" id="selfieUrl">
-
-  <button id="applyBtn" class="disabled">Apply Now</button>
+  <input type="hidden" id="selfieUrl"><button id="applyBtn" class="disabled">Apply Now</button>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
@@ -61,7 +108,7 @@
       let totalViews = 0;
 
       for (const key in posts) {
-        if (posts[key].uid === uid && posts[key].monetized) {
+        if (posts[key].uid === uid) {
           totalViews += posts[key].views || 0;
         }
       }
@@ -74,8 +121,8 @@
           <div class="bar"><div class="fill" style="width:${Math.min(followers, 100)}%;"></div></div>
         </div>
         <div class="progress-box">
-          <label>Views: ${formatNumber(totalViews)}/1000</label>
-          <div class="bar"><div class="fill" style="width:${Math.min((totalViews/1000)*100, 100)}%;"></div></div>
+          <label>Total Views: ${formatNumber(totalViews)}/1000</label>
+          <div class="bar"><div class="fill" style="width:${Math.min((totalViews / 1000) * 100, 100)}%;"></div></div>
         </div>
       `;
 
@@ -110,7 +157,7 @@
       const address = document.getElementById("address").value.trim();
       const selfieUrl = document.getElementById("selfieUrl").value;
 
-      if (!fullName || !address || !selfieUrl) return alert("Fill all fields & upload a selfie!");
+      if (!fullName || !address || !selfieUrl) return alert("Please complete all fields and upload your selfie.");
 
       await set(ref(db, `/applications/${currentUID}`), {
         fullName,
@@ -119,7 +166,7 @@
         timestamp: Date.now()
       });
 
-      alert("Application submitted!");
+      alert("Application submitted successfully!");
     });
 
     onAuthStateChanged(auth, user => {
@@ -130,6 +177,5 @@
         location.href = "/accounts.html";
       }
     });
-  </script>
-</body>
+  </script></body>
 </html>
