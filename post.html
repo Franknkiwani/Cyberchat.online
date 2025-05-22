@@ -93,8 +93,7 @@
       projectId: "itzhoyoo-f9f7e",
       storageBucket: "itzhoyoo-f9f7e.filestorage.app",
       messagingSenderId: "1094792075584",
-      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
-      measurementId: "G-LLT6F9WRKH"
+      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5"
     };
 
     const app = initializeApp(firebaseConfig);
@@ -113,6 +112,10 @@
     let userCanMonetize = false;
     let cpmAmount = 0;
 
+    function randomCPM(min = 0.5, max = 3.0) {
+      return parseFloat((Math.random() * (max - min) + min).toFixed(2));
+    }
+
     async function getCPMForPost(text) {
       try {
         const adsSnap = await get(child(ref(db), "ads"));
@@ -126,7 +129,7 @@
       } catch (err) {
         console.error("Failed to load CPM data", err);
       }
-      return 0;
+      return randomCPM(); // fallback random CPM
     }
 
     onAuthStateChanged(auth, async user => {
@@ -182,7 +185,10 @@
           views: 0
         };
 
-        if (userCanMonetize && monetizeToggle.checked && cpmAmount > 0) {
+        if (userCanMonetize && monetizeToggle.checked) {
+          if (cpmAmount <= 0) {
+            cpmAmount = randomCPM();
+          }
           postData.cpm = cpmAmount;
         }
 
