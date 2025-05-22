@@ -1,79 +1,105 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Apply for Monetization</title>
   <style>
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-      max-width: 600px;
-      margin: auto;
-      padding: 2em 1em;
-      background: #0f0f0f;
-      color: white;
+      font-family: sans-serif;
+      padding: 20px;
+      margin: 0;
+      background: #0d1117;
+      color: #fff;
     }
-    h2 {
+
+    h1 {
       text-align: center;
-      margin-bottom: 1em;
-      font-size: 1.8rem;
+      color: #58a6ff;
     }
-    input, button {
-      width: 100%;
-      padding: 0.75em;
-      margin: 0.75em 0;
-      border: none;
+
+    .form-container {
+      max-width: 500px;
+      margin: 0 auto;
+      background: #161b22;
+      padding: 20px;
       border-radius: 12px;
-      font-size: 1rem;
+      box-shadow: 0 0 20px rgba(88, 166, 255, 0.2);
     }
-    input {
-      background: #1f1f1f;
+
+    label {
+      display: block;
+      margin-top: 15px;
+    }
+
+    input[type="text"],
+    input[type="file"],
+    input[type="email"] {
+      width: 100%;
+      padding: 10px;
+      border-radius: 8px;
+      border: none;
+      margin-top: 5px;
+      background: #0d1117;
       color: white;
     }
+
     button {
-      background: #2563eb;
+      margin-top: 20px;
+      padding: 12px;
+      width: 100%;
+      background: #238636;
+      border: none;
+      border-radius: 8px;
       color: white;
       font-weight: bold;
-      transition: background 0.3s ease;
+      cursor: pointer;
     }
-    button:hover:not(.disabled) {
-      background: #1d4ed8;
+
+    button:disabled {
+      background: #3b3f44;
+      cursor: not-allowed;
     }
-    .disabled {
-      opacity: 0.5;
-      pointer-events: none;
-    }
-    .progress-box {
-      margin-bottom: 1em;
-    }
-    .bar {
-      height: 10px;
-      background: #2a2a2a;
+
+    .stats-box {
+      margin-top: 20px;
+      background: #21262d;
+      padding: 10px;
       border-radius: 8px;
-      overflow: hidden;
-    }
-    .fill {
-      height: 100%;
-      background: #10b981;
-      width: 0%;
-      transition: width 0.4s ease;
-    }
-    label {
-      font-size: 0.9rem;
-      margin-bottom: 0.3em;
-      display: block;
     }
   </style>
 </head>
 <body>
-  <h2>Apply for Monetization</h2>
-  <div id="requirements"></div>  <input type="text" id="fullName" placeholder="Full Name" required>
-  <input type="text" id="address" placeholder="Address" required>
-  <input type="file" id="selfie" accept="image/*" required>
-  <input type="hidden" id="selfieUrl"><button id="applyBtn" class="disabled">Apply Now</button>
+  <h1>Apply for Monetization</h1>
+  <div class="form-container">
+    <div id="userStats" class="stats-box">
+      <p><strong>Followers:</strong> <span id="followerCount">Loading...</span></p>
+      <p><strong>Post Views:</strong> <span id="totalViews">Loading...</span></p>
+    </div>
+
+    <form id="monetizationForm">
+      <label for="name">First Name *</label>
+      <input type="text" id="name" required>
+
+      <label for="surname">Last Name *</label>
+      <input type="text" id="surname" required>
+
+      <label for="address">Address *</label>
+      <input type="text" id="address" required>
+
+      <label for="email">Email *</label>
+      <input type="email" id="email" required>
+
+      <label for="photo">Upload a Photo *</label>
+      <input type="file" id="photo" accept="image/*" required>
+
+      <button type="submit" id="applyButton" disabled>Apply Now</button>
+    </form>
+  </div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-    import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+    import { getDatabase, ref, get, set, update } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
 
     const firebaseConfig = {
@@ -83,57 +109,68 @@
       projectId: "itzhoyoo-f9f7e",
       storageBucket: "itzhoyoo-f9f7e.filestorage.app",
       messagingSenderId: "1094792075584",
-      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
-      measurementId: "G-LLT6F9WRKH"
+      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5"
     };
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
     const auth = getAuth();
 
-    let currentUID = null;
+    const applyBtn = document.getElementById("applyButton");
+    const followerCountSpan = document.getElementById("followerCount");
+    const viewCountSpan = document.getElementById("totalViews");
 
-    function formatNumber(num) {
-      return num.toLocaleString();
-    }
+    let currentUser;
 
-    async function loadStats(uid) {
-      const [followersSnap, postsSnap] = await Promise.all([
+    onAuthStateChanged(auth, async user => {
+      if (!user) return window.location.href = "accounts.html";
+
+      currentUser = user;
+      const uid = user.uid;
+
+      const [postsSnap, followersSnap, userSnap] = await Promise.all([
+        get(ref(db, "/post")),
         get(ref(db, `/followers/${uid}`)),
-        get(ref(db, `/post`))
+        get(ref(db, `/users/${uid}`))
       ]);
 
-      const followers = followersSnap.exists() ? Object.keys(followersSnap.val()).length : 0;
       const posts = postsSnap.val() || {};
-      let totalViews = 0;
+      const followers = followersSnap.exists() ? Object.keys(followersSnap.val()).length : 0;
 
+      let views = 0;
       for (const key in posts) {
-        if (posts[key].uid === uid) {
-          totalViews += posts[key].views || 0;
+        const post = posts[key];
+        if (post.uid === uid && post.monetized === true) {
+          views += post.views || 0;
         }
       }
 
-      const eligible = followers >= 100 && totalViews >= 1000;
+      viewCountSpan.textContent = views;
+      followerCountSpan.textContent = followers;
 
-      document.getElementById("requirements").innerHTML = `
-        <div class="progress-box">
-          <label>Followers: ${followers}/100</label>
-          <div class="bar"><div class="fill" style="width:${Math.min(followers, 100)}%;"></div></div>
-        </div>
-        <div class="progress-box">
-          <label>Total Views: ${formatNumber(totalViews)}/1000</label>
-          <div class="bar"><div class="fill" style="width:${Math.min((totalViews / 1000) * 100, 100)}%;"></div></div>
-        </div>
-      `;
+      if (views >= 1000 && followers >= 100) {
+        applyBtn.disabled = false;
+        document.getElementById("email").value = user.email;
+      }
+    });
 
-      if (eligible) document.getElementById("applyBtn").classList.remove("disabled");
-    }
+    document.getElementById("monetizationForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      applyBtn.textContent = "Applying...";
 
-    async function uploadToImgur(file) {
+      const name = document.getElementById("name").value.trim();
+      const surname = document.getElementById("surname").value.trim();
+      const address = document.getElementById("address").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const file = document.getElementById("photo").files[0];
+
+      if (!file) return alert("Photo is required.");
+
+      // Upload to Imgur
       const formData = new FormData();
       formData.append("image", file);
 
-      const res = await fetch("https://api.imgur.com/3/image", {
+      const imgurRes = await fetch("https://api.imgur.com/3/image", {
         method: "POST",
         headers: {
           Authorization: "Client-ID 891e5bb4aa94282"
@@ -141,41 +178,30 @@
         body: formData
       });
 
-      const data = await res.json();
-      return data.data.link;
-    }
+      const imgurData = await imgurRes.json();
+      if (!imgurData.success) return alert("Imgur upload failed.");
 
-    document.getElementById("selfie").addEventListener("change", async e => {
-      const file = e.target.files[0];
-      if (!file) return;
-      const url = await uploadToImgur(file);
-      document.getElementById("selfieUrl").value = url;
-    });
+      const imageUrl = imgurData.data.link;
 
-    document.getElementById("applyBtn").addEventListener("click", async () => {
-      const fullName = document.getElementById("fullName").value.trim();
-      const address = document.getElementById("address").value.trim();
-      const selfieUrl = document.getElementById("selfieUrl").value;
-
-      if (!fullName || !address || !selfieUrl) return alert("Please complete all fields and upload your selfie.");
-
-      await set(ref(db, `/applications/${currentUID}`), {
-        fullName,
+      // Save application
+      const applicationData = {
+        uid: currentUser.uid,
+        name,
+        surname,
         address,
-        selfieUrl,
+        email,
+        imageUrl,
         timestamp: Date.now()
+      };
+
+      await set(ref(db, `/applications/${currentUser.uid}`), applicationData);
+      await update(ref(db, `/users/${currentUser.uid}`), {
+        monetize: "pending"
       });
 
-      alert("Application submitted successfully!");
+      alert("Application submitted! Status: Pending");
+      window.location.href = "/dashboard.html"; // or wherever you want
     });
-
-    onAuthStateChanged(auth, user => {
-      if (user) {
-        currentUID = user.uid;
-        loadStats(user.uid);
-      } else {
-        location.href = "/accounts.html";
-      }
-    });
-  </script></body>
+  </script>
+</body>
 </html>
