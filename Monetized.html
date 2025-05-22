@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>CyberChat Creator Dashboard</title>
+<style>
+  /* Reset & base */
+  body {
+    margin: 0;
+    background: #0d1117;
+    color: #c9d1d9;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+      Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+  }
+  .container {
+    max-width: 900px;
+    margin: 80px auto 40px;
+    padding: 0 1rem;
+  }
+  /* Sticky header */
+  .sticky-header {
+    position: sticky;
+    top: 0;
+    z-index: 999;
+    background: #0d1117;
+    border-bottom: 1px solid #30363d;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+  }
+  .logo-title {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: #f0f6fc;
+  }
+  .user-box {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .user-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #238636;
+  }
+  #userHandle {
+    color: #c9d1d9;
+    font-size: 0.95rem;
+  }
+
+  /* Stats */
+  .stats {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 2rem;
+  }
+  .stats > div {
+    text-align: center;
+    flex: 1;
+  }
+  .stats h2 {
+    font-size: 2.5rem;
+    margin: 0;
+    color: #58a6ff;
+  }
+  .stats p {
+    font-size: 1rem;
+    color: #8b949e;
+    margin: 0.2rem 0 0.5rem;
+  }
+  .stats .delta {
+    font-size: 0.8rem;
+    color: #3fb950;
+  }
+
+  /* Post list */
+  #postList {
+    margin-top: 1rem;
+    background: #161b22;
+    border-radius: 12px;
+    padding: 1rem;
+    box-shadow: 0 0 15px rgb(56 139 253 / 0.25);
+    max-height: 300px;
+    overflow-y: auto;
+  }
+  .post-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #30363d;
+  }
+  .post-item:last-child {
+    border-bottom: none;
+  }
+  .post-title {
+    font-weight: 600;
+    color: #58a6ff;
+  }
+  .post-earning {
+    color: #3fb950;
+    font-weight: 700;
+  }
+
+  /* Monetization Gate */
+  #monetizationGate {
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 10px;
+    padding: 1.5rem;
+    margin-top: 2rem;
+    box-shadow: 0 0 15px rgb(63 185 80 / 0.3);
+  }
+  #monetizationGate h3 {
+    margin-bottom: 1rem;
+    color: #58a6ff;
+  }
+  .progress-box {
+    margin-bottom: 1rem;
+  }
+  .progress-box label {
+    display: block;
+    margin-bottom: 0.25rem;
+    font-size: 0.9rem;
+    color: #c9d1d9;
+  }
+  .bar {
+    height: 12px;
+    background: #30363d;
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .bar .fill {
+    height: 100%;
+    background: #3fb950;
+    transition: width 0.6s ease-in-out;
+  }
+  #monetizationGate button {
+    width: 100%;
+    margin-top: 1rem;
+    padding: 0.8rem;
+    font-size: 1rem;
+    background: #238636;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 700;
+    transition: background 0.3s ease;
+  }
+  #monetizationGate button:disabled {
+    background: #30363d;
+    cursor: not-allowed;
+    color: #6e7681;
+  }
+#loadingScreen {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  backdrop-filter: blur(100px);
+  background: rgba(0, 0, 0, 0.4); /* darker to emphasize blocked access */
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 1rem;
+}
+
+.spinner {
+  width: 48px;
+  height: 48px;
+  border: 5px solid #ccc;
+  border-top-color: #007bff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+/* Disable text selection on everything */
+* {
+  user-select: none;
+  -webkit-user-select: none;  /* Safari */
+  -moz-user-select: none;     /* Firefox */
+  -ms-user-select: none;      /* IE10+ */
+}
+</style>
+</head>
+<!-- Add Chart.js to your HTML head or before the closing body tag -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<body>
+
+<header class="sticky-header">
+  <div class="logo-title">CyberChat</div>
+  <div id="userBox" class="user-box">
+    <img id="userAvatar" src="" alt="Profile" class="user-avatar" />
+    <span id="userHandle">@username</span>
+  </div>
+</header>
+
+<div class="container">
+  <div class="stats">
+    <div id="viewsStat" class="stats-item"></div>
+    <div id="earningsStat" class="stats-item"></div>
+    <div id="postsStat" class="stats-item"></div>
+  </div>
+
+  <div id="monetizationGate"></div>
+
+  <div id="postList"></div>
+</div>
+<div id="loadingScreen">
+  <div class="spinner"></div>
+  <div id="notLoggedInMsg" style="display:none; color:#fff; font-size:1.5rem; margin-top:1rem;">
+    Not logged in. Please login first.
+  </div>
+</div>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+  import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
+    authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
+    databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
+    projectId: "itzhoyoo-f9f7e",
+    storageBucket: "itzhoyoo-f9f7e.filestorage.app",
+    messagingSenderId: "1094792075584",
+    appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
+    measurementId: "G-LLT6F9WRKH"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  const auth = getAuth();
+  const loadingScreen = document.getElementById("loadingScreen");
+
+  function formatNumber(num) {
+    return num.toLocaleString();
+  }
+
+  async function fetchStats(userId) {
+    const [postsSnap, userSnap, followersSnap] = await Promise.all([
+      get(ref(db, "/post")),
+      get(ref(db, `/users/${userId}`)),
+      get(ref(db, `/followers/${userId}`))
+    ]);
+
+    const posts = postsSnap.val() || {};
+    const userData = userSnap.val() || {};
+    const followers = followersSnap.exists() ? Object.keys(followersSnap.val()).length : 0;
+
+    let totalViews = 0, newViews = 0, earnings = 0, postCount = 0;
+    let postListHTML = "";
+    const oneWeekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
+    const monetized = userData?.monetize === "on";
+    const monetizedAt = userData?.monetizedAt || 0;
+
+    const earningsByDate = {};
+    const viewsByDate = {};
+
+    for (const id in posts) {
+      const post = posts[id];
+      if (post.uid !== userId) continue;
+
+      const created = post.timestamp || 0;
+      const views = post.views || 0;
+      const cpm = post.cpm || 0;
+
+      // Only count monetized posts made AFTER monetization
+      if (monetized && created >= monetizedAt) {
+        const earned = (views / 1000) * cpm;
+        const dateKey = new Date(created).toISOString().split('T')[0];
+
+        earningsByDate[dateKey] = (earningsByDate[dateKey] || 0) + earned;
+        viewsByDate[dateKey] = (viewsByDate[dateKey] || 0) + views;
+        earnings += earned;
+      }
+
+      totalViews += views;
+      if (created > oneWeekAgo) newViews += views;
+      postCount++;
+
+      postListHTML += `
+        <div class="post-item">
+          <div class="post-title">${post.title || "Untitled Post"}</div>
+          <div class="post-earning">${(monetized && created >= monetizedAt) ? "$" + ((views / 1000) * cpm).toFixed(2) : "Not Monetized"}</div>
+        </div>
+      `;
+    }
+
+    document.getElementById("viewsStat").innerHTML = `
+      <h2>${formatNumber(totalViews)}</h2>
+      <p>Total Views</p>
+      <span class="delta">+${formatNumber(newViews)} this week</span>`;
+
+    document.getElementById("earningsStat").innerHTML = `
+      <h2>$${earnings.toFixed(2)}</h2>
+      <p>Earnings</p>
+      <span class="delta">${newViews > 0 ? "+" : "0"} updated</span>`;
+
+    document.getElementById("postsStat").innerHTML = `
+      <h2>${postCount}</h2>
+      <p>Posts</p>
+      <span class="delta">active</span>`;
+
+    document.getElementById("postList").innerHTML = postCount === 0 ? `<p>You got no post yet.</p>` : postListHTML;
+
+    if (!monetized) {
+      const progressViews = Math.min(100, (totalViews / 1000) * 100);
+      const progressFollows = Math.min(100, (followers / 100) * 100);
+      const canMonetize = progressViews >= 100 && progressFollows >= 100;
+
+      document.getElementById("monetizationGate").innerHTML = `
+        <h3>Monetization Requirements</h3>
+        <div class="progress-box">
+          <label>Followers: ${followers}/100</label>
+          <div class="bar"><div class="fill" style="width: ${progressFollows}%;"></div></div>
+        </div>
+        <div class="progress-box">
+          <label>Post Views: ${formatNumber(totalViews)}/1000</label>
+          <div class="bar"><div class="fill" style="width: ${progressViews}%;"></div></div>
+        </div>
+        <button ${canMonetize ? "" : "disabled"} onclick="window.location.href='/cyberchatpartnerprogram.html/Monetization'">
+          ${canMonetize ? "Apply for Monetization" : "Not Eligible Yet"}
+        </button>
+      `;
+    } else {
+      // Render graph instead
+      document.getElementById("monetizationGate").innerHTML = `
+        <canvas id="earningsChart" height="200"></canvas>
+      `;
+      renderGraph(earningsByDate, viewsByDate);
+    }
+  }
+
+  function renderGraph(earningsByDate, viewsByDate) {
+    const labels = Object.keys(earningsByDate).sort();
+    const earningsData = labels.map(date => earningsByDate[date].toFixed(2));
+    const viewsData = labels.map(date => viewsByDate[date]);
+
+    new Chart(document.getElementById('earningsChart'), {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [
+          {
+            label: 'Views',
+            data: viewsData,
+            backgroundColor: '#36a2eb',
+            yAxisID: 'y'
+          },
+          {
+            label: 'Earnings ($)',
+            data: earningsData,
+            type: 'line',
+            borderColor: '#4caf50',
+            borderWidth: 2,
+            yAxisID: 'y1'
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        interaction: {
+          mode: 'index',
+          intersect: false,
+        },
+        stacked: false,
+        plugins: {
+          legend: { position: 'top' },
+          title: { display: true, text: 'Daily Views and Earnings' }
+        },
+        scales: {
+          y: { type: 'linear', position: 'left', title: { display: true, text: 'Views' } },
+          y1: {
+            type: 'linear',
+            position: 'right',
+            title: { display: true, text: 'Earnings ($)' },
+            grid: { drawOnChartArea: false }
+          }
+        }
+      }
+    });
+  }
+
+  async function loadUserHeader(userId) {
+    const userSnap = await get(ref(db, `/users/${userId}`));
+    const user = userSnap.val() || {};
+
+    const profilePic = user.profilePic || "https://i.imgur.com/default.png";
+    const username = user.username || "UnknownUser";
+
+    document.getElementById("userAvatar").src = profilePic;
+    document.getElementById("userHandle").textContent = "@" + username;
+  }
+
+  function finishLoading() {
+    loadingScreen.style.display = "none";
+  }
+
+  onAuthStateChanged(auth, user => {
+    if (user) {
+      const uid = user.uid;
+      fetchStats(uid);
+      loadUserHeader(uid);
+      setTimeout(() => finishLoading(), 7000);
+    } else {
+      window.location.href = "accounts.html";
+    }
+  });
+</script>
+</body>
+</html>
