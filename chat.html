@@ -515,6 +515,50 @@ body.light-theme {
     pointer-events: none;
     display: inline-block;
   }
+  .verified-badge {
+  color: #1da1f2;
+  font-size: 14px;
+  margin-left: 5px;
+  font-weight: bold;
+}
+
+.post-ads {
+  margin-top: 10px;
+  border-top: 1px solid #ddd;
+  padding-top: 10px;
+}
+
+.ad-frame {
+  width: 100%;
+  height: 90px;
+  border: none;
+}
+
+.read-more {
+  color: #007bff;
+  cursor: pointer;
+  font-weight: 600;
+  margin-left: 6px;
+}
+
+.like-btn.liked svg {
+  fill: #ff2e88;
+  stroke: #ff2e88;
+}
+
+.follow-btn {
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: 6px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  font-weight: 600;
+}
+
+.follow-btn:hover {
+  opacity: 0.85;
+}
 </style>
 </head>
 <body>
@@ -1078,7 +1122,7 @@ function createPostElement(post, postId, userLikes = {}) {
   const username = post.username || 'Anonymous';
   const handle = post.handle ? '@' + post.handle : '@user';
   const profilePic = post.profilePic || 'https://via.placeholder.com/50';
-  const postImage = post.imageUrl || post.image || '';  // Smart fallback
+  const postImage = post.imageUrl || post.image || '';
   const title = post.title || 'Untitled Post';
   const description = post.description || '';
   const views = post.views || 0;
@@ -1086,12 +1130,26 @@ function createPostElement(post, postId, userLikes = {}) {
   const comments = post.comments || 0;
   const timestamp = post.timestamp || Date.now();
   const liked = userLikes[postId] === true;
+  const isMonetized = post.monetize === true;
+  const isVerified = post.verified === true;
+
+  // Shorten description for "Read more"
+  const shortDesc = description.length > 120 ? description.slice(0, 120) + '...' : description;
+  const showReadMore = description.length > 120;
+
+  // Monetization ad placeholder (replace with real ad iframe or component)
+  const adHtml = isMonetized
+    ? `<div class="post-ads"><iframe src="https://your-ad-provider.com/adframe" class="ad-frame"></iframe></div>`
+    : '';
 
   postDiv.innerHTML = `
     <div class="post-header">
       <img src="${profilePic}" alt="${username} profile" class="profile-pic"/>
       <div class="user-info">
-        <div class="username">${username}</div>
+        <div class="username">
+          ${username}
+          ${isVerified ? '<span class="verified-badge" title="Verified">✔️</span>' : ''}
+        </div>
         <div class="handle">${handle}</div>
       </div>
       <div class="post-meta">
@@ -1101,7 +1159,10 @@ function createPostElement(post, postId, userLikes = {}) {
     </div>
     <div class="post-title">${title}</div>
     ${postImage ? `<img src="${postImage}" alt="Post image" class="post-image" style="width: 100%; height: auto;" />` : ''}
-    <div class="post-description">${description}</div>
+    <div class="post-description" data-full="${description}">
+      ${shortDesc}
+      ${showReadMore ? '<span class="read-more">Read more</span>' : ''}
+    </div>
     <div class="post-stats">
       <div>${createSvgIcon('views')} ${views}</div>
       <div class="like-wrapper">
@@ -1113,10 +1174,12 @@ function createPostElement(post, postId, userLikes = {}) {
         <button class="comment-btn">Comment</button>
       </div>
     </div>
+    ${adHtml}
   `;
 
-  // Like button handler
-  postDiv.querySelector('.like-btn').addEventListener('click', async () => {
+  // Like button toggle with DB update
+  postDiv.querySelector('.like-btn').addEventListener('click', async (e) => {
+    e.stopPropagation();
     const btn = postDiv.querySelector('.like-btn');
     const isLiked = btn.dataset.liked === 'true';
     const newLiked = !isLiked;
@@ -1136,9 +1199,49 @@ function createPostElement(post, postId, userLikes = {}) {
     }
   });
 
-  // Comment button placeholder
-  postDiv.querySelector('.comment-btn').addEventListener('click', () => {
-    alert('Comment feature coming soon!');
+  // Comment button redirects to post detail page
+  postDiv.querySelector('.comment-btn').addEventListener('click', (e) => {
+    e.stopPropagation();
+    window.location.href = `viewport.html/${postId}`;
+  });
+
+  // Read more expands description
+  const readMore = postDiv.querySelector('.read-more');
+  if (readMore) {
+    readMore.addEventListener('click', (e) => {
+      e.stopPropagation();
+      postDiv.querySelector('.post-description').textContent = description;
+    });
+  }
+
+  // Follow button toggle with DB update
+  const followBtn = postDiv.querySelector('.follow-btn');
+  followBtn.addEventListener('click', async (e) => {
+    e.stopPropagation();
+    const uid = auth.currentUser?.uid;
+    if (!uid || !post.uid) return;
+
+    const followingRef = ref(db, `following/${uid}/${post.uid}`);
+    const isFollowingSnap = await get(followingRef);
+    const isFollowing = isFollowingSnap.exists();
+
+    if (isFollowing) {
+      await remove(followingRef);
+      followBtn.textContent = 'Follow';
+      followBtn.style.backgroundColor = '';
+    } else {
+      await set(followingRef, true);
+      followBtn.textContent = 'Following';
+      followBtn.style.backgroundColor = 'grey';
+    }
+  });
+
+  // Clicking anywhere else on post redirects to detail page
+  postDiv.addEventListener('click', (e) => {
+    const isInteractive = e.target.closest('.like-btn, .comment-btn, .follow-btn, .profile-pic, .username');
+    if (!isInteractive) {
+      window.location.href = `viewport.html/${postId}`;
+    }
   });
 
   return postDiv;
@@ -1165,6 +1268,7 @@ async function loadPosts() {
       }
     }
 
+    // IntersectionObserver to count views only once per post
     const observer = new IntersectionObserver(entries => {
       entries.forEach(entry => {
         if (entry.isIntersecting && !entry.target.dataset.viewed) {
