@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Monetization Application</title>
+  <style>
+    body { font-family: sans-serif; max-width: 500px; margin: auto; padding: 2em; background: #111; color: white; }
+    input, textarea, button { width: 100%; margin: 0.5em 0; padding: 0.8em; border-radius: 8px; border: none; }
+    button { background: dodgerblue; color: white; font-weight: bold; cursor: pointer; }
+    .disabled { opacity: 0.5; pointer-events: none; }
+    .progress-box { margin-bottom: 1em; }
+    .bar { height: 8px; background: #333; border-radius: 5px; overflow: hidden; }
+    .fill { height: 100%; background: lime; width: 0%; transition: width 0.5s; }
+  </style>
+</head>
+<body>
+  <h2>Apply for Monetization</h2>
+  <div id="requirements"></div>
+
+  <input type="text" id="fullName" placeholder="Full Name" required>
+  <input type="text" id="address" placeholder="Address" required>
+  <input type="file" id="selfie" accept="image/*" required>
+  <input type="hidden" id="selfieUrl">
+
+  <button id="applyBtn" class="disabled">Apply Now</button>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+    import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
+      authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
+      databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
+      projectId: "itzhoyoo-f9f7e",
+      storageBucket: "itzhoyoo-f9f7e.filestorage.app",
+      messagingSenderId: "1094792075584",
+      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
+      measurementId: "G-LLT6F9WRKH"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const auth = getAuth();
+
+    let currentUID = null;
+
+    function formatNumber(num) {
+      return num.toLocaleString();
+    }
+
+    async function loadStats(uid) {
+      const [followersSnap, postsSnap] = await Promise.all([
+        get(ref(db, `/followers/${uid}`)),
+        get(ref(db, `/post`))
+      ]);
+
+      const followers = followersSnap.exists() ? Object.keys(followersSnap.val()).length : 0;
+      const posts = postsSnap.val() || {};
+      let totalViews = 0;
+
+      for (const key in posts) {
+        if (posts[key].uid === uid && posts[key].monetized) {
+          totalViews += posts[key].views || 0;
+        }
+      }
+
+      const eligible = followers >= 100 && totalViews >= 1000;
+
+      document.getElementById("requirements").innerHTML = `
+        <div class="progress-box">
+          <label>Followers: ${followers}/100</label>
+          <div class="bar"><div class="fill" style="width:${Math.min(followers, 100)}%;"></div></div>
+        </div>
+        <div class="progress-box">
+          <label>Views: ${formatNumber(totalViews)}/1000</label>
+          <div class="bar"><div class="fill" style="width:${Math.min((totalViews/1000)*100, 100)}%;"></div></div>
+        </div>
+      `;
+
+      if (eligible) document.getElementById("applyBtn").classList.remove("disabled");
+    }
+
+    async function uploadToImgur(file) {
+      const formData = new FormData();
+      formData.append("image", file);
+
+      const res = await fetch("https://api.imgur.com/3/image", {
+        method: "POST",
+        headers: {
+          Authorization: "Client-ID 891e5bb4aa94282"
+        },
+        body: formData
+      });
+
+      const data = await res.json();
+      return data.data.link;
+    }
+
+    document.getElementById("selfie").addEventListener("change", async e => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const url = await uploadToImgur(file);
+      document.getElementById("selfieUrl").value = url;
+    });
+
+    document.getElementById("applyBtn").addEventListener("click", async () => {
+      const fullName = document.getElementById("fullName").value.trim();
+      const address = document.getElementById("address").value.trim();
+      const selfieUrl = document.getElementById("selfieUrl").value;
+
+      if (!fullName || !address || !selfieUrl) return alert("Fill all fields & upload a selfie!");
+
+      await set(ref(db, `/applications/${currentUID}`), {
+        fullName,
+        address,
+        selfieUrl,
+        timestamp: Date.now()
+      });
+
+      alert("Application submitted!");
+    });
+
+    onAuthStateChanged(auth, user => {
+      if (user) {
+        currentUID = user.uid;
+        loadStats(user.uid);
+      } else {
+        location.href = "/accounts.html";
+      }
+    });
+  </script>
+</body>
+</html>
