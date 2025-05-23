@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>Public Profile</title>
   <style>
     :root {
@@ -10,13 +10,12 @@
       --text-light: #000;
       --text-dark: #fff;
       --border-light: #000;
-      --border-dark: #f0f; /* pink/cyan for dark mode */
+      --border-dark: #fff;
     }
 
     body {
       margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
-        Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+      font-family: sans-serif;
       transition: background 0.3s, color 0.3s;
     }
 
@@ -39,13 +38,8 @@
     .banner {
       width: 80%;
       border-radius: 12px;
-      margin: 1rem auto 3rem;
+      margin: 1rem auto 2rem;
       display: block;
-      object-fit: cover;
-      height: 100px;
-      box-shadow: 0 4px 8px rgb(0 0 0 / 0.2);
-      position: relative;
-      z-index: 0;
     }
 
     .profile-info {
@@ -53,53 +47,16 @@
       align-items: center;
       gap: 1rem;
       margin-bottom: 1rem;
-      position: relative;
-      z-index: 1;
-      margin-top: -50px; /* push down so no overlap with banner */
-      background: inherit;
-      padding: 0 1rem;
     }
 
     .profile-pic {
-      width: 72px;
-      height: 72px;
+      width: 64px;
+      height: 64px;
       border-radius: 50%;
-      background: #666;
-      color: white;
-      font-weight: 700;
-      font-size: 28px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      user-select: none;
-      flex-shrink: 0;
-      overflow: hidden;
-      text-transform: uppercase;
-      border: 3px solid var(--border-light);
-      transition: border-color 0.3s;
-    }
-
-    .dark .profile-pic {
-      border-color: var(--border-dark);
     }
 
     .user-meta {
       flex: 1;
-    }
-
-    #handle {
-      font-size: 0.9em;
-      color: gray;
-      margin-top: 0.1rem;
-      user-select: text;
-      font-family: monospace;
-    }
-
-    #description {
-      margin-top: 0.5rem;
-      font-size: 0.95rem;
-      white-space: pre-wrap;
-      color: var(--text-light);
     }
 
     .follow-btn {
@@ -109,32 +66,19 @@
       padding: 0.5rem 1rem;
       border-radius: 6px;
       cursor: pointer;
-      flex-shrink: 0;
-      font-weight: 600;
-      user-select: none;
-      transition: background 0.3s;
-    }
-
-    .follow-btn:hover {
-      background: darkred;
     }
 
     .post-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
       gap: 1rem;
-      margin-top: 2rem;
-      margin-bottom: 2rem;
     }
 
     .post {
-      border: 2px solid var(--border-light);
+      border: 2px solid;
+      border-color: var(--border-light);
       border-radius: 8px;
       overflow: hidden;
-      cursor: pointer;
-      transition: border-color 0.3s;
-      user-select: none;
-      background: inherit;
+      transition: border 0.3s;
     }
 
     .dark .post {
@@ -144,8 +88,6 @@
     .post img {
       width: 100%;
       display: block;
-      object-fit: cover;
-      aspect-ratio: 4 / 3;
     }
 
     .loading {
@@ -172,47 +114,26 @@
 </head>
 <body>
   <div class="container">
-    <img
-      class="banner"
-      id="banner"
-      src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQLpJFRzXUUjUvEGV5LqUcz6R3hxGFjhghY-w&s"
-      alt="Banner"
-    />
+    <img class="banner" id="banner" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQLpJFRzXUUjUvEGV5LqUcz6R3hxGFjhghY-w&s">
     <div class="profile-info">
-      <div class="profile-pic" id="profilePicFallback" style="display:none;"></div>
-      <img class="profile-pic" id="profilePic" alt="Profile Picture" />
+      <img class="profile-pic" id="profilePic" src="">
       <div class="user-meta">
         <h2 id="username">Loading...</h2>
-        <p id="handle">...</p>
         <p id="description">...</p>
       </div>
       <button class="follow-btn" id="followBtn">Follow</button>
     </div>
-
     <div class="loading" id="loader">
       <div class="spinner"></div>
     </div>
-
     <div class="post-grid" id="posts"></div>
   </div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-    import {
-      getDatabase,
-      ref,
-      get,
-      set,
-      onValue,
-      update,
-      child,
-    } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
-    import {
-      getAuth,
-      onAuthStateChanged,
-    } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+    import { getDatabase, ref, get, set, onValue } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
 
-    // Firebase config
     const firebaseConfig = {
       apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
       authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
@@ -220,10 +141,9 @@
       projectId: "itzhoyoo-f9f7e",
       storageBucket: "itzhoyoo-f9f7e.firebasestorage.app",
       messagingSenderId: "1094792075584",
-      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
+      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5"
     };
 
-    // Init Firebase
     const app = initializeApp(firebaseConfig);
     const db = getDatabase();
     const auth = getAuth();
@@ -232,181 +152,72 @@
     const theme = localStorage.getItem("theme") || "light";
     document.body.classList.add(theme);
 
-    // Grab user ID from URL
     const params = new URLSearchParams(location.search);
     const uid = params.get("id");
 
-    // DOM elements
     const usernameEl = document.getElementById("username");
     const descriptionEl = document.getElementById("description");
     const profilePicEl = document.getElementById("profilePic");
-    const profilePicFallback = document.getElementById("profilePicFallback");
     const postsContainer = document.getElementById("posts");
     const loader = document.getElementById("loader");
     const followBtn = document.getElementById("followBtn");
-    const handleEl = document.getElementById("handle");
 
-    // Generate handle from username with random 3 digits
-    function generateHandle(name) {
-      const base = name.replace(/\s+/g, "").toLowerCase();
-      const rand = Math.floor(100 + Math.random() * 900);
-      return base + rand;
-    }
-
-    // Helper: create initials from name
-    function initials(name) {
-      if (!name) return "";
-      const parts = name.trim().split(/\s+/);
-      if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-      else
-        return (
-          parts[0][0].toUpperCase() + parts[1][0].toUpperCase()
-        );
-    }
-
-    // Load user profile and handle auto-generation of handle
     async function loadProfile() {
       if (!uid) return alert("No user ID in URL");
 
-      const userRef = ref(db, `users/${uid}`);
-      const snap = await get(userRef);
-
-      if (snap.exists()) {
-        const data = snap.val();
-
+      const snapshot = await get(ref(db, `/users/${uid}`));
+      if (snapshot.exists()) {
+        const data = snapshot.val();
         usernameEl.textContent = data.username || "Unnamed";
-        descriptionEl.textContent = data.description || "No description yet";
-
-        // Handle fallback for profile pic to initials
-        if (data.profilePic) {
-          profilePicEl.src = data.profilePic;
-          profilePicEl.style.display = "block";
-          profilePicFallback.style.display = "none";
-        } else {
-          profilePicEl.style.display = "none";
-          profilePicFallback.textContent = initials(data.username || "??");
-          profilePicFallback.style.display = "flex";
-        }
-
-        // Generate or show handle (if stored)
-        if (data.handle) {
-          handleEl.textContent = data.handle;
-        } else {
-          const newHandle = generateHandle(data.username || "user");
-          handleEl.textContent = newHandle;
-          // Save handle to DB for persistence
-          update(userRef, { handle: newHandle }).catch(console.error);
-        }
-
-        // After profile loads, check follow status
-        checkFollowStatus();
-
-        // Load user posts
-        loadUserPosts();
-
-      } else {
-        usernameEl.textContent = "User not found";
-        descriptionEl.textContent = "";
-        profilePicEl.style.display = "none";
-        profilePicFallback.style.display = "none";
+        descriptionEl.textContent = data.description || "No description";
+        profilePicEl.src = data.profilePic || "https://via.placeholder.com/64";
       }
     }
 
-    // Check if current logged in user is following this profile
-    async function checkFollowStatus() {
-      const currentUser = auth.currentUser;
-      if (!currentUser || currentUser.uid === uid) {
-        followBtn.style.display = "none"; // Hide follow button if own profile or not logged in
-        return;
-      }
-
-      const followRef = ref(db, `followers/${uid}/${currentUser.uid}`);
-      const snap = await get(followRef);
-      if (snap.exists()) {
-        followBtn.textContent = "Following";
-        followBtn.disabled = false;
-      } else {
-        followBtn.textContent = "Follow";
-        followBtn.disabled = false;
-      }
-    }
-
-    // Toggle follow/unfollow
-    followBtn.addEventListener("click", async () => {
-      followBtn.disabled = true;
-      const currentUser = auth.currentUser;
-      if (!currentUser) return alert("You need to be logged in to follow.");
-
-      const followRef = ref(db, `followers/${uid}/${currentUser.uid}`);
-
-      const snap = await get(followRef);
-      if (snap.exists()) {
-        // Unfollow
-        await set(followRef, null);
-        followBtn.textContent = "Follow";
-      } else {
-        // Follow
-        await set(followRef, true);
-        followBtn.textContent = "Following";
-      }
-      followBtn.disabled = false;
-    });
-
-    // Load posts made by this user
-    async function loadUserPosts() {
-      loader.style.display = "block";
+    async function loadPosts() {
+      const snapshot = await get(ref(db, `/post`));
       postsContainer.innerHTML = "";
-
-      const postsRef = ref(db, "post");
-      const snap = await get(postsRef);
-
-      if (!snap.exists()) {
-        loader.style.display = "none";
-        postsContainer.textContent = "No posts yet.";
-        return;
-      }
-
-      const posts = snap.val();
-      const userPosts = Object.values(posts).filter(p => p.uid === uid);
-
-      if (userPosts.length === 0) {
-        postsContainer.textContent = "No posts yet.";
-        loader.style.display = "none";
-        return;
-      }
-
-      userPosts.forEach(post => {
-        const div = document.createElement("div");
-        div.className = "post";
-
-        const img = document.createElement("img");
-        img.src = post.image || "https://via.placeholder.com/160x120?text=No+Image";
-        img.alt = post.title || "Post image";
-
-        div.appendChild(img);
-        postsContainer.appendChild(div);
-
-        // Optional: click to open post detail (not implemented here)
-      });
-
       loader.style.display = "none";
+
+      if (snapshot.exists()) {
+        const posts = snapshot.val();
+        Object.entries(posts)
+          .filter(([_, post]) => post.uid === uid)
+          .forEach(([_, post]) => {
+            const postEl = document.createElement("div");
+            postEl.className = "post";
+            postEl.innerHTML = `<img src="${post.image}" alt="Post">`;
+            postsContainer.appendChild(postEl);
+          });
+      } else {
+        postsContainer.innerHTML = "<p>No posts yet.</p>";
+      }
     }
 
-    // Auth state monitoring
-    onAuthStateChanged(auth, user => {
+    onAuthStateChanged(auth, (user) => {
       if (user) {
-        loadProfile();
+        const followRef = ref(db, `/users/${user.uid}/following/${uid}`);
+        onValue(followRef, (snap) => {
+          followBtn.textContent = snap.exists() ? "Unfollow" : "Follow";
+        });
+
+        followBtn.onclick = () => {
+          const followRef = ref(db, `/users/${user.uid}/following/${uid}`);
+          get(followRef).then((snap) => {
+            if (snap.exists()) {
+              set(followRef, null); // unfollow
+            } else {
+              set(followRef, true); // follow
+            }
+          });
+        };
       } else {
-        loadProfile(); // Load profile anyway, but no follow button
+        followBtn.onclick = () => alert("Login required to follow");
       }
     });
 
-    // Initial load fallback if auth state doesn't fire quickly
-    setTimeout(() => {
-      if (!usernameEl.textContent || usernameEl.textContent === "Loading...") {
-        loadProfile();
-      }
-    }, 2000);
+    loadProfile();
+    loadPosts();
   </script>
 </body>
 </html>
