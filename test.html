@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Post View - YouTube Style</title>
   <style>
+    /* Your existing CSS here, unchanged */
     * {
       box-sizing: border-box;
     }
@@ -206,6 +207,7 @@
       font-size: 1rem;
       line-height: 1.6;
       box-shadow: 0 0 20px #1e90ff;
+      position: relative;
     }
     .modal-close {
       position: absolute;
@@ -327,260 +329,255 @@
   display: flex;
   gap: 18px;
   font-size: 0.85rem;
-  color: #555;
-  user-select: none;
+  color: #1e90ff;
   cursor: pointer;
+  user-select: none;
 }
 
 .comment-actions span:hover {
-  color: #1e90ff;
+  text-decoration: underline;
 }
 
-.comment-actions svg {
-  vertical-align: middle;
-  width: 16px;
-  height: 16px;
-  fill: currentColor;
-  margin-right: 4px;
+/* Scrollbar styling for comments */
+#commentsList::-webkit-scrollbar {
+  width: 6px;
+}
+
+#commentsList::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 3px;
+}
+
+#commentsList::-webkit-scrollbar-track {
+  background: #f0f0f0;
 }
   </style>
 </head>
 <body>
   <div class="container">
+
     <div class="media">
-      <img
-        id="postImage"
-        src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQdKTwgOD9MYs8iIcJvBx5ioSya0XRJpe-wmQSv5j9mvHeLxdXw9n94n1w&s=10"
-        alt="Post Media"
-      />
+      <img src="https://picsum.photos/960/540" alt="Post Image" />
     </div>
 
-    <div class="title" id="postTitle">Sample Post Title</div>
+    <div class="title">Amazing Post Title That Hooks You In</div>
 
     <div class="profile">
       <div class="profile-pic">
-        <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="User Profile" />
+        <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Profile Picture" />
       </div>
       <div class="user-info">
-        <div class="username">@anonUser</div>
-        <div class="followers">100 followers</div>
+        <div class="username">BossMan123</div>
+        <div class="followers">23.4K followers</div>
       </div>
     </div>
 
-    <div class="actions">
-      <button class="action-button" id="likeBtn" aria-label="Like">
-        <svg viewBox="0 0 24 24" >
-          <path d="M2 21h4V9H2v12zM23 10c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 2 7.59 8.59C7.22 8.95 7 9.45 7 10v9c0 1.1.9 2 2 2h7c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-1z"/>
-        </svg>
-        Like
-        <span class="count" id="likeCount">123</span>
+    <div class="actions" role="group" aria-label="Post actions">
+      <button class="action-button" id="likeBtn" aria-pressed="false" aria-label="Like post">
+        <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 6 4 4 6.5 4c1.54 0 3.04.99 3.57 2.36h1.87C13.46 4.99 14.96 4 16.5 4 19 4 21 6 21 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+        <span class="count" id="likeCount">120</span>
       </button>
 
-      <button class="action-button" id="dislikeBtn" aria-label="Dislike">
-        <svg viewBox="0 0 24 24" >
-          <path d="M22 3h-4v12h4V3zM1 14c0 1.1.9 2 2 2h6.31l-.95 4.57-.03.32c0 .41.17.79.44 1.06L9.83 22l6.59-6.59c.36-.36.59-.86.59-1.41V5c0-1.1-.9-2-2-2H7c-.83 0-1.54.5-1.84 1.22L2.14 9.27c-.09.23-.14.47-.14.73v1z"/>
-        </svg>
-        Dislike
-        <span class="count" id="dislikeCount">4</span>
+      <button class="action-button" id="dislikeBtn" aria-pressed="false" aria-label="Dislike post">
+        <svg viewBox="0 0 24 24"><path d="M12 2.65l1.45 1.32C18.6 8.64 22 11.72 22 15.5c0 2.5-2 4.5-4.5 4.5-1.54 0-3.04-.99-3.57-2.36h-1.87C10.54 19.01 9.04 20 7.5 20 5 20 3 18 3 15.5c0-3.78 3.4-6.86 8.55-11.54L12 2.65z"/></svg>
+        <span class="count" id="dislikeCount">3</span>
       </button>
 
-      <button class="action-button" id="shareBtn" aria-label="Share">
-        <svg viewBox="0 0 24 24">
-          <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.02-4.11c.53.5 1.23.81 2.01.81 1.66 0 3-1.34 3-3s-1.34-3-3-3S16 4.34 16 6c0 .24.04.47.09.7L9.07 10.8C8.53 10.3 7.83 10 7.05 10 5.39 10 4.05 11.34 4.05 13s1.34 3 3 3c.78 0 1.48-.3 2.01-.8l7.13 4.18c-.05.21-.09.43-.09.66 0 1.66 1.34 3 3 3s3-1.34 3-3-1.34-3-3-3z"/>
-        </svg>
-        Share
+      <button class="action-button" id="saveBtn" aria-label="Save post">
+        <svg viewBox="0 0 24 24"><path d="M17 3H7a2 2 0 0 0-2 2v16l7-3 7 3V5a2 2 0 0 0-2-2z"/></svg> Save
       </button>
 
-      <button class="action-button" id="saveBtn" aria-label="Save">
-        <svg viewBox="0 0 24 24">
-          <path d="M17 3H7c-1.1 0-2 .9-2 2v16l7-3 7 3V5c0-1.1-.9-2-2-2z"/>
-        </svg>
-        Save
+      <button class="action-button" id="shareBtn" aria-label="Share post">
+        <svg viewBox="0 0 24 24"><path d="M18 8a3 3 0 0 0-2.83 2H8.83a3 3 0 1 0 0 2h6.34a3 3 0 1 0 0-2h-6.34a3 3 0 0 0 2.83-2z"/></svg> Share
       </button>
     </div>
 
-    <div class="description" id="postDescription">
-      <!-- Description content will be injected here -->
+    <div class="description" id="desc">
+      Lorem ipsum dolor sit amet, consectetur adipiscing elit. Pellentesque vel pulvinar nulla. Vestibulum sed risus quis ex sagittis feugiat at in lectus. Praesent tristique lorem ac lorem lobortis rhoncus. Sed at vehicula nisl, id malesuada justo. Morbi suscipit sem a ex posuere, a sodales lacus porttitor. Curabitur posuere dui sapien, at fringilla augue consectetur at. Integer et purus nulla. Sed sit amet dictum neque. Aliquam erat volutpat. Suspendisse ut massa libero.
+      <div class="tags" id="tagsContainer"></div>
+      <div class="read-more-btn" id="readMoreBtn">Read more</div>
     </div>
-    <div class="tags" id="postTags"></div>
 
-    <div class="comments" id="commentsSection">
-      <div class="comment">
-        <div class="comment-author">User123</div>
-        <div class="comment-text">This is such a dope post!</div>
-      </div>
-      <div class="comment">
-        <div class="comment-author">AnotherUser</div>
-        <div class="comment-text">Loved the visuals, keep it up!</div>
+    <!-- Modal for full description -->
+    <div class="modal-overlay" id="modal">
+      <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <button class="modal-close" id="modalCloseBtn" aria-label="Close description modal">&times;</button>
+        <div id="modalText"></div>
       </div>
     </div>
+
+    <div class="comments-section" aria-label="Comments section">
+      <h3>Comments</h3>
+      <div class="add-comment">
+        <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Your profile picture" />
+        <input type="text" id="commentInput" placeholder="Add a comment..." aria-label="Add a comment" />
+        <button id="commentSubmitBtn" disabled>Add</button>
+      </div>
+      <div id="commentsList" role="list" aria-live="polite"></div>
+    </div>
+
   </div>
 
-  <!-- Modal for full description -->
-  <div class="modal-overlay" id="descModal">
-    <div class="modal-content">
-      <button class="modal-close" id="modalClose">&times;</button>
-      <div id="fullDescription"></div>
-    </div>
-  </div>
-<!-- Comments Section -->
-<div class="comments-section">
-  <h3>Comments</h3>
-  <div class="add-comment">
-    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQdKTwgOD9MYs8iIcJvBx5ioSya0XRJpe-wmQSv5j9mvHeLxdXw9n94n1w&s=10" alt="User profile" />
-    <input type="text" placeholder="Add a public comment..." id="newCommentInput" />
-    <button id="postCommentBtn" disabled>Comment</button>
-  </div>
-  <div id="commentsList">
-    <!-- Comments will be appended here -->
-  </div>
-</div>
   <script>
-    const descriptionText = `Check out this awesome post! Visit https://example.com for more info.
-Also, don't forget to follow the #Tech #Innovation #Design tags. This description is long enough to test the Read More functionality properly.`;
+    (() => {
+      // Like and dislike toggle with counts
+      const likeBtn = document.getElementById('likeBtn');
+      const dislikeBtn = document.getElementById('dislikeBtn');
+      const likeCountElem = document.getElementById('likeCount');
+      const dislikeCountElem = document.getElementById('dislikeCount');
 
-    const maxLength = 80;
-    const descriptionEl = document.getElementById('postDescription');
-    const fullDescModal = document.getElementById('descModal');
-    const fullDescContent = document.getElementById('fullDescription');
-    const modalCloseBtn = document.getElementById('modalClose');
-    const tagsContainer = document.getElementById('postTags');
+      let liked = false;
+      let disliked = false;
 
-    // Helper: convert URLs to clickable links
-    function linkify(text) {
-      const urlPattern = /(\bhttps?:\/\/[^\s]+)/g;
-      return text.replace(urlPattern, url => `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`);
-    }
-
-    // Extract hashtags and display
-    function renderTags(text) {
-      const tagPattern = /#(\w+)/g;
-      let match;
-      const tags = new Set();
-      while ((match = tagPattern.exec(text)) !== null) {
-        tags.add(match[0]);
-      }
-      tagsContainer.innerHTML = '';
-      tags.forEach(tag => {
-        const span = document.createElement('span');
-        span.textContent = tag;
-        span.className = 'tag';
-        tagsContainer.appendChild(span);
+      likeBtn.addEventListener('click', () => {
+        if(liked) {
+          liked = false;
+          likeCountElem.textContent = +likeCountElem.textContent - 1;
+          likeBtn.setAttribute('aria-pressed', 'false');
+        } else {
+          liked = true;
+          likeCountElem.textContent = +likeCountElem.textContent + 1;
+          likeBtn.setAttribute('aria-pressed', 'true');
+          // Remove dislike if active
+          if (disliked) {
+            disliked = false;
+            dislikeCountElem.textContent = +dislikeCountElem.textContent - 1;
+            dislikeBtn.setAttribute('aria-pressed', 'false');
+          }
+        }
       });
-    }
 
-    // Set truncated or full description with read more
-    function renderDescription(text) {
-      if(text.length <= maxLength) {
-        descriptionEl.innerHTML = linkify(text);
+      dislikeBtn.addEventListener('click', () => {
+        if(disliked) {
+          disliked = false;
+          dislikeCountElem.textContent = +dislikeCountElem.textContent - 1;
+          dislikeBtn.setAttribute('aria-pressed', 'false');
+        } else {
+          disliked = true;
+          dislikeCountElem.textContent = +dislikeCountElem.textContent + 1;
+          dislikeBtn.setAttribute('aria-pressed', 'true');
+          // Remove like if active
+          if (liked) {
+            liked = false;
+            likeCountElem.textContent = +likeCountElem.textContent - 1;
+            likeBtn.setAttribute('aria-pressed', 'false');
+          }
+        }
+      });
+
+      // Save & Share buttons (placeholders for now)
+      document.getElementById('saveBtn').addEventListener('click', () => {
+        alert('Save functionality coming soon!');
+      });
+
+      document.getElementById('shareBtn').addEventListener('click', () => {
+        alert('Share functionality coming soon!');
+      });
+
+      // Read more functionality for description
+      const descElem = document.getElementById('desc');
+      const readMoreBtn = document.getElementById('readMoreBtn');
+      const modal = document.getElementById('modal');
+      const modalCloseBtn = document.getElementById('modalCloseBtn');
+      const modalText = document.getElementById('modalText');
+
+      // Initially limit description to about 3 lines or 150 chars
+      const fullText = descElem.textContent.trim();
+      const maxLength = 150;
+
+      if (fullText.length <= maxLength) {
+        readMoreBtn.style.display = 'none';
       } else {
-        const truncated = text.slice(0, maxLength) + '... ';
-        descriptionEl.innerHTML = linkify(truncated) + `<span class="read-more-btn" id="readMoreBtn">Read more</span>`;
-        document.getElementById('readMoreBtn').addEventListener('click', () => {
-          fullDescContent.innerHTML = linkify(text);
-          fullDescModal.classList.add('active');
+        descElem.textContent = fullText.slice(0, maxLength) + '...';
+        readMoreBtn.style.display = 'inline-block';
+      }
+
+      readMoreBtn.addEventListener('click', () => {
+        modalText.textContent = fullText;
+        modal.classList.add('active');
+        modalCloseBtn.focus();
+      });
+
+      modalCloseBtn.addEventListener('click', () => {
+        modal.classList.remove('active');
+        readMoreBtn.focus();
+      });
+
+      modal.addEventListener('click', (e) => {
+        if(e.target === modal) {
+          modal.classList.remove('active');
+          readMoreBtn.focus();
+        }
+      });
+
+      // Tags rendering & click handler
+      const tags = ['Tech', 'Gaming', 'Vlog', 'Tutorial', 'Live']; // example tags
+      const tagsContainer = document.getElementById('tagsContainer');
+      tags.forEach(tag => {
+        const tagElem = document.createElement('span');
+        tagElem.className = 'tag';
+        tagElem.textContent = `#${tag}`;
+        tagElem.tabIndex = 0;
+        tagElem.setAttribute('role', 'button');
+        tagElem.setAttribute('aria-label', `Filter by tag ${tag}`);
+        tagElem.addEventListener('click', () => alert(`Filter by tag: ${tag}`));
+        tagElem.addEventListener('keydown', e => {
+          if(e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            tagElem.click();
+          }
+        });
+        tagsContainer.appendChild(tagElem);
+      });
+
+      // Comments section
+      const commentInput = document.getElementById('commentInput');
+      const commentSubmitBtn = document.getElementById('commentSubmitBtn');
+      const commentsList = document.getElementById('commentsList');
+
+      // Enable add button only if input not empty
+      commentInput.addEventListener('input', () => {
+        commentSubmitBtn.disabled = commentInput.value.trim().length === 0;
+      });
+
+      // Mock comments array to store
+      const comments = [
+        { author: 'Alice', text: 'Great post!' },
+        { author: 'Bob', text: 'Thanks for sharing.' }
+      ];
+
+      function renderComments() {
+        commentsList.innerHTML = '';
+        comments.forEach(({author, text}, i) => {
+          const commentElem = document.createElement('div');
+          commentElem.className = 'comment';
+          commentElem.setAttribute('role', 'listitem');
+
+          commentElem.innerHTML = `
+            <img src="https://randomuser.me/api/portraits/lego/${i % 10}.jpg" alt="Commenter profile" />
+            <div class="comment-body">
+              <div class="comment-header">${author}</div>
+              <div class="comment-text">${text}</div>
+            </div>
+          `;
+          commentsList.appendChild(commentElem);
         });
       }
-    }
 
-    modalCloseBtn.addEventListener('click', () => {
-      fullDescModal.classList.remove('active');
-    });
+      commentSubmitBtn.addEventListener('click', () => {
+        const text = commentInput.value.trim();
+        if(text) {
+          comments.push({ author: 'You', text });
+          renderComments();
+          commentInput.value = '';
+          commentSubmitBtn.disabled = true;
+        }
+      });
 
-    // Clicking outside modal content closes modal
-    fullDescModal.addEventListener('click', e => {
-      if(e.target === fullDescModal) fullDescModal.classList.remove('active');
-    });
-
-    // Initialize description and tags
-    renderDescription(descriptionText);
-    renderTags(descriptionText);
-    const newCommentInput = document.getElementById('newCommentInput');
-const postCommentBtn = document.getElementById('postCommentBtn');
-const commentsList = document.getElementById('commentsList');
-
-let commentsData = [
-  {
-    id: 1,
-    username: 'JohnDoe',
-    profilePic: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQdKTwgOD9MYs8iIcJvBx5ioSya0XRJpe-wmQSv5j9mvHeLxdXw9n94n1w&s=10',
-    text: 'Amazing video, learned a lot!',
-    timestamp: '2 hours ago',
-    likes: 5,
-  },
-  {
-    id: 2,
-    username: 'JaneSmith',
-    profilePic: 'https://randomuser.me/api/portraits/women/68.jpg',
-    text: 'Can someone explain the part at 3:45?',
-    timestamp: '1 hour ago',
-    likes: 2,
-  },
-];
-
-// Enable/disable comment button based on input
-newCommentInput.addEventListener('input', () => {
-  postCommentBtn.disabled = newCommentInput.value.trim() === '';
-});
-
-// Render comments
-function renderComments() {
-  commentsList.innerHTML = '';
-  commentsData.forEach(comment => {
-    const commentEl = document.createElement('div');
-    commentEl.className = 'comment';
-    commentEl.innerHTML = `
-      <img src="${comment.profilePic}" alt="${comment.username} profile picture" />
-      <div class="comment-body">
-        <div class="comment-header">
-          <strong>${comment.username}</strong>
-          <span>• ${comment.timestamp}</span>
-        </div>
-        <div class="comment-text">${comment.text}</div>
-        <div class="comment-actions" data-id="${comment.id}">
-          <span class="like-comment">
-            <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 6 4 4 6.5 4c1.54 0 3.04.99 3.57 2.36h1.87C14.46 4.99 15.96 4 17.5 4 20 4 22 6 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
-            ${comment.likes}
-          </span>
-          <span class="reply-comment">Reply</span>
-        </div>
-      </div>
-    `;
-    commentsList.appendChild(commentEl);
-  });
-
-  // Add like comment click handlers
-  document.querySelectorAll('.like-comment').forEach(el => {
-    el.addEventListener('click', () => {
-      const id = Number(el.parentElement.getAttribute('data-id'));
-      const comment = commentsData.find(c => c.id === id);
-      comment.likes++;
+      // Initial render
       renderComments();
-    });
-  });
-}
 
-// Add new comment handler
-postCommentBtn.addEventListener('click', () => {
-  const newText = newCommentInput.value.trim();
-  if (!newText) return;
-
-  commentsData.unshift({
-    id: Date.now(),
-    username: 'CurrentUser',
-    profilePic: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQdKTwgOD9MYs8iIcJvBx5ioSya0XRJpe-wmQSv5j9mvHeLxdXw9n94n1w&s=10',
-    text: newText,
-    timestamp: 'Just now',
-    likes: 0,
-  });
-
-  newCommentInput.value = '';
-  postCommentBtn.disabled = true;
-  renderComments();
-});
-
-// Initial render
-renderComments();
+    })();
   </script>
 </body>
 </html>
