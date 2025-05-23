@@ -3,99 +3,108 @@
 <head>
   <meta charset="UTF-8">
   <title>Public Profile</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
-    html, body {
+    :root {
+      --bg-light: #fff;
+      --bg-dark: #181818;
+      --text-light: #000;
+      --text-dark: #fff;
+      --border-light: #000;
+      --border-dark: #fff;
+    }
+
+    body {
       margin: 0;
-      padding: 0;
-      font-family: system-ui, sans-serif;
-      background-color: var(--bg);
-      color: var(--fg);
+      font-family: sans-serif;
       transition: background 0.3s, color 0.3s;
     }
-    :root.light {
-      --bg: #fff;
-      --fg: #111;
-      --card-bg: #f9f9f9;
-      --border-color: #000;
+
+    .light {
+      background: var(--bg-light);
+      color: var(--text-light);
     }
-    :root.dark {
-      --bg: #111;
-      --fg: #eee;
-      --card-bg: #1a1a1a;
-      --border-color: #fff;
+
+    .dark {
+      background: var(--bg-dark);
+      color: var(--text-dark);
+    }
+
+    .container {
+      padding: 1rem;
+      max-width: 800px;
+      margin: 0 auto;
     }
 
     .banner {
       width: 80%;
-      margin: 1rem auto 0;
       border-radius: 12px;
+      margin: 1rem auto 2rem;
       display: block;
-      object-fit: cover;
     }
 
-    .profile-container {
-      text-align: center;
-      margin-top: 1rem;
-    }
-    .profile-pic {
-      width: 96px;
-      height: 96px;
-      border-radius: 50%;
-      border: 3px solid var(--fg);
-      object-fit: cover;
-    }
-
-    #followBtn {
-      padding: 6px 12px;
-      margin-top: 0.5rem;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-      background-color: #0077ff;
-      color: #fff;
-    }
-
-    .stats {
-      font-size: 14px;
-      color: gray;
-      margin: 0.5rem 0;
-    }
-
-    .posts-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-      gap: 1rem;
-      padding: 2rem;
-    }
-
-    .post-img {
-      width: 100%;
-      border-radius: 10px;
-      border: 1px solid var(--border-color);
-      object-fit: cover;
-      aspect-ratio: 1 / 1;
-    }
-
-    .loading-screen {
-      position: fixed;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.5);
-      backdrop-filter: blur(6px);
+    .profile-info {
       display: flex;
       align-items: center;
-      justify-content: center;
-      z-index: 99;
-      transition: opacity 0.3s ease;
+      gap: 1rem;
+      margin-bottom: 1rem;
     }
+
+    .profile-pic {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+    }
+
+    .user-meta {
+      flex: 1;
+    }
+
+    .follow-btn {
+      background: crimson;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .post-grid {
+      display: grid;
+      gap: 1rem;
+    }
+
+    .post {
+      border: 2px solid;
+      border-color: var(--border-light);
+      border-radius: 8px;
+      overflow: hidden;
+      transition: border 0.3s;
+    }
+
+    .dark .post {
+      border-color: var(--border-dark);
+    }
+
+    .post img {
+      width: 100%;
+      display: block;
+    }
+
+    .loading {
+      text-align: center;
+      margin: 3rem 0;
+    }
+
     .spinner {
-      width: 40px;
-      height: 40px;
-      border: 4px solid transparent;
-      border-top: 4px solid var(--fg);
+      width: 48px;
+      height: 48px;
+      border: 6px solid currentColor;
+      border-top: 6px solid transparent;
       border-radius: 50%;
       animation: spin 1s linear infinite;
+      margin: auto;
     }
+
     @keyframes spin {
       to {
         transform: rotate(360deg);
@@ -104,24 +113,25 @@
   </style>
 </head>
 <body>
-  <div class="loading-screen" id="loadingScreen"><div class="spinner"></div></div>
-
-  <img class="banner" id="banner" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQLpJFRzXUUjUvEGV5LqUcz6R3hxGFjhghY-w&s" alt="Banner" />
-  <div class="profile-container">
-    <img id="profilePic" class="profile-pic" src="" alt="Profile" />
-    <h2 id="username">Loading...</h2>
-    <div class="stats">
-      <span id="followerCount">0 followers</span> | 
-      <span id="postCount">0 posts</span>
+  <div class="container">
+    <img class="banner" id="banner" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQLpJFRzXUUjUvEGV5LqUcz6R3hxGFjhghY-w&s">
+    <div class="profile-info">
+      <img class="profile-pic" id="profilePic" src="">
+      <div class="user-meta">
+        <h2 id="username">Loading...</h2>
+        <p id="description">...</p>
+      </div>
+      <button class="follow-btn" id="followBtn">Follow</button>
     </div>
-    <button id="followBtn" style="display:none;">Follow</button>
+    <div class="loading" id="loader">
+      <div class="spinner"></div>
+    </div>
+    <div class="post-grid" id="posts"></div>
   </div>
-
-  <div class="posts-grid" id="postsGrid"></div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-    import { getDatabase, ref, get, onValue, set, update } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+    import { getDatabase, ref, get, set, onValue } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
 
     const firebaseConfig = {
@@ -131,108 +141,83 @@
       projectId: "itzhoyoo-f9f7e",
       storageBucket: "itzhoyoo-f9f7e.firebasestorage.app",
       messagingSenderId: "1094792075584",
-      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
-      measurementId: "G-LLT6F9WRKH"
+      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5"
     };
+
     const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
+    const db = getDatabase();
     const auth = getAuth();
 
-    const uidFromURL = new URLSearchParams(window.location.search).get("uid");
-    const profilePic = document.getElementById("profilePic");
-    const username = document.getElementById("username");
-    const followerCount = document.getElementById("followerCount");
-    const postCount = document.getElementById("postCount");
-    const postsGrid = document.getElementById("postsGrid");
+    // THEME
+    const theme = localStorage.getItem("theme") || "light";
+    document.body.classList.add(theme);
+
+    const params = new URLSearchParams(location.search);
+    const uid = params.get("id");
+
+    const usernameEl = document.getElementById("username");
+    const descriptionEl = document.getElementById("description");
+    const profilePicEl = document.getElementById("profilePic");
+    const postsContainer = document.getElementById("posts");
+    const loader = document.getElementById("loader");
     const followBtn = document.getElementById("followBtn");
-    const loadingScreen = document.getElementById("loadingScreen");
 
-    let currentUserUid = null;
+    async function loadProfile() {
+      if (!uid) return alert("No user ID in URL");
 
-    function applyTheme() {
-      const theme = localStorage.getItem("theme") || "light";
-      document.documentElement.className = theme;
-    }
-
-    async function loadProfileUser() {
-      if (!uidFromURL) return;
-      showLoading();
-      const snapshot = await get(ref(db, "/users/" + uidFromURL));
-      const data = snapshot.val();
-      if (data) {
-        profilePic.src = data.profilePic || "";
-        username.textContent = data.username || "Anonymous";
+      const snapshot = await get(ref(db, `/users/${uid}`));
+      if (snapshot.exists()) {
+        const data = snapshot.val();
+        usernameEl.textContent = data.username || "Unnamed";
+        descriptionEl.textContent = data.description || "No description";
+        profilePicEl.src = data.profilePic || "https://via.placeholder.com/64";
       }
-      hideLoading();
     }
 
     async function loadPosts() {
-      postsGrid.innerHTML = "";
-      showLoading();
-      const snapshot = await get(ref(db, "/post"));
-      let count = 0;
-      snapshot.forEach(child => {
-        const post = child.val();
-        if (post.uid === uidFromURL && post.imageUrl) {
-          const img = document.createElement("img");
-          img.className = "post-img";
-          img.src = post.imageUrl;
-          postsGrid.appendChild(img);
-          count++;
-        }
-      });
-      postCount.textContent = count + " posts";
-      hideLoading();
-    }
+      const snapshot = await get(ref(db, `/post`));
+      postsContainer.innerHTML = "";
+      loader.style.display = "none";
 
-    async function loadFollowerCount() {
-      const snap = await get(ref(db, "/followers/" + uidFromURL));
-      const val = snap.val();
-      const count = val ? Object.keys(val).length : 0;
-      followerCount.textContent = count + " followers";
-    }
-
-    async function checkIfFollowing() {
-      if (!currentUserUid || !uidFromURL) return;
-      const snap = await get(ref(db, `/followers/${uidFromURL}/${currentUserUid}`));
-      followBtn.textContent = snap.exists() ? "Following" : "Follow";
-    }
-
-    followBtn.onclick = async () => {
-      const path = `/followers/${uidFromURL}/${currentUserUid}`;
-      const snap = await get(ref(db, path));
-      if (snap.exists()) {
-        await set(ref(db, path), null);
-        followBtn.textContent = "Follow";
+      if (snapshot.exists()) {
+        const posts = snapshot.val();
+        Object.entries(posts)
+          .filter(([_, post]) => post.uid === uid)
+          .forEach(([_, post]) => {
+            const postEl = document.createElement("div");
+            postEl.className = "post";
+            postEl.innerHTML = `<img src="${post.image}" alt="Post">`;
+            postsContainer.appendChild(postEl);
+          });
       } else {
-        await set(ref(db, path), true);
-        followBtn.textContent = "Following";
+        postsContainer.innerHTML = "<p>No posts yet.</p>";
       }
-      loadFollowerCount();
-    };
-
-    function showLoading() {
-      loadingScreen.style.display = "flex";
     }
 
-    function hideLoading() {
-      loadingScreen.style.display = "none";
-    }
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        const followRef = ref(db, `/users/${user.uid}/following/${uid}`);
+        onValue(followRef, (snap) => {
+          followBtn.textContent = snap.exists() ? "Unfollow" : "Follow";
+        });
 
-    onAuthStateChanged(auth, user => {
-      currentUserUid = user?.uid || null;
-      loadProfileUser();
-      loadPosts();
-      loadFollowerCount();
-      if (currentUserUid && currentUserUid !== uidFromURL) {
-        followBtn.style.display = "inline-block";
-        checkIfFollowing();
+        followBtn.onclick = () => {
+          const followRef = ref(db, `/users/${user.uid}/following/${uid}`);
+          get(followRef).then((snap) => {
+            if (snap.exists()) {
+              set(followRef, null); // unfollow
+            } else {
+              set(followRef, true); // follow
+            }
+          });
+        };
       } else {
-        followBtn.style.display = "none";
+        followBtn.onclick = () => alert("Login required to follow");
       }
     });
 
-    applyTheme();
+    loadProfile();
+    loadPosts();
   </script>
 </body>
 </html>
