@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Post View Test</title>
+<style>
+  body { background: #121212; color: #eee; font-family: sans-serif; padding: 20px; max-width: 600px; margin: auto; }
+  img { width: 100%; border-radius: 8px; }
+  .actions { display: flex; gap: 1rem; margin-top: 12px; }
+  button { background: #333; border: none; padding: 8px 16px; border-radius: 24px; color: white; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+  button:hover { background: #555; }
+  svg { width: 20px; height: 20px; fill: currentColor; }
+</style>
+</head>
+<body>
+  <h2>Sample Post Title</h2>
+  <img src="https://picsum.photos/seed/1/600/340" alt="Post Image" />
+  <p>This is a sample description for the post. It’s sleek, modern, and won’t make your browser complain.</p>
+  <div class="actions">
+    <button>
+      <svg viewBox="0 0 24 24"><path d="M14 1H6c-.6 0-1 .4-1 1v12c0 .6.4 1 1 1h8c.6 0 1-.4 1-1V2c0-.6-.4-1-1-1zM5 3H2c-.6 0-1 .4-1 1v8c0 .6.4 1 1 1h3V3zm17 4c0-1.1-.9-2-2-2h-4v10h4c1.1 0 2-.9 2-2V7z"/></svg>
+      Like
+    </button>
+    <button>
+      <svg viewBox="0 0 24 24"><path d="M10 23h8c.6 0 1-.4 1-1V10c0-.6-.4-1-1-1h-8c-.6 0-1 .4-1 1v12c0 .6.4 1 1 1zM19 21h3c.6 0 1-.4 1-1v-8c0-.6-.4-1-1-1h-3v10zM5 17c0 1.1.9 2 2 2h4V9H7c-1.1 0-2 .9-2 2v6z"/></svg>
+      Dislike
+    </button>
+    <button>
+      <svg viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.02-4.11c.53.5 1.23.81 2.01.81 1.66 0 3-1.34 3-3s-1.34-3-3-3S16 4.34 16 6c0 .24.04.47.09.7L9.07 10.8C8.53 10.3 7.83 10 7.05 10 5.39 10 4.05 11.34 4.05 13s1.34 3 3 3c.78 0 1.48-.3 2.01-.8l7.13 4.18c-.05.21-.09.43-.09.66 0 1.66 1.34 3 3 3s3-1.34 3-3-1.34-3-3-3z"/></svg>
+      Share
+    </button>
+    <button>
+      <svg viewBox="0 0 24 24"><path d="M17 3H7c-1.1 0-2 .9-2 2v16l7-3 7 3V5c0-1.1-.9-2-2-2z"/></svg>
+      Save
+    </button>
+  </div>
+</body>
+</html>
