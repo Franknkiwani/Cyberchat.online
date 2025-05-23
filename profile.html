@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>User Profile</title>
+<style>
+  :root {
+    --bg: #fff;
+    --text: #0f0f0f;
+    --subtext: #606060;
+    --card-bg: #f9f9f9;
+    --border: #ddd;
+    --btn-bg: #000;
+    --btn-text: #fff;
+  }
+  .dark {
+    --bg: #0f0f0f;
+    --text: #f1f1f1;
+    --subtext: #aaa;
+    --card-bg: #1c1c1c;
+    --border: #333;
+    --btn-bg: #fff;
+    --btn-text: #000;
+  }
+  * {
+    margin: 0; padding: 0; box-sizing: border-box;
+  }
+  body {
+    font-family: system-ui, sans-serif;
+    background-color: var(--bg);
+    color: var(--text);
+    padding-top: 1.5rem;
+    min-height: 100vh;
+  }
+  .banner {
+    height: 60px;
+    width: 80%;
+    max-width: 960px;
+    margin: 0 auto 1.5rem;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgb(0 0 0 / 0.15);
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+  }
+  .profile-info-box {
+    max-width: 960px;
+    margin: 0 auto 1rem;
+    padding: 0 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .profile-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  .profile-pic {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: 3px solid var(--bg);
+    object-fit: cover;
+    background-color: #ccc;
+  }
+  .profile-meta h1 {
+    font-size: 1.4rem;
+    font-weight: 500;
+  }
+  .profile-meta p {
+    font-size: 0.9rem;
+    color: var(--subtext);
+  }
+  .follow-btn {
+    padding: 0.5rem 1.2rem;
+    background: var(--btn-bg);
+    color: var(--btn-text);
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    font-weight: 500;
+  }
+  .gallery-grid {
+    max-width: 960px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 1.5rem;
+  }
+  .post-card {
+    background: var(--card-bg);
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+  .post-card img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+  }
+  .post-card .caption {
+    padding: 0.5rem;
+    font-size: 0.95rem;
+    font-weight: 500;
+  }
+  .post-card .meta {
+    font-size: 0.8rem;
+    padding: 0 0.5rem 0.7rem;
+    color: var(--subtext);
+  }
+  .loading {
+    max-width: 960px;
+    margin: 3rem auto;
+    font-size: 1.1rem;
+    color: var(--subtext);
+    text-align: center;
+  }
+</style>
+<script>
+  const theme = localStorage.getItem("theme");
+  if (theme === "dark") {
+    document.documentElement.classList.add("dark");
+  }
+</script>
+</head>
+<body>
+
+  <div id="banner" class="banner"></div>
+
+  <div class="profile-info-box">
+    <div class="profile-left">
+      <img
+        src=""
+        alt="Profile Pic"
+        id="profilePic"
+        class="profile-pic"
+      />
+      <div class="profile-meta">
+        <h1 id="username">@loading...</h1>
+        <p id="followersCount">0 followers • 0 posts</p>
+      </div>
+    </div>
+    <button id="followBtn" class="follow-btn" style="display:none;">Follow</button>
+  </div>
+
+  <section id="gallery" class="gallery-grid"></section>
+
+  <div id="loading" class="loading">Loading profile...</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+  import { getDatabase, ref, get, child, onValue, set, remove } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+
+  // Firebase config (your provided config)
+  const firebaseConfig = {
+    apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
+    authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
+    databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
+    projectId: "itzhoyoo-f9f7e",
+    storageBucket: "itzhoyoo-f9f7e.firebasestorage.app",
+    messagingSenderId: "1094792075584",
+    appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
+    measurementId: "G-LLT6F9WRKH"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  const auth = getAuth(app);
+
+  // Grab uid from URL param: ?uid=someUserId
+  const params = new URLSearchParams(window.location.search);
+  const profileUid = params.get("uid");
+  if (!profileUid) {
+    document.getElementById("loading").innerText = "No user ID provided in URL.";
+    throw new Error("No uid in URL");
+  }
+
+  const bannerEl = document.getElementById("banner");
+  const profilePicEl = document.getElementById("profilePic");
+  const usernameEl = document.getElementById("username");
+  const followersCountEl = document.getElementById("followersCount");
+  const followBtn = document.getElementById("followBtn");
+  const galleryEl = document.getElementById("gallery");
+  const loadingEl = document.getElementById("loading");
+
+  let currentUserUid = null;
+  let isFollowing = false;
+
+  // Update followers count UI
+  function updateFollowersCount(count, postsCount) {
+    followersCountEl.textContent = `${count} follower${count !== 1 ? 's' : ''} • ${postsCount} post${postsCount !== 1 ? 's' : ''}`;
+  }
+
+  // Load profile user info
+  async function loadProfileUser() {
+    const userSnap = await get(ref(db, `users/${profileUid}`));
+    if (!userSnap.exists()) {
+      loadingEl.innerText = "User not found.";
+      return;
+    }
+    const userData = userSnap.val();
+
+    bannerEl.style.backgroundImage = `url('${userData.bannerUrl || 'https://via.placeholder.com/960x60?text=No+Banner'}')`;
+    profilePicEl.src = userData.profilePicUrl || "https://via.placeholder.com/80?text=No+Pic";
+    usernameEl.textContent = '@' + (userData.username || 'unknown');
+
+    // Load followers count
+    const followersSnap = await get(ref(db, `followers/${profileUid}`));
+    const followersCount = followersSnap.exists() ? Object.keys(followersSnap.val()).length : 0;
+
+    // Load posts count
+    const postsSnap = await get(ref(db, `posts`));
+    const postsData = postsSnap.exists() ? postsSnap.val() : {};
+    let postsCount = 0;
+    for (const postId in postsData) {
+      if (postsData[postId].userId === profileUid) postsCount++;
+    }
+
+    updateFollowersCount(followersCount, postsCount);
+
+    // Show follow button only if logged in user is NOT the profile user
+    if (currentUserUid && currentUserUid !== profileUid) {
+      followBtn.style.display = 'inline-block';
+      checkIfFollowing();
+    } else {
+      followBtn.style.display = 'none';
+    }
+
+    loadingEl.style.display = 'none';
+  }
+
+  // Load posts by this user
+  async function loadPosts() {
+    galleryEl.innerHTML = ""; // clear
+    const postsSnap = await get(ref(db, `posts`));
+    if (!postsSnap.exists()) return;
+    const posts = postsSnap.val();
+
+    // Filter only posts by profile user
+    const userPosts = Object.entries(posts)
+      .filter(([id, post]) => post.userId === profileUid);
+
+    if (userPosts.length === 0) {
+      galleryEl.innerHTML = "<p style='color: var(--subtext);'>No posts yet.</p>";
+      return;
+    }
+
+    userPosts.forEach(([postId, post]) => {
+      const card = document.createElement("div");
+      card.className = "post-card";
+
+      const img = document.createElement("img");
+      img.src = post.imageUrl || "";
+      img.alt = post.caption || "User post image";
+
+      const caption = document.createElement("div");
+      caption.className = "caption";
+      caption.textContent = post.caption || "";
+
+      const meta = document.createElement("div");
+      meta.className = "meta";
+      meta.textContent = `${post.likesCount || 0} likes • ${post.commentsCount || 0} comments`;
+
+      card.appendChild(img);
+      card.appendChild(caption);
+      card.appendChild(meta);
+
+      galleryEl.appendChild(card);
+    });
+  }
+
+  // Check if current logged-in user follows profile user
+  async function checkIfFollowing() {
+    if (!currentUserUid) return;
+    const followSnap = await get(ref(db, `followers/${profileUid}/${currentUserUid}`));
+    isFollowing = followSnap.exists();
+    updateFollowBtn();
+  }
+
+  function updateFollowBtn() {
+    followBtn.textContent = isFollowing ? "Following" : "Follow";
+    followBtn.style.backgroundColor = isFollowing ? "#555" : "var(--btn-bg)";
+    followBtn.style.color = isFollowing ? "#ddd" : "var(--btn-text)";
+  }
+
+  // Follow/unfollow logic
+  async function toggleFollow() {
+    if (!currentUserUid) {
+      alert("You need to be logged in to follow users.");
+      return;
+    }
+    if (isFollowing) {
+      // Unfollow
+      await remove(ref(db, `followers/${profileUid}/${currentUserUid}`));
+      isFollowing = false;
+    } else {
+      // Follow
+      await set(ref(db, `followers/${profileUid}/${currentUserUid}`), true);
+      isFollowing = true;
+    }
+    updateFollowBtn();
+
+    // Update followers count display (fetch again)
+    const followersSnap = await get(ref(db, `followers/${profileUid}`));
+    const followersCount = followersSnap.exists() ? Object.keys(followersSnap.val()).length : 0;
+    updateFollowersCount(followersCount, null); // null means keep posts count unchanged
+  }
+
+  followBtn.addEventListener('click', toggleFollow);
+
+  // Monitor auth state
+  onAuthStateChanged(auth, user => {
+    currentUserUid = user ? user.uid : null;
+    loadProfileUser();
+    loadPosts();
+// If the user just logged in/out, refresh follow button state
+    if (currentUserUid && currentUserUid !== profileUid) {
+      checkIfFollowing();
+      followBtn.style.display = 'inline-block';
+    } else {
+      followBtn.style.display = 'none';
+    }
+  });
+
+  // Initial load in case user is already logged in before onAuthStateChanged fires
+  auth.currentUser ? (() => {
+    currentUserUid = auth.currentUser.uid;
+    loadProfileUser();
+    loadPosts();
+    if (currentUserUid !== profileUid) {
+      checkIfFollowing();
+      followBtn.style.display = 'inline-block';
+    }
+  })() : (() => {
+    loadProfileUser();
+    loadPosts();
+  })();
+
+</script>
+
+</body>
+</html>
