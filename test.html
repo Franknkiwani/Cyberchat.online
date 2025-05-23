@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" >
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>View Post</title>
+  <title>Post View - YouTube Style</title>
   <style>
     * {
       box-sizing: border-box;
@@ -35,19 +35,65 @@
       font-weight: 600;
       margin-bottom: 0.5rem;
     }
-    .meta {
+
+    /* Profile area */
+    .profile {
       display: flex;
-      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 0.5rem;
+    }
+    .profile-pic {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      border: 3px solid #1e90ff; /* Blue edge */
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+    .profile-pic img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .user-info {
+      display: flex;
+      flex-direction: column;
+    }
+    .username {
+      font-weight: 600;
+      font-size: 1.1rem;
+      color: #eee;
+    }
+    .followers {
       font-size: 0.9rem;
       color: #aaa;
-      margin-bottom: 1rem;
+      margin-top: 0.2rem;
     }
+
     .actions {
       display: flex;
       gap: 1rem;
       margin-bottom: 1rem;
+      overflow-x: auto;
+      padding-bottom: 0.25rem;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+    }
+    .actions::-webkit-scrollbar {
+      height: 6px;
+    }
+    .actions::-webkit-scrollbar-thumb {
+      background: #555;
+      border-radius: 3px;
+    }
+    .actions::-webkit-scrollbar-track {
+      background: transparent;
     }
     .action-button {
+      flex: 0 0 auto;
+      scroll-snap-align: start;
       background: #222;
       border: none;
       color: #fff;
@@ -77,14 +123,46 @@
       color: #eee;
       user-select: none;
     }
+
+    /* Description */
     .description {
-      white-space: pre-wrap;
       line-height: 1.5;
       margin-bottom: 2rem;
       background: #1a1a1a;
       padding: 1rem;
       border-radius: 8px;
+      position: relative;
+      font-size: 1rem;
+      white-space: pre-wrap;
+      color: #ddd;
     }
+    .description a {
+      color: #1e90ff;
+      text-decoration: none;
+      word-break: break-word;
+    }
+    .description a:hover {
+      text-decoration: underline;
+    }
+    .tags {
+      margin-top: 0.5rem;
+    }
+    .tag {
+      color: #1e90ff;
+      margin-right: 0.5rem;
+      cursor: pointer;
+      user-select: none;
+    }
+    .read-more-btn {
+      color: #1e90ff;
+      cursor: pointer;
+      font-weight: 600;
+      margin-top: 0.5rem;
+      display: inline-block;
+      user-select: none;
+    }
+
+    /* Comments */
     .comments {
       border-top: 1px solid #333;
       padding-top: 1rem;
@@ -99,6 +177,47 @@
     .comment-text {
       margin-top: 0.2rem;
       color: #ccc;
+      white-space: pre-wrap;
+    }
+
+    /* Modal */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.85);
+      backdrop-filter: blur(6px);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+      padding: 2rem;
+    }
+    .modal-overlay.active {
+      display: flex;
+    }
+    .modal-content {
+      background: #121212;
+      max-width: 600px;
+      max-height: 80vh;
+      overflow-y: auto;
+      border-radius: 12px;
+      padding: 1.5rem;
+      color: #eee;
+      font-size: 1rem;
+      line-height: 1.6;
+      box-shadow: 0 0 20px #1e90ff;
+    }
+    .modal-close {
+      position: absolute;
+      top: 1.2rem;
+      right: 1.5rem;
+      font-size: 1.8rem;
+      font-weight: 700;
+      cursor: pointer;
+      color: #1e90ff;
+      user-select: none;
+      background: transparent;
+      border: none;
     }
   </style>
 </head>
@@ -114,9 +233,14 @@
 
     <div class="title" id="postTitle">Sample Post Title</div>
 
-    <div class="meta">
-      <div id="postAuthor">By @anon</div>
-      <div id="postDate">May 23, 2025</div>
+    <div class="profile">
+      <div class="profile-pic">
+        <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="User Profile" />
+      </div>
+      <div class="user-info">
+        <div class="username">@anonUser</div>
+        <div class="followers">100 followers</div>
+      </div>
     </div>
 
     <div class="actions">
@@ -152,8 +276,9 @@
     </div>
 
     <div class="description" id="postDescription">
-      This is the post description. It’s styled to feel just like YouTube’s video detail box, with space for full multiline text.
+      <!-- Description content will be injected here -->
     </div>
+    <div class="tags" id="postTags"></div>
 
     <div class="comments" id="commentsSection">
       <div class="comment">
@@ -166,5 +291,75 @@
       </div>
     </div>
   </div>
+
+  <!-- Modal for full description -->
+  <div class="modal-overlay" id="descModal">
+    <div class="modal-content">
+      <button class="modal-close" id="modalClose">&times;</button>
+      <div id="fullDescription"></div>
+    </div>
+  </div>
+
+  <script>
+    const descriptionText = `Check out this awesome post! Visit https://example.com for more info.
+Also, don't forget to follow the #Tech #Innovation #Design tags. This description is long enough to test the Read More functionality properly.`;
+
+    const maxLength = 80;
+    const descriptionEl = document.getElementById('postDescription');
+    const fullDescModal = document.getElementById('descModal');
+    const fullDescContent = document.getElementById('fullDescription');
+    const modalCloseBtn = document.getElementById('modalClose');
+    const tagsContainer = document.getElementById('postTags');
+
+    // Helper: convert URLs to clickable links
+    function linkify(text) {
+      const urlPattern = /(\bhttps?:\/\/[^\s]+)/g;
+      return text.replace(urlPattern, url => `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`);
+    }
+
+    // Extract hashtags and display
+    function renderTags(text) {
+      const tagPattern = /#(\w+)/g;
+      let match;
+      const tags = new Set();
+      while ((match = tagPattern.exec(text)) !== null) {
+        tags.add(match[0]);
+      }
+      tagsContainer.innerHTML = '';
+      tags.forEach(tag => {
+        const span = document.createElement('span');
+        span.textContent = tag;
+        span.className = 'tag';
+        tagsContainer.appendChild(span);
+      });
+    }
+
+    // Set truncated or full description with read more
+    function renderDescription(text) {
+      if(text.length <= maxLength) {
+        descriptionEl.innerHTML = linkify(text);
+      } else {
+        const truncated = text.slice(0, maxLength) + '... ';
+        descriptionEl.innerHTML = linkify(truncated) + `<span class="read-more-btn" id="readMoreBtn">Read more</span>`;
+        document.getElementById('readMoreBtn').addEventListener('click', () => {
+          fullDescContent.innerHTML = linkify(text);
+          fullDescModal.classList.add('active');
+        });
+      }
+    }
+
+    modalCloseBtn.addEventListener('click', () => {
+      fullDescModal.classList.remove('active');
+    });
+
+    // Clicking outside modal content closes modal
+    fullDescModal.addEventListener('click', e => {
+      if(e.target === fullDescModal) fullDescModal.classList.remove('active');
+    });
+
+    // Initialize description and tags
+    renderDescription(descriptionText);
+    renderTags(descriptionText);
+  </script>
 </body>
 </html>
