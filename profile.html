@@ -2,135 +2,217 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Public Profile</title>
   <style>
+    :root {
+      --bg-light: #fff;
+      --bg-dark: #181818;
+      --text-light: #000;
+      --text-dark: #fff;
+      --border-light: #000;
+      --border-dark: #f0f; /* pink/cyan for dark mode */
+    }
+
     body {
-      font-family: Arial, sans-serif;
-      background-color: #121212;
-      color: white;
       margin: 0;
-      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+        Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
       transition: background 0.3s, color 0.3s;
     }
 
-    body.light {
-      background-color: #f9f9f9;
-      color: #222;
+    .light {
+      background: var(--bg-light);
+      color: var(--text-light);
+    }
+
+    .dark {
+      background: var(--bg-dark);
+      color: var(--text-dark);
+    }
+
+    .container {
+      padding: 1rem;
+      max-width: 800px;
+      margin: 0 auto;
     }
 
     .banner {
       width: 80%;
-      margin: 20px auto 0;
-      border-radius: 20px;
-      overflow: hidden;
-    }
-
-    .banner img {
-      width: 100%;
-      height: auto;
+      border-radius: 12px;
+      margin: 1rem auto 3rem;
       display: block;
+      object-fit: cover;
+      height: 100px;
+      box-shadow: 0 4px 8px rgb(0 0 0 / 0.2);
+      position: relative;
+      z-index: 0;
     }
 
-    .profile-container {
-      text-align: center;
-      margin-top: 20px;
+    .profile-info {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
+      position: relative;
+      z-index: 1;
+      margin-top: -50px; /* push down so no overlap with banner */
+      background: inherit;
+      padding: 0 1rem;
     }
 
     .profile-pic {
-      width: 100px;
-      height: 100px;
-      object-fit: cover;
+      width: 72px;
+      height: 72px;
       border-radius: 50%;
-      margin-top: -50px;
-      border: 4px solid white;
+      background: #666;
+      color: white;
+      font-weight: 700;
+      font-size: 28px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      user-select: none;
+      flex-shrink: 0;
+      overflow: hidden;
+      text-transform: uppercase;
+      border: 3px solid var(--border-light);
+      transition: border-color 0.3s;
     }
 
-    .light .profile-pic {
-      border-color: black;
+    .dark .profile-pic {
+      border-color: var(--border-dark);
     }
 
-    .user-name {
-      font-size: 1.5rem;
-      font-weight: bold;
-      margin-top: 10px;
+    .user-meta {
+      flex: 1;
     }
 
-    .user-description, .user-links {
-      margin-top: 10px;
-      font-size: 0.9rem;
+    #handle {
+      font-size: 0.9em;
+      color: gray;
+      margin-top: 0.1rem;
+      user-select: text;
+      font-family: monospace;
+    }
+
+    #description {
+      margin-top: 0.5rem;
+      font-size: 0.95rem;
+      white-space: pre-wrap;
+      color: var(--text-light);
     }
 
     .follow-btn {
-      margin-top: 12px;
-      padding: 8px 20px;
-      border-radius: 20px;
-      border: none;
-      cursor: pointer;
-      font-weight: bold;
-      background-color: crimson;
+      background: crimson;
       color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      flex-shrink: 0;
+      font-weight: 600;
+      user-select: none;
+      transition: background 0.3s;
     }
 
-    .post-gallery {
+    .follow-btn:hover {
+      background: darkred;
+    }
+
+    .post-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-      gap: 16px;
-      padding: 20px;
-      max-width: 1000px;
-      margin: 0 auto;
+      gap: 1rem;
+      margin-top: 2rem;
+      margin-bottom: 2rem;
     }
 
-    .post-wrapper {
-      border-radius: 12px;
+    .post {
+      border: 2px solid var(--border-light);
+      border-radius: 8px;
       overflow: hidden;
       cursor: pointer;
-      transition: transform 0.2s ease;
+      transition: border-color 0.3s;
+      user-select: none;
+      background: inherit;
     }
 
-    .post-image {
+    .dark .post {
+      border-color: var(--border-dark);
+    }
+
+    .post img {
       width: 100%;
-      height: auto;
-      border-radius: 12px;
       display: block;
+      object-fit: cover;
+      aspect-ratio: 4 / 3;
     }
 
-    .light .post-wrapper {
-      box-shadow: 0 0 6px rgba(0,0,0,0.6);
+    .loading {
+      text-align: center;
+      margin: 3rem 0;
     }
 
-    .dark .post-wrapper {
-      box-shadow: 0 0 10px rgba(255,255,255,0.2);
+    .spinner {
+      width: 48px;
+      height: 48px;
+      border: 6px solid currentColor;
+      border-top: 6px solid transparent;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: auto;
     }
 
-    .dark .post-wrapper:nth-child(odd) {
-      box-shadow: 0 0 10px 1px rgba(255, 105, 180, 0.5);
-    }
-
-    .dark .post-wrapper:nth-child(even) {
-      box-shadow: 0 0 10px 1px rgba(0, 255, 255, 0.4);
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
     }
   </style>
 </head>
 <body>
-  <div class="banner">
-    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQLpJFRzXUUjUvEGV5LqUcz6R3hxGFjhghY-w&s" alt="Banner" />
-  </div>
-  <div class="profile-container">
-    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQJ-xkg_UuiaE5VLCtF5gvQMlDrSh8ws2ztv5J8t348Yujn34teOGrQE2k&s=10" alt="Profile Pic" class="profile-pic" />
-    <h1 class="user-name" id="user-name">Loading...</h1>
-    <p class="user-description" id="user-description"></p>
-    <div class="user-links" id="user-links"></div>
-    <button class="follow-btn" id="follow-btn">Follow</button>
-  </div>
-  <div class="post-gallery" id="post-gallery"></div>
+  <div class="container">
+    <img
+      class="banner"
+      id="banner"
+      src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQLpJFRzXUUjUvEGV5LqUcz6R3hxGFjhghY-w&s"
+      alt="Banner"
+    />
+    <div class="profile-info">
+      <div class="profile-pic" id="profilePicFallback" style="display:none;"></div>
+      <img class="profile-pic" id="profilePic" alt="Profile Picture" />
+      <div class="user-meta">
+        <h2 id="username">Loading...</h2>
+        <p id="handle">...</p>
+        <p id="description">...</p>
+      </div>
+      <button class="follow-btn" id="followBtn">Follow</button>
+    </div>
 
-  <!-- Firebase SDK -->
+    <div class="loading" id="loader">
+      <div class="spinner"></div>
+    </div>
+
+    <div class="post-grid" id="posts"></div>
+  </div>
+
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-    import { getDatabase, ref, onValue, get, child, update } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+    import {
+      getDatabase,
+      ref,
+      get,
+      set,
+      onValue,
+      update,
+      child,
+    } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+    import {
+      getAuth,
+      onAuthStateChanged,
+    } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
 
+    // Firebase config
     const firebaseConfig = {
       apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
       authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
@@ -139,78 +221,192 @@
       storageBucket: "itzhoyoo-f9f7e.firebasestorage.app",
       messagingSenderId: "1094792075584",
       appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
-      measurementId: "G-LLT6F9WRKH"
     };
 
+    // Init Firebase
     const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
+    const db = getDatabase();
     const auth = getAuth();
 
-    // Apply theme from localStorage
+    // THEME
     const theme = localStorage.getItem("theme") || "light";
     document.body.classList.add(theme);
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const profileUid = urlParams.get('uid');
+    // Grab user ID from URL
+    const params = new URLSearchParams(location.search);
+    const uid = params.get("id");
 
-    const userNameEl = document.getElementById("user-name");
-    const userDescEl = document.getElementById("user-description");
-    const userLinksEl = document.getElementById("user-links");
-    const followBtn = document.getElementById("follow-btn");
-    const postGallery = document.getElementById("post-gallery");
+    // DOM elements
+    const usernameEl = document.getElementById("username");
+    const descriptionEl = document.getElementById("description");
+    const profilePicEl = document.getElementById("profilePic");
+    const profilePicFallback = document.getElementById("profilePicFallback");
+    const postsContainer = document.getElementById("posts");
+    const loader = document.getElementById("loader");
+    const followBtn = document.getElementById("followBtn");
+    const handleEl = document.getElementById("handle");
 
-    onAuthStateChanged(auth, (user) => {
-      if (!user || !profileUid) return;
+    // Generate handle from username with random 3 digits
+    function generateHandle(name) {
+      const base = name.replace(/\s+/g, "").toLowerCase();
+      const rand = Math.floor(100 + Math.random() * 900);
+      return base + rand;
+    }
 
-      const userRef = ref(db, 'users/' + profileUid);
-      onValue(userRef, (snapshot) => {
-        const data = snapshot.val();
-        if (data) {
-          userNameEl.textContent = data.username || "Unknown User";
-          userDescEl.textContent = data.description || "";
-          if (data.links) {
-            userLinksEl.innerHTML = Object.entries(data.links).map(
-              ([name, url]) => `<a href="${url}" target="_blank">${name}</a>`
-            ).join(" | ");
-          }
+    // Helper: create initials from name
+    function initials(name) {
+      if (!name) return "";
+      const parts = name.trim().split(/\s+/);
+      if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+      else
+        return (
+          parts[0][0].toUpperCase() + parts[1][0].toUpperCase()
+        );
+    }
+
+    // Load user profile and handle auto-generation of handle
+    async function loadProfile() {
+      if (!uid) return alert("No user ID in URL");
+
+      const userRef = ref(db, `users/${uid}`);
+      const snap = await get(userRef);
+
+      if (snap.exists()) {
+        const data = snap.val();
+
+        usernameEl.textContent = data.username || "Unnamed";
+        descriptionEl.textContent = data.description || "No description yet";
+
+        // Handle fallback for profile pic to initials
+        if (data.profilePic) {
+          profilePicEl.src = data.profilePic;
+          profilePicEl.style.display = "block";
+          profilePicFallback.style.display = "none";
+        } else {
+          profilePicEl.style.display = "none";
+          profilePicFallback.textContent = initials(data.username || "??");
+          profilePicFallback.style.display = "flex";
         }
-      });
 
-      const followRef = ref(db, `users/${user.uid}/following`);
-      onValue(followRef, (snap) => {
-        const following = snap.val() || {};
-        followBtn.textContent = following[profileUid] ? "Unfollow" : "Follow";
-      });
+        // Generate or show handle (if stored)
+        if (data.handle) {
+          handleEl.textContent = data.handle;
+        } else {
+          const newHandle = generateHandle(data.username || "user");
+          handleEl.textContent = newHandle;
+          // Save handle to DB for persistence
+          update(userRef, { handle: newHandle }).catch(console.error);
+        }
 
-      followBtn.onclick = async () => {
-        const followingRef = ref(db, `users/${user.uid}/following`);
-        const currentSnap = await get(followingRef);
-        const following = currentSnap.val() || {};
-        following[profileUid] = !following[profileUid];
-        await update(followingRef, following);
-      };
+        // After profile loads, check follow status
+        checkFollowStatus();
 
-      const postsRef = ref(db, 'post');
-      onValue(postsRef, (snapshot) => {
-        postGallery.innerHTML = "";
-        snapshot.forEach((childSnap) => {
-          const post = childSnap.val();
-          if (post.uid === profileUid && post.image) {
-            const div = document.createElement("div");
-            div.className = "post-wrapper";
-            const img = document.createElement("img");
-            img.className = "post-image";
-            img.src = post.image;
-            img.alt = post.title || "Post";
-            img.onclick = () => {
-              window.location.href = `viewport.html?postId=${childSnap.key}`;
-            };
-            div.appendChild(img);
-            postGallery.appendChild(div);
-          }
-        });
-      });
+        // Load user posts
+        loadUserPosts();
+
+      } else {
+        usernameEl.textContent = "User not found";
+        descriptionEl.textContent = "";
+        profilePicEl.style.display = "none";
+        profilePicFallback.style.display = "none";
+      }
+    }
+
+    // Check if current logged in user is following this profile
+    async function checkFollowStatus() {
+      const currentUser = auth.currentUser;
+      if (!currentUser || currentUser.uid === uid) {
+        followBtn.style.display = "none"; // Hide follow button if own profile or not logged in
+        return;
+      }
+
+      const followRef = ref(db, `followers/${uid}/${currentUser.uid}`);
+      const snap = await get(followRef);
+      if (snap.exists()) {
+        followBtn.textContent = "Following";
+        followBtn.disabled = false;
+      } else {
+        followBtn.textContent = "Follow";
+        followBtn.disabled = false;
+      }
+    }
+
+    // Toggle follow/unfollow
+    followBtn.addEventListener("click", async () => {
+      followBtn.disabled = true;
+      const currentUser = auth.currentUser;
+      if (!currentUser) return alert("You need to be logged in to follow.");
+
+      const followRef = ref(db, `followers/${uid}/${currentUser.uid}`);
+
+      const snap = await get(followRef);
+      if (snap.exists()) {
+        // Unfollow
+        await set(followRef, null);
+        followBtn.textContent = "Follow";
+      } else {
+        // Follow
+        await set(followRef, true);
+        followBtn.textContent = "Following";
+      }
+      followBtn.disabled = false;
     });
+
+    // Load posts made by this user
+    async function loadUserPosts() {
+      loader.style.display = "block";
+      postsContainer.innerHTML = "";
+
+      const postsRef = ref(db, "post");
+      const snap = await get(postsRef);
+
+      if (!snap.exists()) {
+        loader.style.display = "none";
+        postsContainer.textContent = "No posts yet.";
+        return;
+      }
+
+      const posts = snap.val();
+      const userPosts = Object.values(posts).filter(p => p.uid === uid);
+
+      if (userPosts.length === 0) {
+        postsContainer.textContent = "No posts yet.";
+        loader.style.display = "none";
+        return;
+      }
+
+      userPosts.forEach(post => {
+        const div = document.createElement("div");
+        div.className = "post";
+
+        const img = document.createElement("img");
+        img.src = post.image || "https://via.placeholder.com/160x120?text=No+Image";
+        img.alt = post.title || "Post image";
+
+        div.appendChild(img);
+        postsContainer.appendChild(div);
+
+        // Optional: click to open post detail (not implemented here)
+      });
+
+      loader.style.display = "none";
+    }
+
+    // Auth state monitoring
+    onAuthStateChanged(auth, user => {
+      if (user) {
+        loadProfile();
+      } else {
+        loadProfile(); // Load profile anyway, but no follow button
+      }
+    });
+
+    // Initial load fallback if auth state doesn't fire quickly
+    setTimeout(() => {
+      if (!usernameEl.textContent || usernameEl.textContent === "Loading...") {
+        loadProfile();
+      }
+    }, 2000);
   </script>
 </body>
 </html>
