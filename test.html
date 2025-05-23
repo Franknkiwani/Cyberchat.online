@@ -12,7 +12,7 @@
       margin: 0;
       background-color: #0f0f0f;
       color: #fff;
-      font-family: system-ui, sans-serif;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
     .container {
       max-width: 960px;
@@ -29,7 +29,6 @@
       width: 100%;
       height: auto;
       border-radius: 12px;
-      object-fit: cover;
     }
     .title {
       font-size: 1.5rem;
@@ -52,22 +51,31 @@
       background: #222;
       border: none;
       color: #fff;
-      padding: 0.5rem 1rem;
+      padding: 0.5rem 1.2rem;
       border-radius: 999px;
-      font-size: 0.9rem;
+      font-size: 1rem;
       cursor: pointer;
       display: flex;
       align-items: center;
-      gap: 0.4rem;
+      gap: 0.6rem;
       transition: background 0.2s;
+      user-select: none;
     }
     .action-button:hover {
       background: #333;
     }
     .action-button svg {
-      width: 20px;
-      height: 20px;
+      width: 22px;
+      height: 22px;
       fill: #fff;
+      flex-shrink: 0;
+    }
+    .count {
+      font-weight: 600;
+      min-width: 28px;
+      text-align: right;
+      color: #eee;
+      user-select: none;
     }
     .description {
       white-space: pre-wrap;
@@ -97,7 +105,11 @@
 <body>
   <div class="container">
     <div class="media">
-      <img id="postImage" src="https://picsum.photos/960/540" alt="Post Media" />
+      <img
+        id="postImage"
+        src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQdKTwgOD9MYs8iIcJvBx5ioSya0XRJpe-wmQSv5j9mvHeLxdXw9n94n1w&s=10"
+        alt="Post Media"
+      />
     </div>
 
     <div class="title" id="postTitle">Sample Post Title</div>
@@ -108,20 +120,33 @@
     </div>
 
     <div class="actions">
-      <button class="action-button" id="likeBtn">
-        <svg viewBox="0 0 24 24"><path d="M14 1H6c-.6 0-1 .4-1 1v12c0 .6.4 1 1 1h8c.6 0 1-.4 1-1V2c0-.6-.4-1-1-1zM5 3H2c-.6 0-1 .4-1 1v8c0 .6.4 1 1 1h3V3zm17 4c0-1.1-.9-2-2-2h-4v10h4c1.1 0 2-.9 2-2V7z"/></svg>
+      <button class="action-button" id="likeBtn" aria-label="Like">
+        <svg viewBox="0 0 24 24" >
+          <path d="M2 21h4V9H2v12zM23 10c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 2 7.59 8.59C7.22 8.95 7 9.45 7 10v9c0 1.1.9 2 2 2h7c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-1z"/>
+        </svg>
         Like
+        <span class="count" id="likeCount">123</span>
       </button>
-      <button class="action-button" id="dislikeBtn">
-        <svg viewBox="0 0 24 24"><path d="M10 23h8c.6 0 1-.4 1-1V10c0-.6-.4-1-1-1h-8c-.6 0-1 .4-1 1v12c0 .6.4 1 1 1zM19 21h3c.6 0 1-.4 1-1v-8c0-.6-.4-1-1-1h-3v10zM5 17c0 1.1.9 2 2 2h4V9H7c-1.1 0-2 .9-2 2v6z"/></svg>
+
+      <button class="action-button" id="dislikeBtn" aria-label="Dislike">
+        <svg viewBox="0 0 24 24" >
+          <path d="M22 3h-4v12h4V3zM1 14c0 1.1.9 2 2 2h6.31l-.95 4.57-.03.32c0 .41.17.79.44 1.06L9.83 22l6.59-6.59c.36-.36.59-.86.59-1.41V5c0-1.1-.9-2-2-2H7c-.83 0-1.54.5-1.84 1.22L2.14 9.27c-.09.23-.14.47-.14.73v1z"/>
+        </svg>
         Dislike
+        <span class="count" id="dislikeCount">4</span>
       </button>
-      <button class="action-button" id="shareBtn">
-        <svg viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.02-4.11c.53.5 1.23.81 2.01.81 1.66 0 3-1.34 3-3s-1.34-3-3-3S16 4.34 16 6c0 .24.04.47.09.7L9.07 10.8C8.53 10.3 7.83 10 7.05 10 5.39 10 4.05 11.34 4.05 13s1.34 3 3 3c.78 0 1.48-.3 2.01-.8l7.13 4.18c-.05.21-.09.43-.09.66 0 1.66 1.34 3 3 3s3-1.34 3-3-1.34-3-3-3z"/></svg>
+
+      <button class="action-button" id="shareBtn" aria-label="Share">
+        <svg viewBox="0 0 24 24">
+          <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.02-4.11c.53.5 1.23.81 2.01.81 1.66 0 3-1.34 3-3s-1.34-3-3-3S16 4.34 16 6c0 .24.04.47.09.7L9.07 10.8C8.53 10.3 7.83 10 7.05 10 5.39 10 4.05 11.34 4.05 13s1.34 3 3 3c.78 0 1.48-.3 2.01-.8l7.13 4.18c-.05.21-.09.43-.09.66 0 1.66 1.34 3 3 3s3-1.34 3-3-1.34-3-3-3z"/>
+        </svg>
         Share
       </button>
-      <button class="action-button" id="saveBtn">
-        <svg viewBox="0 0 24 24"><path d="M17 3H7c-1.1 0-2 .9-2 2v16l7-3 7 3V5c0-1.1-.9-2-2-2z"/></svg>
+
+      <button class="action-button" id="saveBtn" aria-label="Save">
+        <svg viewBox="0 0 24 24">
+          <path d="M17 3H7c-1.1 0-2 .9-2 2v16l7-3 7 3V5c0-1.1-.9-2-2-2z"/>
+        </svg>
         Save
       </button>
     </div>
