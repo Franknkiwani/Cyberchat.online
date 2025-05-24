@@ -2,259 +2,399 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Firebase Multi-Tab Demo</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>iPhone Style Tabs with Firebase Content</title>
 <style>
-  /* Basic styling for tabs and cards */
+  /* Reset + basics */
   body {
+    margin: 0; 
+    background: #f0f0f5;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-    background: #f0f2f5;
-    margin: 0; padding: 0;
+    color: #111;
+    -webkit-font-smoothing: antialiased;
   }
-  nav {
+  /* Top tab container */
+  .tab-bar {
     display: flex;
-    background: white;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    justify-content: space-around;
+    background: linear-gradient(145deg, #f8f8f8, #e0e0e0);
+    padding: 12px 0;
+    box-shadow:
+      0 5px 10px rgba(0,0,0,0.05),
+      inset 0 -1px 0 #ccc;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    border-radius: 0 0 18px 18px;
+    margin-bottom: 10px;
   }
-  nav div.tab {
-    flex: 1;
-    padding: 1rem;
-    text-align: center;
-    cursor: pointer;
-    user-select: none;
+  /* Tab buttons with iOS 3D style */
+  .tab-bar button {
+    background: linear-gradient(145deg, #ffffff, #d7d7d7);
+    border: none;
+    border-radius: 15px;
+    box-shadow:
+      5px 5px 8px #bebebe,
+      -5px -5px 8px #ffffff;
+    padding: 8px 18px;
     font-weight: 600;
+    font-size: 16px;
+    color: #444;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    flex: 1;
+    margin: 0 6px;
+    max-width: 120px;
   }
-  nav div.tab.active {
-    border-bottom: 3px solid #007aff;
-    color: #007aff;
+  .tab-bar button.active {
+    background: linear-gradient(145deg, #d6d6f0, #a1a1f7);
+    color: white;
+    box-shadow:
+      inset 5px 5px 8px #6b6bcd,
+      inset -5px -5px 8px #b1b1ff;
+    transform: translateY(-3px);
   }
-  .content {
+  .tab-bar button:hover:not(.active) {
+    box-shadow:
+      5px 5px 8px #bfbfbf,
+      -5px -5px 8px #f7f7f7;
+  }
+
+  /* Content container */
+  #content > section {
     display: none;
-    padding: 1rem;
+    padding: 0 12px 30px;
+    max-width: 600px;
+    margin: auto;
   }
-  .content.active {
+  #content > section.active {
     display: block;
   }
-  .card {
+
+  /* Instagram style posts */
+  .insta-post {
     background: white;
-    border-radius: 12px;
-    padding: 1rem;
-    margin-bottom: 1rem;
-    box-shadow: 0 2px 6px rgb(0 0 0 / 0.1);
+    border-radius: 16px;
+    box-shadow: 0 3px 10px rgb(0 0 0 / 0.1);
+    margin-bottom: 1.5rem;
+    overflow: hidden;
   }
-  .post-title, .poll-quiz-title, .user-name {
+  .insta-post img {
+    width: 100%;
+    display: block;
+    object-fit: cover;
+  }
+  .insta-caption {
+    padding: 12px 16px;
+    font-weight: 600;
+    font-size: 1rem;
+    color: #111;
+  }
+  .insta-views {
+    padding: 0 16px 12px;
+    color: #999;
+    font-size: 0.875rem;
+  }
+
+  /* Community item */
+  .community-item {
+    background: white;
+    border-radius: 14px;
+    padding: 12px 16px;
+    margin-bottom: 12px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.07);
+  }
+  .community-item h3 {
+    margin: 0 0 6px 0;
     font-weight: 700;
-    font-size: 1.1rem;
   }
-  .post-body, .poll-quiz-body {
-    margin-top: 0.5rem;
+  .community-item p {
+    margin: 0;
     color: #444;
   }
+
+  /* Following list */
+  .follow-list {
+    max-width: 600px;
+    margin: auto;
+  }
+  .follow-item {
+    display: flex;
+    align-items: center;
+    background: white;
+    border-radius: 14px;
+    padding: 10px 16px;
+    margin-bottom: 12px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.07);
+  }
+  .follow-item img {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: 14px;
+  }
+  .follow-info {
+    flex-grow: 1;
+  }
+  .follow-info .username {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: #111;
+  }
+  .follow-info .handle {
+    font-size: 0.9rem;
+    color: #777;
+  }
   .unfollow-btn {
-    margin-top: 0.5rem;
-    padding: 0.3rem 0.6rem;
     background: #ff3b30;
-    color: white;
     border: none;
-    border-radius: 6px;
+    color: white;
+    padding: 6px 14px;
+    border-radius: 14px;
     cursor: pointer;
+    font-weight: 700;
+    transition: background 0.3s ease;
+  }
+  .unfollow-btn:hover {
+    background: #e32b20;
+  }
+
+  /* Loading text style */
+  .loading {
+    text-align: center;
+    padding: 40px 0;
     font-weight: 600;
+    color: #666;
   }
 </style>
 </head>
 <body>
 
-<nav>
-  <div class="tab active" onclick="switchTab('home')">Home</div>
-  <div class="tab" onclick="switchTab('community')">Community</div>
-  <div class="tab" onclick="switchTab('following')">Following</div>
-</nav>
+<!-- Top tab buttons -->
+<div class="tab-bar">
+  <button id="tab-home" class="active">Home</button>
+  <button id="tab-community">Community</button>
+  <button id="tab-following">Following</button>
+</div>
 
-<div id="homePage" class="content active">
-  <p>Loading posts...</p>
-</div>
-<div id="communityPage" class="content">
-  <p>Loading community content...</p>
-</div>
-<div id="followingPage" class="content">
-  <p>Loading following list...</p>
+<!-- Content Sections -->
+<div id="content">
+  <section id="home" class="active"></section>
+  <section id="community"></section>
+  <section id="following"></section>
 </div>
 
 <script type="module">
-// Your Firebase config + imports
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-analytics.js";
-import { getDatabase, ref, get, child, remove } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+  import { getDatabase, ref, get, child, onValue, update } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
-  authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
-  databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
-  projectId: "itzhoyoo-f9f7e",
-  storageBucket: "itzhoyoo-f9f7e.firebasestorage.app",
-  messagingSenderId: "1094792075584",
-  appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
-  measurementId: "G-LLT6F9WRKH"
-};
+  // Your Firebase config
+  const firebaseConfig = {
+    apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
+    authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
+    databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
+    projectId: "itzhoyoo-f9f7e",
+    storageBucket: "itzhoyoo-f9f7e.firebasestorage.app",
+    messagingSenderId: "1094792075584",
+    appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
+    measurementId: "G-LLT6F9WRKH"
+  };
 
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
-const db = getDatabase(app);
-const auth = getAuth(app);
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  const auth = getAuth();
 
-const homePage = document.getElementById('homePage');
-const communityPage = document.getElementById('communityPage');
-const followingPage = document.getElementById('followingPage');
+  // UI Elements
+  const tabHomeBtn = document.getElementById('tab-home');
+  const tabCommunityBtn = document.getElementById('tab-community');
+  const tabFollowingBtn = document.getElementById('tab-following');
 
-let currentUser = null;
+  const homePage = document.getElementById('home');
+  const communityPage = document.getElementById('community');
+  const followingPage = document.getElementById('following');
 
-const sanitize = str => {
-  const div = document.createElement('div');
-  div.textContent = str;
-  return div.innerHTML;
-};
+  // Current user uid (set after auth)
+  let currentUserUid = null;
 
-window.switchTab = function(tab) {
-  document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.getElementById(tab + 'Page').classList.add('active');
-  [...document.querySelectorAll('.tab')]
-    .find(t => t.textContent.toLowerCase() === tab)
-    .classList.add('active');
+  // Sanitizer to prevent injection
+  function sanitize(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
 
-  if (tab === 'home') loadHomePosts();
-  else if (tab === 'community') loadCommunity();
-  else if (tab === 'following') loadFollowing();
-};
+  // Tab switching handler
+  function setActiveTab(tab) {
+    // Buttons active states
+    tabHomeBtn.classList.toggle('active', tab === 'home');
+    tabCommunityBtn.classList.toggle('active', tab === 'community');
+    tabFollowingBtn.classList.toggle('active', tab === 'following');
+    // Sections visible states
+    homePage.classList.toggle('active', tab === 'home');
+    communityPage.classList.toggle('active', tab === 'community');
+    followingPage.classList.toggle('active', tab === 'following');
 
-async function loadHomePosts() {
-  homePage.innerHTML = '<p style="text-align:center;padding-top:1rem;">Loading posts...</p>';
-  try {
-    const snapshot = await get(ref(db, 'post'));
-    if (!snapshot.exists()) {
-      homePage.innerHTML = '<p>No posts yet.</p>';
+    // Load content as needed
+    if(tab === 'home') loadHomePosts();
+    else if(tab === 'community') loadCommunityItems();
+    else if(tab === 'following') loadFollowing();
+  }
+
+  // Load Home posts - Instagram style
+  async function loadHomePosts() {
+    homePage.innerHTML = '<p class="loading">Loading posts...</p>';
+    try {
+      const snapshot = await get(ref(db, 'post'));
+      if (!snapshot.exists()) {
+        homePage.innerHTML = '<p class="loading">No posts yet.</p>';
+        return;
+      }
+      const posts = snapshot.val();
+      let html = '';
+      for (const id in posts) {
+        const post = posts[id];
+        const title = sanitize(post.title || '');
+        const imageUrl = post.imageUrl || '';
+        const views = post.views || 0;
+        html += `
+          <div class="insta-post">
+            ${imageUrl ? `<img src="${imageUrl}" alt="${title}">` : ''}
+            <div class="insta-caption">${title}</div>
+            <div class="insta-views">${views} views</div>
+          </div>`;
+      }
+      homePage.innerHTML = html;
+    } catch (e) {
+      console.error(e);
+      homePage.innerHTML = '<p class="loading">Error loading posts.</p>';
+    }
+  }
+
+  // Load Community polls + quizzes combined
+  async function loadCommunityItems() {
+    communityPage.innerHTML = '<p class="loading">Loading community content...</p>';
+    try {
+      const [pollsSnap, quizSnap] = await Promise.all([
+        get(ref(db, 'polls')),
+        get(ref(db, 'quiz'))
+      ]);
+      let html = '';
+      if (pollsSnap.exists()) {
+        const polls = pollsSnap.val();
+        for (const id in polls) {
+          const poll = polls[id];
+          html += `
+            <div class="community-item">
+              <h3>Poll: ${sanitize(poll.question || 'Untitled')}</h3>
+              <p>${sanitize(poll.description || '')}</p>
+            </div>`;
+        }
+      }
+      if (quizSnap.exists()) {
+        const quizzes = quizSnap.val();
+        for (const id in quizzes) {
+          const quiz = quizzes[id];
+          html += `
+            <div class="community-item">
+              <h3>Quiz: ${sanitize(quiz.title || 'Untitled')}</h3>
+              <p>${sanitize(quiz.description || '')}</p>
+            </div>`;
+        }
+      }
+      communityPage.innerHTML = html || '<p class="loading">No community content found.</p>';
+    } catch (e) {
+      console.error(e);
+      communityPage.innerHTML = '<p class="loading">Error loading community content.</p>';
+    }
+  }
+
+  // Load Following users list
+  async function loadFollowing() {
+    followingPage.innerHTML = '<p class="loading">Loading following list...</p>';
+    if (!currentUserUid) {
+      followingPage.innerHTML = '<p class="loading">Please log in to see your following list.</p>';
       return;
     }
-    const posts = snapshot.val();
-    let html = '';
-    for (const id in posts) {
-      const post = posts[id];
-      html += `
-        <div class="card">
-          <div class="post-title">${sanitize(post.title || 'Untitled')}</div>
-          <div class="post-body">${sanitize(post.description || '')}</div>
-        </div>`;
+    try {
+      // Get the list of following UIDs
+      const followingsSnap = await get(ref(db, `following/${currentUserUid}`));
+      if (!followingsSnap.exists()) {
+        followingPage.innerHTML = '<p class="loading">You are not following anyone.</p>';
+        return;
+      }
+      const followings = followingsSnap.val();
+      let html = '<div class="follow-list">';
+      // For each UID in following, get their profile
+      const userPromises = Object.keys(followings).map(async (uid) => {
+        const userSnap = await get(ref(db, `users/${uid}`));
+        if (!userSnap.exists()) return '';
+        const user = userSnap.val();
+        const profilePic = user.profilePic || 'https://via.placeholder.com/48?text=User';
+        const username = sanitize(user.username || 'Unknown');
+        const handle = sanitize(user.handle || '@unknown');
+        // Return a follow item block with unfollow button
+        return `
+          <div class="follow-item" data-uid="${uid}">
+            <img src="${profilePic}" alt="${username}">
+            <div class="follow-info">
+              <div class="username">${username}</div>
+              <div class="handle">${handle}</div>
+            </div>
+            <button class="unfollow-btn">Unfollow</button>
+          </div>`;
+      });
+      const userHtmlArr = await Promise.all(userPromises);
+      html += userHtmlArr.join('');
+      html += '</div>';
+      followingPage.innerHTML = html;
+
+      // Add click handlers to unfollow buttons
+      const unfollowButtons = followingPage.querySelectorAll('.unfollow-btn');
+      unfollowButtons.forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const parent = btn.closest('.follow-item');
+          const uidToUnfollow = parent.getAttribute('data-uid');
+          if (!uidToUnfollow) return;
+          // Remove from following list in DB
+          try {
+            await update(ref(db, `following/${currentUserUid}/${uidToUnfollow}`), null);
+            // Optimistically remove from UI
+            parent.remove();
+          } catch (e) {
+            alert('Failed to unfollow user. Try again.');
+            console.error(e);
+          }
+        });
+      });
+
+    } catch (e) {
+      console.error(e);
+      followingPage.innerHTML = '<p class="loading">Error loading following list.</p>';
     }
-    homePage.innerHTML = html;
-  } catch (e) {
-    console.error(e);
-    homePage.innerHTML = '<p>Error loading posts.</p>';
   }
-}
 
-async function loadCommunity() {
-  communityPage.innerHTML = '<p style="text-align:center;padding-top:1rem;">Loading community...</p>';
-  try {
-    const pollsSnap = await get(ref(db, 'polls'));
-    const quizSnap = await get(ref(db, 'quiz'));
-    const polls = pollsSnap.exists() ? pollsSnap.val() : {};
-    const quizzes = quizSnap.exists() ? quizSnap.val() : {};
-
-    const combined = [];
-    for (const key in polls) combined.push({ id: key, type: 'Poll', ...polls[key] });
-    for (const key in quizzes) combined.push({ id: key, type: 'Quiz', ...quizzes[key] });
-
-    if (!combined.length) {
-      communityPage.innerHTML = '<p>No polls or quizzes available.</p>';
-      return;
+  // Listen for auth state changes
+  onAuthStateChanged(auth, user => {
+    if (user) {
+      currentUserUid = user.uid;
+    } else {
+      currentUserUid = null;
     }
-    // Sort by timestamp descending if available
-    combined.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+    // Reload current tab content
+    const activeTab = document.querySelector('.tab-bar button.active').id.replace('tab-', '');
+    setActiveTab(activeTab);
+  });
 
-    let html = '';
-    combined.forEach(item => {
-      html += `
-      <div class="card">
-        <div class="poll-quiz-title">${sanitize(item.title || 'Untitled')} <small style="color:#888">[${item.type}]</small></div>
-        <div class="poll-quiz-body">${sanitize(item.description || '')}</div>
-      </div>`;
-    });
+  // Tab buttons click handlers
+  tabHomeBtn.addEventListener('click', () => setActiveTab('home'));
+  tabCommunityBtn.addEventListener('click', () => setActiveTab('community'));
+  tabFollowingBtn.addEventListener('click', () => setActiveTab('following'));
 
-    communityPage.innerHTML = html;
-  } catch (e) {
-    console.error(e);
-    communityPage.innerHTML = '<p>Error loading community content.</p>';
-  }
-}
-
-async function loadFollowing() {
-  if (!currentUser) {
-    followingPage.innerHTML = '<p>Please log in to see who you are following.</p>';
-    return;
-  }
-
-  followingPage.innerHTML = '<p style="text-align:center;padding-top:1rem;">Loading following...</p>';
-  try {
-    // Get following uids
-    const followingSnap = await get(ref(db, `following/${currentUser.uid}`));
-    if (!followingSnap.exists()) {
-      followingPage.innerHTML = '<p>You are not following anyone.</p>';
-      return;
-    }
-    const following = followingSnap.val(); // Assume format { uid: true, ... }
-
-    // Now get user info for each followed uid
-    let html = '';
-    for (const followedUid in following) {
-      // fetch profile data for followedUid
-      const userSnap = await get(ref(db, `profile/${followedUid}`));
-      if (!userSnap.exists()) continue;
-      const user = userSnap.val();
-
-      // user should have username, handle (or fallback)
-      const username = sanitize(user.username || 'Unknown');
-      const handle = sanitize(user.handle || '@unknown');
-
-      html += `
-      <div class="card">
-        <div class="user-name">${username} <small style="color:#666">${handle}</small></div>
-        <button class="unfollow-btn" onclick="unfollowUser('${followedUid}')">Unfollow</button>
-      </div>`;
-    }
-    followingPage.innerHTML = html || '<p>No followed users found.</p>';
-  } catch (e) {
-    console.error(e);
-    followingPage.innerHTML = '<p>Error loading following list.</p>';
-  }
-}
-
-window.unfollowUser = async function(uidToUnfollow) {
-  if (!currentUser) return alert('Not logged in');
-  if (!confirm('Unfollow this user?')) return;
-
-  try {
-    await remove(ref(db, `following/${currentUser.uid}/${uidToUnfollow}`));
-    alert('Unfollowed successfully');
-    loadFollowing();
-  } catch (e) {
-    console.error(e);
-    alert('Error unfollowing user.');
-  }
-};
-
-onAuthStateChanged(auth, user => {
-  currentUser = user;
-  if (!user) {
-    // Not logged in - can show guest view or prompt login
-    homePage.innerHTML = '<p>Please log in to see posts.</p>';
-    communityPage.innerHTML = '<p>Please log in to see community content.</p>';
-    followingPage.innerHTML = '<p>Please log in to see who you follow.</p>';
-  } else {
-    // Load default tab data when user logs in
-    loadHomePosts();
-  }
-});
+  // Initial load
+  setActiveTab('home');
 </script>
 
 </body>
