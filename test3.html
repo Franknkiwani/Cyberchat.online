@@ -99,7 +99,7 @@
       max-width: 900px;
       margin: 1.5rem auto;
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
       gap: 16px;
       padding: 0 1rem;
     }
@@ -210,6 +210,10 @@
         Posts
         <div class="stat-number">–</div>
       </div>
+      <div id="views" class="stat-box">
+        Views
+        <div class="stat-number">–</div>
+      </div>
     </section>
   </main>
 
@@ -239,11 +243,11 @@
     const followersBox = document.getElementById('followers');
     const earningsBox = document.getElementById('earnings');
     const postsBox = document.getElementById('posts');
+    const viewsBox = document.getElementById('views');
 
     function updateStat(box, value) {
       const numberDiv = box.querySelector('.stat-number');
       numberDiv.textContent = value !== null && value !== undefined ? value : '–';
-      // Color border based on positive or negative number (only for earnings)
       if (box.id === 'earnings') {
         if (typeof value === 'number') {
           box.classList.toggle('positive', value >= 0);
@@ -252,7 +256,6 @@
           box.classList.remove('positive', 'negative');
         }
       } else {
-        // For followers and posts, always positive styling
         box.classList.add('positive');
         box.classList.remove('negative');
       }
@@ -266,12 +269,13 @@
           updateStat(followersBox, data.followers ?? '–');
           updateStat(earningsBox, data.earnings ?? '–');
           updateStat(postsBox, data.posts ?? '–');
+          updateStat(viewsBox, data.views ?? '–');
         });
       } else {
-        // User not logged in, reset stats to dashes
         updateStat(followersBox, '–');
         updateStat(earningsBox, '–');
         updateStat(postsBox, '–');
+        updateStat(viewsBox, '–');
       }
     });
   </script>
