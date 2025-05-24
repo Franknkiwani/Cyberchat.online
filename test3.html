@@ -1,224 +1,296 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>CyberChat</title>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      -webkit-tap-highlight-color: transparent;
-    }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>CyberChat</title>
+<style>
+  :root {
+    --bg: #fff;
+    --fg: #222;
+    --subtle: #666;
+    --border: #ddd;
+    --pink: #ff0080;
+    --blue: #007aff;
+  }
+  body.dark-theme {
+    --bg: #121212;
+    --fg: #eee;
+    --subtle: #aaa;
+    --border: #333;
+  }
 
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto;
-      background: #fff;
-      color: #111;
-      padding-top: 56px;
-      padding-bottom: 56px;
-      user-select: none;
-      transition: background 0.3s, color 0.3s;
-    }
+  /* Reset & basics */
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+      Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+    background: var(--bg);
+    color: var(--fg);
+    -webkit-tap-highlight-color: transparent;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  h1, p {
+    user-select: text;
+  }
 
-    body.dark {
-      background: #121212;
-      color: #eee;
-    }
+  /* No blue highlight on click */
+  *:focus {
+    outline: none;
+  }
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
 
-    .selectable {
-      user-select: text;
-    }
+  /* Header */
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg);
+    gap: 0.75rem;
+    position: relative;
+  }
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    color: var(--subtle);
+  }
+  .header-left svg {
+    width: 24px;
+    height: 24px;
+    stroke: currentColor;
+    stroke-width: 2;
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .search-text {
+    font-size: 1rem;
+  }
+  .app-name {
+    flex-grow: 1;
+    text-align: center;
+    font-weight: 900;
+    font-size: 1.3rem;
+    user-select: text;
+    color: var(--fg);
+    cursor: default;
+  }
+  .cyber {
+    color: var(--pink);
+  }
+  .chat {
+    color: var(--blue);
+  }
+  .settings-btn {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    color: var(--subtle);
+    display: flex;
+    align-items: center;
+  }
+  .settings-btn svg {
+    width: 24px;
+    height: 24px;
+    fill: currentColor;
+  }
 
-    header, footer {
-      height: 56px;
-      background: #f9f9f9;
-      color: inherit;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 12px;
-      z-index: 999;
-    }
+  /* Settings dropdown */
+  .settings-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    border-radius: 8px;
+    width: 180px;
+    display: none;
+    flex-direction: column;
+    padding: 0.5rem 0;
+    z-index: 1100;
+  }
+  .settings-dropdown button {
+    background: none;
+    border: none;
+    padding: 0.75rem 1rem;
+    text-align: left;
+    font-size: 1rem;
+    cursor: pointer;
+    color: var(--fg);
+    transition: background-color 0.2s ease;
+    user-select: none;
+  }
+  .settings-dropdown button:hover {
+    background-color: var(--border);
+  }
 
-    header {
-      position: sticky;
-      top: 0;
-      border-bottom: 1px solid #ccc;
-    }
+  /* Search bar */
+  #searchBar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    padding: 0.75rem 1rem;
+    display: none;
+    z-index: 1050;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  }
+  #searchBar input {
+    width: 100%;
+    padding: 0.5rem 1rem;
+    font-size: 1rem;
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    outline: none;
+    background: var(--bg);
+    color: var(--fg);
+    user-select: text;
+  }
+  #searchBar input::placeholder {
+    color: var(--subtle);
+  }
 
-    footer {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      border-top: 1px solid #ccc;
-    }
+  /* Footer */
+  footer {
+    position: sticky;
+    bottom: 0;
+    z-index: 1000;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1.5rem;
+    border-top: 1px solid var(--border);
+    background: var(--bg);
+  }
+  footer button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--subtle);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 0.75rem;
+    user-select: none;
+  }
+  footer button svg {
+    width: 24px;
+    height: 24px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    margin-bottom: 2px;
+  }
+  footer button:focus {
+    outline: none;
+  }
 
-    body.dark header,
-    body.dark footer {
-      background: #1f1f1f;
-      border-color: #333;
-    }
+  /* Profile pic as circle */
+  .profile-pic svg {
+    stroke: currentColor;
+    stroke-width: 2;
+    fill: none;
+    border-radius: 50%;
+  }
 
-    svg {
-      width: 24px;
-      height: 24px;
-      fill: currentColor;
-    }
-
-    #header-left, #header-right, #footer-left, #footer-middle, #footer-right {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    #header-middle {
-      font-weight: 700;
-      font-size: 18px;
-      user-select: text;
-    }
-
-    .cyber { color: #e91e63; }
-    .chat { color: #2196f3; }
-
-    #search-drawer {
-      position: fixed;
-      top: 56px;
-      left: 0;
-      right: 0;
-      background: #fff;
-      border-bottom: 1px solid #ccc;
-      padding: 12px;
-      display: none;
-      z-index: 998;
-    }
-
-    body.dark #search-drawer {
-      background: #1e1e1e;
-      border-color: #333;
-    }
-
-    #search-drawer input {
-      width: 100%;
-      padding: 8px;
-      font-size: 16px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      outline: none;
-      background: #fafafa;
-      color: #111;
-    }
-
-    body.dark #search-drawer input {
-      background: #2a2a2a;
-      border-color: #444;
-      color: #fff;
-    }
-
-    #settings-dropdown {
-      display: none;
-      position: absolute;
-      top: 56px;
-      right: 12px;
-      background: #fff;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      overflow: hidden;
-      z-index: 999;
-    }
-
-    body.dark #settings-dropdown {
-      background: #2a2a2a;
-      border-color: #444;
-    }
-
-    #settings-dropdown button {
-      width: 100%;
-      padding: 10px;
-      background: none;
-      border: none;
-      color: inherit;
-      text-align: left;
-      cursor: pointer;
-    }
-
-    #settings-dropdown button:hover {
-      background: #eee;
-    }
-
-    body.dark #settings-dropdown button:hover {
-      background: #333;
-    }
-
-    main {
-      padding: 16px;
-    }
-
-    img.profile {
-      width: 28px;
-      height: 28px;
-      border-radius: 50%;
-    }
-  </style>
+</style>
 </head>
 <body>
-  <header>
-    <div id="header-left" onclick="toggleSearch()">
-      <svg viewBox="0 0 24 24"><path d="M10,17A7,7 0 1,1 17,10A7,7 0 0,1 10,17M21,21L15.5,15.5"></path></svg>
-      <span>Search</span>
-    </div>
-    <div id="header-middle">
-      <span class="cyber">CYBER</span><span class="chat">CHAT</span>
-    </div>
-    <div id="header-right">
-      <button id="settings-btn" onclick="toggleSettings()">
-        <svg viewBox="0 0 24 24"><path d="M12 16a2 2 0 1 0 0-4 2 2 0 0 0 0 4zM19.43 12.98a7.996 7.996 0 0 0 0-1.96l2.11-1.65a.5.5 0 0 0 .12-.65l-2-3.46a.5.5 0 0 0-.61-.22l-2.49 1a7.986 7.986 0 0 0-1.68-.98l-.38-2.65a.5.5 0 0 0-.5-.42h-4a.5.5 0 0 0-.5.42l-.38 2.65a7.986 7.986 0 0 0-1.68.98l-2.49-1a.5.5 0 0 0-.61.22l-2 3.46a.5.5 0 0 0 .12.65l2.11 1.65a7.996 7.996 0 0 0 0 1.96l-2.11 1.65a.5.5 0 0 0-.12.65l2 3.46a.5.5 0 0 0 .61.22l2.49-1a7.986 7.986 0 0 0 1.68.98l.38 2.65a.5.5 0 0 0 .5.42h4a.5.5 0 0 0 .5-.42l.38-2.65a7.986 7.986 0 0 0 1.68-.98l2.49 1a.5.5 0 0 0 .61-.22l2-3.46a.5.5 0 0 0-.12-.65l-2.11-1.65z"/></svg>
-      </button>
-      <div id="settings-dropdown">
-        <button onclick="toggleTheme()">Toggle Theme</button>
-        <button onclick="alert('Contact us at cyberchat@support.com')">Contact Us</button>
-        <button onclick="alert('Logged out!')">Logout</button>
-      </div>
-    </div>
-  </header>
 
-  <div id="search-drawer">
-    <input type="text" placeholder="Search CyberChat..." />
+<header>
+  <div class="header-left" id="searchTrigger" tabindex="0" role="button" aria-label="Open Search">
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <circle cx="11" cy="11" r="7"/>
+      <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+    </svg>
+    <span class="search-text">Search</span>
   </div>
 
-  <main>
-    <h1 class="selectable">Welcome to CyberChat</h1>
-    <p class="selectable">Your native-styled social feed, rebuilt from the future.</p>
-  </main>
+  <div class="app-name" aria-label="App name CyberChat">
+    <span class="cyber">CYBER</span><span class="chat">CHAT</span>
+  </div>
 
-  <footer>
-    <div id="footer-left">
-      <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
-    </div>
-    <div id="footer-middle">
-      <svg viewBox="0 0 24 24"><path d="M19 13H5v-2h14v2z"/></svg>
-    </div>
-    <div id="footer-right">
-      <img src="https://i.imgur.com/3ZQ3ZEk.png" class="profile" alt="Profile" />
-    </div>
-  </footer>
+  <button class="settings-btn" aria-label="Settings" aria-haspopup="true" aria-expanded="false">
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z"/>
+      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.09a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h.09a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.09a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+    </svg>
+  </button>
 
-  <script>
-    function toggleTheme() {
-      document.body.classList.toggle('dark');
+  <div class="settings-dropdown" id="settingsDropdown" aria-hidden="true" role="menu">
+    <button id="toggleThemeBtn" role="menuitem">Toggle Light/Dark Theme</button>
+    <button id="contactBtn" role="menuitem">Contact Us</button>
+    <button id="logoutBtn" role="menuitem">Logout</button>
+  </div>
+</header>
+
+<div id="searchBar" role="search">
+  <input type="search" placeholder="Search CyberChat..." aria-label="Search CyberChat" />
+</div>
+
+<main style="padding: 4rem 1rem 4rem 1rem; user-select:none;">
+  <h1>Welcome to CyberChat</h1>
+  <p>This is a neat empty app shell with native UI vibes.</p>
+</main>
+
+<footer>
+  <button aria-label="Home">
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M3 12l9-9 9 9v9a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3z" />
+      <path d="M9 21V12h6v9" />
+    </svg>
+    Home
+  </button>
+  <button aria-label="Upload">
+    <svg viewBox="0 0 24 24" aria-hidden="true" style="stroke-width:3;">
+      <line x1="12" y1="5" x2="12" y2="19" />
+      <line x1="5" y1="12" x2="19" y2="12" />
+    </svg>
+    Upload
+  </button>
+  <button class="profile-pic" aria-label="Profile">
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <circle cx="12" cy="7" r="4" />
+      <path d="M5.5 21a7 7 0 0 1 13 0" />
+    </svg>
+    Profile
+  </button>
+</footer>
+
+<script>
+  // Search toggle
+  const searchTrigger = document.getElementById('searchTrigger');
+  const searchBar = document.getElementById('searchBar');
+  searchTrigger.addEventListener('click', () => {
+    if (searchBar.style.display === 'block') {
+      searchBar.style.display = 'none';
+    } else {
+      searchBar.style.display = 'block';
+      searchBar.querySelector('input').focus();
     }
+  });
 
-    function toggleSearch() {
-      const drawer = document.getElementById('search-drawer');
-      drawer.style.display = drawer.style.display === 'block' ? 'none' : 'block';
-    }
+  // Settings dropdown toggle and actions
+  const settingsBtn = document.querySelector('.settings-btn');
+  const settingsDropdown = document.getElementById('settingsDropdown');
+  const toggleThemeBtn = document.getElementById('toggleThemeBtn');
+  const contactBtn = document.getElementById('contactBtn');
+  const logoutBtn = document.getElementById('logoutBtn');
 
-    function toggleSettings() {
-      const dropdown = document.getElementById('settings-dropdown');
-      dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
-    }
-  </script>
-</body>
-</html>
+  settingsBtn.add
