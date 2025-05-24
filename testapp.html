@@ -1,70 +1,173 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" >
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Create CyberChat Ad</title>
-  <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-database-compat.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CyberChat Header with Firebase Profile & Earnings</title>
   <style>
+    :root {
+      --bg-light: #fff;
+      --text-light: #202124;
+      --bg-dark: #181818;
+      --text-dark: #e8eaed;
+
+      --netherite-bg-light: #3a3f47;
+      --netherite-bg-dark: #1f2226;
+      --netherite-border-light: #5c616a;
+      --netherite-border-dark: #282c30;
+
+      --cyber-pink: #ff2d95;
+      --chat-cyan: #00ffff;
+
+      --pill-bg-light: #e8f0fe;
+      --pill-text-light: #1a73e8;
+
+      --pill-bg-dark: #202124;
+      --pill-text-dark: #8ab4f8;
+
+      --container-green: #4CAF50;
+      --container-green-dark: #388E3C;
+      --container-shadow: rgba(0, 0, 0, 0.15);
+    }
+
     body {
       margin: 0;
-      font-family: 'Segoe UI', sans-serif;
-      background: #f4f6f8;
-      color: #222;
+      font-family: "Roboto", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--bg-light);
+      color: var(--text-light);
+      transition: background-color 0.3s, color 0.3s;
+      min-height: 100vh;
       display: flex;
       flex-direction: column;
+    }
+
+    body.dark {
+      background-color: var(--bg-dark);
+      color: var(--text-dark);
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
       align-items: center;
-      padding: 30px;
+      padding: 0 20px;
+      background-color: var(--netherite-bg-light);
+      border-bottom: 1px solid var(--netherite-border-light);
+      height: 40px;
+      user-select: none;
+      font-weight: 500;
+      font-size: 14px;
+      letter-spacing: 0.03em;
     }
-    .ad-form {
-      background: white;
-      padding: 30px;
-      max-width: 600px;
-      width: 100%;
-      border-radius: 12px;
-      box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+
+    body.dark header {
+      background-color: var(--netherite-bg-dark);
+      border-color: var(--netherite-border-dark);
     }
-    .ad-form h2 {
-      margin-bottom: 20px;
+
+    .logo-text {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      font-weight: 600;
+      font-size: 16px;
     }
-    .ad-form input,
-    .ad-form textarea {
-      width: 100%;
-      padding: 12px;
-      margin-bottom: 15px;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      font-size: 1rem;
+
+    .cyber {
+      color: var(--cyber-pink);
     }
-    .ad-form button {
-      background: #00c853;
-      color: white;
-      border: none;
-      padding: 12px 20px;
-      font-size: 1rem;
-      border-radius: 8px;
+
+    .chat {
+      color: var(--chat-cyan);
+      font-weight: 400;
+      font-size: 14px;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .earnings-container {
+      background-color: var(--container-green);
+      padding: 4px 8px;
+      border-radius: 6px;
+      box-shadow:
+        2px 2px 6px var(--container-shadow),
+        inset 0 0 8px rgba(255 255 255 / 0.2);
+      display: flex;
+      align-items: center;
+      user-select: none;
+      transition: background-color 0.3s, box-shadow 0.3s;
+      cursor: default;
+      min-width: 110px;
+      justify-content: center;
+    }
+
+    body.dark .earnings-container {
+      background-color: var(--container-green-dark);
+      box-shadow:
+        2px 2px 6px rgba(0,0,0,0.4),
+        inset 0 0 8px rgba(255 255 255 / 0.1);
+    }
+
+    .earnings-pill {
+      background-color: var(--pill-bg-light);
+      color: var(--pill-text-light);
+      padding: 6px 18px;
+      border-radius: 9999px;
+      font-weight: 600;
+      font-size: 13px;
+      white-space: nowrap;
+      box-shadow: none;
+      user-select: none;
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    body.dark .earnings-pill {
+      background-color: var(--pill-bg-dark);
+      color: var(--pill-text-dark);
+    }
+
+    /* Pink edge on profile */
+    .profile-pic {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      object-fit: cover;
       cursor: pointer;
-      width: 100%;
+      border: 2.5px solid var(--cyber-pink);
+      transition: border-color 0.3s ease;
+      box-sizing: border-box;
     }
-    .ad-form button:disabled {
-      background: gray;
+
+    .profile-pic:hover {
+      border-color: #ff56b6;
     }
+
   </style>
 </head>
 <body>
+  <header>
+    <div class="logo-text">
+      <span class="cyber">CYBER</span><span class="chat">CHAT</span>
+    </div>
+    <div class="header-right">
+      <div class="earnings-container" title="Your current earnings">
+        <div id="earnings" class="earnings-pill">Earnings $0.000</div>
+      </div>
+      <img id="profile-pic" class="profile-pic" src="https://i.pravatar.cc/32" alt="Profile Picture" />
+    </div>
+  </header>
 
-  <form class="ad-form" id="adForm">
-    <h2>Create New Ad</h2>
-    <input type="text" id="title" placeholder="Ad Title" required />
-    <textarea id="description" placeholder="Ad Description" required></textarea>
-    <input type="url" id="targetUrl" placeholder="Target Link (e.g. https://example.com)" required />
-    <input type="file" id="imageFile" accept="image/*" required />
-    <button type="submit">Upload Ad</button>
-  </form>
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js"></script>
 
   <script>
+    // Your Firebase config - replace with your actual config
     const firebaseConfig = {
       apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
       authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
@@ -76,61 +179,267 @@
       measurementId: "G-LLT6F9WRKH"
     };
 
-    firebase.initializeApp(firebaseConfig);
+    // Initialize Firebase
+    const app = firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
     const db = firebase.database();
 
-    const clientId = '891e5bb4aa94282';
+    // Check if dark mode stored
+    if (localStorage.getItem('theme') === 'dark') {
+      document.body.classList.add('dark');
+    }
 
-    document.getElementById('adForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const title = document.getElementById('title').value.trim();
-      const description = document.getElementById('description').value.trim();
-      const targetUrl = document.getElementById('targetUrl').value.trim();
-      const imageFile = document.getElementById('imageFile').files[0];
-      const button = e.target.querySelector('button');
-      button.disabled = true;
-      button.textContent = 'Uploading...';
+    // DOM references
+    const profilePicEl = document.getElementById('profile-pic');
+    const earningsEl = document.getElementById('earnings');
 
-      try {
-        // Upload image to Imgur
-        const formData = new FormData();
-        formData.append('image', imageFile);
-        const res = await fetch('https://api.imgur.com/3/image', {
-          method: 'POST',
-          headers: { Authorization: `Client-ID ${clientId}` },
-          body: formData
+    // Listen for auth state changes
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        // Load profile pic from user
+        if(user.photoURL) {
+          profilePicEl.src = user.photoURL;
+        }
+        // Load earnings from Realtime Database, under `/users/{uid}/earnings`
+        db.ref(`users/${user.uid}/earnings`).once('value').then(snapshot => {
+          const earnings = snapshot.val();
+          if (earnings !== null && !isNaN(earnings)) {
+            // Format earnings nicely
+            earningsEl.textContent = `Earnings $${Number(earnings).toFixed(3)}`;
+          } else {
+            earningsEl.textContent = 'Earnings $0.000';
+          }
+        }).catch(() => {
+          earningsEl.textContent = 'Earnings $0.000';
         });
-        const imgurData = await res.json();
-        const imageUrl = imgurData.data.link;
-
-        // Save to Firebase
-        const user = firebase.auth().currentUser;
-        if (!user) throw new Error('You must be signed in.');
-
-        const adId = db.ref().push().key;
-        await db.ref(`user/${user.uid}/adscampaign/${adId}`).set({
-          title,
-          description,
-          targetUrl,
-          image: imageUrl,
-          views: 0,
-          clicks: 0,
-          createdAt: Date.now()
-        });
-
-        alert('Ad created successfully!');
-        document.getElementById('adForm').reset();
-      } catch (err) {
-        alert('Error uploading ad: ' + err.message);
-      } finally {
-        button.disabled = false;
-        button.textContent = 'Upload Ad';
+      } else {
+        // Not logged in - fallback
+        profilePicEl.src = 'https://i.pravatar.cc/32';
+        earningsEl.textContent = 'Earnings $0.000';
       }
     });
-
-    // Optional: Auto-login (for testing only, use proper auth in production)
-    firebase.auth().signInAnonymously();
   </script>
+</body>
+</html><!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CyberChat Header with Firebase Profile & Earnings</title>
+  <style>
+    :root {
+      --bg-light: #fff;
+      --text-light: #202124;
+      --bg-dark: #181818;
+      --text-dark: #e8eaed;
 
+      --netherite-bg-light: #3a3f47;
+      --netherite-bg-dark: #1f2226;
+      --netherite-border-light: #5c616a;
+      --netherite-border-dark: #282c30;
+
+      --cyber-pink: #ff2d95;
+      --chat-cyan: #00ffff;
+
+      --pill-bg-light: #e8f0fe;
+      --pill-text-light: #1a73e8;
+
+      --pill-bg-dark: #202124;
+      --pill-text-dark: #8ab4f8;
+
+      --container-green: #4CAF50;
+      --container-green-dark: #388E3C;
+      --container-shadow: rgba(0, 0, 0, 0.15);
+    }
+
+    body {
+      margin: 0;
+      font-family: "Roboto", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--bg-light);
+      color: var(--text-light);
+      transition: background-color 0.3s, color 0.3s;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    body.dark {
+      background-color: var(--bg-dark);
+      color: var(--text-dark);
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 20px;
+      background-color: var(--netherite-bg-light);
+      border-bottom: 1px solid var(--netherite-border-light);
+      height: 40px;
+      user-select: none;
+      font-weight: 500;
+      font-size: 14px;
+      letter-spacing: 0.03em;
+    }
+
+    body.dark header {
+      background-color: var(--netherite-bg-dark);
+      border-color: var(--netherite-border-dark);
+    }
+
+    .logo-text {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      font-weight: 600;
+      font-size: 16px;
+    }
+
+    .cyber {
+      color: var(--cyber-pink);
+    }
+
+    .chat {
+      color: var(--chat-cyan);
+      font-weight: 400;
+      font-size: 14px;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .earnings-container {
+      background-color: var(--container-green);
+      padding: 4px 8px;
+      border-radius: 6px;
+      box-shadow:
+        2px 2px 6px var(--container-shadow),
+        inset 0 0 8px rgba(255 255 255 / 0.2);
+      display: flex;
+      align-items: center;
+      user-select: none;
+      transition: background-color 0.3s, box-shadow 0.3s;
+      cursor: default;
+      min-width: 110px;
+      justify-content: center;
+    }
+
+    body.dark .earnings-container {
+      background-color: var(--container-green-dark);
+      box-shadow:
+        2px 2px 6px rgba(0,0,0,0.4),
+        inset 0 0 8px rgba(255 255 255 / 0.1);
+    }
+
+    .earnings-pill {
+      background-color: var(--pill-bg-light);
+      color: var(--pill-text-light);
+      padding: 6px 18px;
+      border-radius: 9999px;
+      font-weight: 600;
+      font-size: 13px;
+      white-space: nowrap;
+      box-shadow: none;
+      user-select: none;
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    body.dark .earnings-pill {
+      background-color: var(--pill-bg-dark);
+      color: var(--pill-text-dark);
+    }
+
+    /* Pink edge on profile */
+    .profile-pic {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      object-fit: cover;
+      cursor: pointer;
+      border: 2.5px solid var(--cyber-pink);
+      transition: border-color 0.3s ease;
+      box-sizing: border-box;
+    }
+
+    .profile-pic:hover {
+      border-color: #ff56b6;
+    }
+
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo-text">
+      <span class="cyber">CYBER</span><span class="chat">CHAT</span>
+    </div>
+    <div class="header-right">
+      <div class="earnings-container" title="Your current earnings">
+        <div id="earnings" class="earnings-pill">Earnings $0.000</div>
+      </div>
+      <img id="profile-pic" class="profile-pic" src="https://i.pravatar.cc/32" alt="Profile Picture" />
+    </div>
+  </header>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js"></script>
+
+  <script>
+    // Your Firebase config - replace with your actual config
+    const firebaseConfig = {
+      apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
+      authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
+      databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
+      projectId: "itzhoyoo-f9f7e",
+      storageBucket: "itzhoyoo-f9f7e.filestorage.app",
+      messagingSenderId: "1094792075584",
+      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
+      measurementId: "G-LLT6F9WRKH"
+    };
+
+    // Initialize Firebase
+    const app = firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.database();
+
+    // Check if dark mode stored
+    if (localStorage.getItem('theme') === 'dark') {
+      document.body.classList.add('dark');
+    }
+
+    // DOM references
+    const profilePicEl = document.getElementById('profile-pic');
+    const earningsEl = document.getElementById('earnings');
+
+    // Listen for auth state changes
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        // Load profile pic from user
+        if(user.photoURL) {
+          profilePicEl.src = user.photoURL;
+        }
+        // Load earnings from Realtime Database, under `/users/{uid}/earnings`
+        db.ref(`users/${user.uid}/earnings`).once('value').then(snapshot => {
+          const earnings = snapshot.val();
+          if (earnings !== null && !isNaN(earnings)) {
+            // Format earnings nicely
+            earningsEl.textContent = `Earnings $${Number(earnings).toFixed(3)}`;
+          } else {
+            earningsEl.textContent = 'Earnings $0.000';
+          }
+        }).catch(() => {
+          earningsEl.textContent = 'Earnings $0.000';
+        });
+      } else {
+        // Not logged in - fallback
+        profilePicEl.src = 'https://i.pravatar.cc/32';
+        earningsEl.textContent = 'Earnings $0.000';
+      }
+    });
+  </script>
 </body>
 </html>
