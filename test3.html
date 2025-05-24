@@ -1,396 +1,279 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" >
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Real Creator Dashboard</title>
-<style>
-  /* Reset + base */
-  * {
-    box-sizing: border-box;
-  }
-  body {
-    margin:0; padding:0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
-      Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-    background: #121212;
-    color: #eee;
-  }
-  a {
-    color: #4caf50;
-    text-decoration: none;
-  }
-  a:hover {
-    text-decoration: underline;
-  }
-  /* Layout */
-  header {
-    position: fixed;
-    top: 0; left: 0; right: 0;
-    height: 50px;
-    background: #1f1f1f;
-    display: flex;
-    align-items: center;
-    padding: 0 1rem;
-    z-index: 1000;
-  }
-  #hamburger {
-    font-size: 1.5rem;
-    cursor: pointer;
-    user-select: none;
-    margin-right: 1rem;
-    color: #4caf50;
-  }
-  #sidebar {
-    position: fixed;
-    top: 50px; left: 0;
-    width: 220px;
-    height: calc(100vh - 50px);
-    background: #222;
-    padding: 1rem;
-    transform: translateX(-100%);
-    transition: transform 0.3s ease;
-    overflow-y: auto;
-    z-index: 999;
-  }
-  #sidebar.open {
-    transform: translateX(0);
-  }
-  #sidebar nav a {
-    display: block;
-    margin-bottom: 1rem;
-    color: #eee;
-    font-weight: 600;
-  }
-  main {
-    margin-top: 50px;
-    padding: 1rem;
-    max-width: 720px;
-    margin-left: auto;
-    margin-right: auto;
-  }
-  .profile-overview {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    margin-bottom: 1rem;
-  }
-  .profile-overview img {
-    width: 64px;
-    height: 64px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 2px solid #4caf50;
-  }
-  .profile-info {
-    flex-grow: 1;
-  }
-  .profile-info h2 {
-    margin: 0;
-    font-size: 1.25rem;
-  }
-  .profile-info p {
-    margin: 0;
-    opacity: 0.7;
-  }
-  .stats-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
-    margin-bottom: 1rem;
-  }
-  .stat-box {
-    background: #1f1f1f;
-    padding: 1rem;
-    border-radius: 10px;
-    position: relative;
-  }
-  .stat-title {
-    font-weight: 600;
-    font-size: 0.9rem;
-    margin-bottom: 0.5rem;
-    color: #aaa;
-  }
-  .stat-value {
-    font-size: 1.5rem;
-    font-weight: 700;
-  }
-  .stat-change {
-    position: absolute;
-    top: 1rem;
-    right: 1rem;
-    font-size: 0.8rem;
-    font-weight: 600;
-  }
-  .positive {
-    color: #4caf50;
-  }
-  .negative {
-    color: #f44336;
-  }
-  .progress-bar-container {
-    background: #333;
-    height: 12px;
-    border-radius: 6px;
-    overflow: hidden;
-    margin-top: 0.5rem;
-  }
-  .progress-bar {
-    background: #4caf50;
-    height: 100%;
-    width: 0%;
-    transition: width 0.5s ease;
-  }
-  .monetization-box {
-    background: #272727;
-    padding: 1rem;
-    border-radius: 10px;
-    margin-top: 1rem;
-    text-align: center;
-  }
-  .monetization-status {
-    font-weight: 700;
-    margin-bottom: 0.5rem;
-  }
-  button#monetize-btn {
-    background: #4caf50;
-    border: none;
-    color: white;
-    padding: 0.75rem 1.5rem;
-    font-weight: 700;
-    font-size: 1rem;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-  }
-  button#monetize-btn:disabled {
-    background: #555;
-    cursor: not-allowed;
-  }
-  /* Responsive */
-  @media (max-width: 600px) {
-    main {
-      padding: 1rem 0.5rem;
-      max-width: 100%;
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CyberChat Stats (Dark Mode + Firebase)</title>
+  <style>
+    /* Reset and base */
+    * {
+      box-sizing: border-box;
     }
-    .stats-grid {
-      grid-template-columns: 1fr;
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+        Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+      background-color: #121212;
+      color: #eee;
+      padding-top: 80px;
     }
-  }
-</style>
+
+    /* Header */
+    header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 60px;
+      background-color: #1e1e1e;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 1rem;
+      border-radius: 0 0 20px 20px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.8);
+      z-index: 1000;
+    }
+
+    /* Hamburger menu */
+    .menu-btn {
+      width: 28px;
+      height: 22px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      cursor: pointer;
+    }
+    .menu-btn span {
+      display: block;
+      height: 3.5px;
+      background-color: #eee;
+      border-radius: 2px;
+      transition: background-color 0.3s ease;
+    }
+
+    /* Center logo text */
+    .center-logo {
+      font-weight: 900;
+      font-size: 1.5rem;
+      user-select: none;
+      display: flex;
+      gap: 6px;
+      justify-content: center;
+      flex: 1;
+      color: #eee;
+      font-family: "Segoe UI Black", "Arial Black", sans-serif;
+      text-shadow: 0 0 6px #000;
+    }
+    .center-logo .cyber {
+      color: #ff3cac; /* cyber pink */
+      text-shadow: 0 0 12px #ff3caccc;
+    }
+    .center-logo .chat {
+      color: #00d2ff; /* chat cyan */
+      text-shadow: 0 0 12px #00d2ffcc;
+    }
+
+    /* Profile container */
+    .profile-container {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      overflow: hidden;
+      box-shadow: 0 0 8px rgba(255,255,255,0.2);
+      cursor: pointer;
+      flex-shrink: 0;
+      border: 1.5px solid #444;
+      background-color: #222;
+    }
+    .profile-pic {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      filter: brightness(0.9);
+    }
+
+    /* Stats container */
+    .stats-container {
+      max-width: 900px;
+      margin: 1.5rem auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      padding: 0 1rem;
+    }
+
+    /* Each stat card */
+    .stat-box {
+      background: #1f1f1f;
+      border-radius: 18px;
+      padding: 20px;
+      font-weight: 700;
+      font-size: 1.1rem;
+      text-align: center;
+      box-shadow:
+        0 4px 10px rgba(0,0,0,0.9),
+        inset 0 0 15px rgba(255,255,255,0.05);
+      border: 3px solid transparent;
+      user-select: none;
+      transform-style: preserve-3d;
+      perspective: 600px;
+      transition: box-shadow 0.3s ease, border-color 0.3s ease;
+      color: #ddd;
+    }
+    .stat-box:hover {
+      box-shadow:
+        0 12px 22px rgba(0,0,0,0.95),
+        inset 0 0 22px rgba(255,255,255,0.1);
+      transform: translateZ(10px);
+    }
+
+    /* Positive = green edges, Negative = red edges */
+    .stat-box.positive {
+      border-color: #0f0;
+      box-shadow:
+        0 4px 14px #0f0a,
+        inset 0 0 18px #0f0a;
+      color: #b5f5b3;
+    }
+    .stat-box.negative {
+      border-color: #f00;
+      box-shadow:
+        0 4px 14px #f00a,
+        inset 0 0 18px #f00a;
+      color: #f5b3b3;
+    }
+
+    /* Number styling */
+    .stat-number {
+      margin-top: 10px;
+      font-size: 2.8rem;
+      letter-spacing: 1px;
+      color: inherit;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    /* Responsive tweaks for mobile */
+    @media (max-width: 480px) {
+      header {
+        height: 55px;
+        padding: 0 0.8rem;
+      }
+      .center-logo {
+        font-size: 1.3rem;
+        gap: 4px;
+      }
+      .stats-container {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+      }
+      .stat-number {
+        font-size: 2.2rem;
+      }
+    }
+  </style>
 </head>
 <body>
-
-<header>
-  <div id="hamburger">&#9776;</div>
-  <h1 style="font-weight:700; font-size:1.2rem; color:#4caf50; margin:0;">Creator Dashboard</h1>
-</header>
-
-<aside id="sidebar">
-  <nav>
-    <a href="#">Dashboard</a>
-    <a href="#">Monetize</a>
-    <a href="#">Posts</a>
-    <a href="#">Profile</a>
-    <a href="#" id="logout-btn">Logout</a>
-  </nav>
-</aside>
-
-<main>
-  <section class="profile-overview">
-    <img id="user-photo" src="https://via.placeholder.com/64" alt="User Photo" />
-    <div class="profile-info">
-      <h2 id="username">Loading...</h2>
-      <p id="userhandle">@loading</p>
-      <p><strong>Followers:</strong> <span id="followers-count">0</span></p>
+  <header>
+    <div class="menu-btn" aria-label="Open menu" role="button" tabindex="0">
+      <span></span>
+      <span></span>
+      <span></span>
     </div>
-  </section>
 
-  <section class="stats-grid">
-    <div class="stat-box">
-      <div class="stat-title">Total Views</div>
-      <div class="stat-value" id="total-views">0</div>
-      <div class="stat-change positive" id="views-change">+0 today</div>
-      <div class="progress-bar-container">
-        <div id="views-progress" class="progress-bar"></div>
+    <div class="center-logo">
+      <span class="cyber">Cyber</span><span class="chat">Chat</span>
+    </div>
+
+    <div class="profile-container" title="Profile">
+      <img
+        class="profile-pic"
+        src="https://i.pravatar.cc/36?u=darkmode"
+        alt="Profile Picture"
+        loading="lazy"
+      />
+    </div>
+  </header>
+
+  <main>
+    <section class="stats-container" aria-live="polite" aria-label="User statistics">
+      <div id="followers" class="stat-box">
+        Followers
+        <div class="stat-number">–</div>
       </div>
-    </div>
-    <div class="stat-box">
-      <div class="stat-title">Total Earnings</div>
-      <div class="stat-value" id="total-earnings">$0.00</div>
-      <div class="stat-change positive" id="earnings-change">+ $0.00 today</div>
-      <div class="progress-bar-container">
-        <div id="earnings-progress" class="progress-bar"></div>
+      <div id="earnings" class="stat-box">
+        Earnings
+        <div class="stat-number">–</div>
       </div>
-    </div>
-    <div class="stat-box">
-      <div class="stat-title">Total Posts</div>
-      <div class="stat-value" id="total-posts">0</div>
-      <div class="stat-change positive" id="posts-change">+0 today</div>
-    </div>
-    <div class="stat-box monetization-box">
-      <div class="stat-title">Monetization Status</div>
-      <div class="monetization-status" id="monetize-status">Checking...</div>
-      <button id="monetize-btn" disabled>Toggle Monetization</button>
-    </div>
-  </section>
-</main>
+      <div id="posts" class="stat-box">
+        Posts
+        <div class="stat-number">–</div>
+      </div>
+    </section>
+  </main>
 
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-  import {
-    getDatabase,
-    ref,
-    onValue,
-    get,
-    update,
-    child,
-    query,
-    orderByChild,
-  } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
-  import {
-    getAuth,
-    onAuthStateChanged,
-    signOut,
-  } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-analytics.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
 
-  // Your Firebase config
-  const firebaseConfig = {
-    apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
-    authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
-    databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
-    projectId: "itzhoyoo-f9f7e",
-    storageBucket: "itzhoyoo-f9f7e.filestorage.app",
-    messagingSenderId: "1094792075584",
-    appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
-    measurementId: "G-LLT6F9WRKH"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const db = getDatabase(app);
-  const auth = getAuth(app);
-
-  // Elements
-  const usernameEl = document.getElementById("username");
-  const userhandleEl = document.getElementById("userhandle");
-  const userPhotoEl = document.getElementById("user-photo");
-  const followersCountEl = document.getElementById("followers-count");
-
-  const totalViewsEl = document.getElementById("total-views");
-  const viewsChangeEl = document.getElementById("views-change");
-  const viewsProgressEl = document.getElementById("views-progress");
-
-  const totalEarningsEl = document.getElementById("total-earnings");
-  const earningsChangeEl = document.getElementById("earnings-change");
-  const earningsProgressEl = document.getElementById("earnings-progress");
-
-  const totalPostsEl = document.getElementById("total-posts");
-  const postsChangeEl = document.getElementById("posts-change");
-
-  const monetizeStatusEl = document.getElementById("monetize-status");
-  const monetizeBtn = document.getElementById("monetize-btn");
-
-  let currentUserId;
-
-  onAuthStateChanged(auth, async (user) => {
-    if (!user) {
-      // Redirect or show login
-      alert("Not logged in!");
-      return;
-    }
-    currentUserId = user.uid;
-    loadUserProfile(currentUserId);
-    loadStatsRealtime(currentUserId);
-    setupMonetizationToggle(currentUserId);
-  });
-
-  function loadUserProfile(uid) {
-    const userRef = ref(db, `users/${uid}`);
-    onValue(userRef, (snapshot) => {
-      if (!snapshot.exists()) return;
-      const user = snapshot.val();
-      usernameEl.textContent = user.username || "No Username";
-      userhandleEl.textContent = user.handle ? `@${user.handle}` : `@${user.username || 'user'}`;
-      userPhotoEl.src = user.photoURL || "https://via.placeholder.com/64";
-    });
-
-    // Followers count (assuming followers stored as keys)
-    const followersRef = ref(db, `followers/${uid}`);
-    onValue(followersRef, (snap) => {
-      const followersObj = snap.val();
-      const count = followersObj ? Object.keys(followersObj).length : 0;
-      followersCountEl.textContent = count;
-    });
-  }
-
-  function loadStatsRealtime(uid) {
-    // Total posts by user
-    const postsRef = ref(db, "posts");
-    onValue(postsRef, (snapshot) => {
-      const posts = snapshot.val() || {};
-      let totalPosts = 0, totalViews = 0, totalEarnings = 0;
-
-      const today = new Date();
-      const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-      const todayStartTs = todayStart.getTime();
-
-      let viewsToday = 0, earningsToday = 0, postsToday = 0;
-
-      for (const postId in posts) {
-        const post = posts[postId];
-        if (post.authorId !== uid) continue;
-        totalPosts++;
-        totalViews += post.views || 0;
-        totalEarnings += post.earnings || 0;
-
-        // Assuming post.createdAt is a timestamp in ms
-        if (post.createdAt >= todayStartTs) {
-          postsToday++;
-          viewsToday += post.viewsToday || 0; // if you track daily views separately
-          earningsToday += post.earningsToday || 0; // likewise daily earnings
-        }
-      }
-
-      totalPostsEl.textContent = totalPosts;
-      totalViewsEl.textContent = totalViews;
-      totalEarningsEl.textContent = `$${totalEarnings.toFixed(2)}`;
-
-      postsChangeEl.textContent = `+${postsToday} today`;
-      viewsChangeEl.textContent = `+${viewsToday} today`;
-      earningsChangeEl.textContent = `+ $${earningsToday.toFixed(2)} today`;
-
-      // Progress bars: simple example showing progress to some arbitrary goals
-      viewsProgressEl.style.width = Math.min(100, (totalViews / 10000) * 100) + "%";
-      earningsProgressEl.style.width = Math.min(100, (totalEarnings / 500) * 100) + "%";
-    });
-  }
-
-  function setupMonetizationToggle(uid) {
-    const monetizeRef = ref(db, `users/${uid}/monetize`);
-    onValue(monetizeRef, (snapshot) => {
-      const status = snapshot.val();
-      monetizeStatusEl.textContent = status ? "Monetized" : "Not Monetized";
-      monetizeBtn.disabled = false;
-      monetizeBtn.textContent = status ? "Disable Monetization" : "Enable Monetization";
-    });
-
-    monetizeBtn.onclick = () => {
-      monetizeBtn.disabled = true; // prevent spam
-      get(ref(db, `users/${uid}/monetize`)).then((snap) => {
-        const current = snap.val();
-        update(ref(db, `users/${uid}`), {
-          monetize: !current,
-        }).then(() => {
-          monetizeBtn.disabled = false;
-        });
-      });
+    const firebaseConfig = {
+      apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
+      authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
+      databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
+      projectId: "itzhoyoo-f9f7e",
+      storageBucket: "itzhoyoo-f9f7e.firebasestorage.app",
+      messagingSenderId: "1094792075584",
+      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
+      measurementId: "G-LLT6F9WRKH"
     };
-  }
 
-  // Logout
-  document.getElementById("logout-btn").addEventListener("click", () => {
-    signOut(auth);
-  });
-</script>
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
 
+    const followersBox = document.getElementById('followers');
+    const earningsBox = document.getElementById('earnings');
+    const postsBox = document.getElementById('posts');
+
+    function updateStat(box, value) {
+      const numberDiv = box.querySelector('.stat-number');
+      numberDiv.textContent = value !== null && value !== undefined ? value : '–';
+      // Color border based on positive or negative number (only for earnings)
+      if (box.id === 'earnings') {
+        if (typeof value === 'number') {
+          box.classList.toggle('positive', value >= 0);
+          box.classList.toggle('negative', value < 0);
+        } else {
+          box.classList.remove('positive', 'negative');
+        }
+      } else {
+        // For followers and posts, always positive styling
+        box.classList.add('positive');
+        box.classList.remove('negative');
+      }
+    }
+
+    onAuthStateChanged(auth, user => {
+      if (user) {
+        const statsRef = ref(db, `users/${user.uid}/stats`);
+        onValue(statsRef, snapshot => {
+          const data = snapshot.val() || {};
+          updateStat(followersBox, data.followers ?? '–');
+          updateStat(earningsBox, data.earnings ?? '–');
+          updateStat(postsBox, data.posts ?? '–');
+        });
+      } else {
+        // User not logged in, reset stats to dashes
+        updateStat(followersBox, '–');
+        updateStat(earningsBox, '–');
+        updateStat(postsBox, '–');
+      }
+    });
+  </script>
 </body>
 </html>
