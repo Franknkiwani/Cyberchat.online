@@ -1,173 +1,215 @@
 <!DOCTYPE html>
-<html lang="en" >
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>CyberChat Stats with Hamburger & Profile</title>
+  <title>CyberChat Dashboard</title>
   <style>
-    /* Dark Nertherite vibe */
     :root {
-      --bg: #121212;
-      --header-bg: #1e1e1e;
-      --card-bg: #22272a;
-      --pink: #ff2fa7;
-      --cyan: #00fff7;
-      --green: #4ade80;
-      --red: #f87171;
-      --text-light: #ddd;
-      --border: #2d2f33;
+      --bg-dark: #121212;
+      --bg-card: #1e1e1e;
+      --green: #4caf50;
+      --red: #f44336;
+      --cyan: #00ffff;
+      --pink: #ff2c8e;
+      --text-light: #eee;
+      --border-green: #3a7d44;
+      --border-red: #7d3a44;
     }
+
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       margin: 0;
-      background: var(--bg);
+      background: var(--bg-dark);
       color: var(--text-light);
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
     }
-    /* HEADER */
+
     header {
       position: sticky;
       top: 0;
-      background: var(--header-bg);
+      background: var(--bg-card);
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0.75rem 1rem;
-      border-bottom: 2px solid var(--border);
-      z-index: 10;
-      border-radius: 0 0 12px 12px;
-      user-select: none;
+      padding: 0.8rem 1rem;
+      border-radius: 0 0 15px 15px;
+      z-index: 1000;
+      box-shadow: 0 4px 8px rgb(0 0 0 / 0.7);
     }
-    /* Hamburger */
+
+    .left {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
     .hamburger {
-      width: 30px;
+      width: 28px;
       height: 22px;
       cursor: pointer;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
     }
+
     .hamburger span {
       display: block;
-      height: 4px;
-      background: var(--pink);
+      height: 3.5px;
+      background: var(--text-light);
       border-radius: 2px;
       transition: 0.3s;
     }
-    /* Title */
-    .title {
+
+    .logo {
       font-weight: 900;
-      font-size: 1.75rem;
-      color: var(--text-light);
-      flex-grow: 1;
-      text-align: center;
+      font-size: 1.7rem;
       user-select: none;
+      line-height: 1;
     }
-    .title .cyber {
+
+    .logo .cyber {
       color: var(--pink);
     }
-    .title .chat {
+
+    .logo .chat {
       color: var(--cyan);
     }
-    /* Profile */
-    .profile {
-      width: 38px;
-      height: 38px;
+
+    .profile-btn {
+      width: 36px;
+      height: 36px;
       border-radius: 50%;
-      background: var(--border);
       overflow: hidden;
-      flex-shrink: 0;
       cursor: pointer;
-      border: 2px solid var(--pink);
+      border: 2px solid var(--text-light);
+      flex-shrink: 0;
+      background: var(--bg-dark);
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: border-color 0.3s;
     }
-    .profile:hover {
-      border-color: var(--cyan);
-    }
-    .profile img {
+
+    .profile-btn img {
       width: 100%;
       height: 100%;
       object-fit: cover;
       display: block;
     }
-    .profile svg {
-      fill: var(--pink);
+
+    .profile-btn svg {
       width: 22px;
       height: 22px;
+      fill: var(--text-light);
     }
 
-    /* MAIN and CARDS */
     main {
-      max-width: 800px;
-      margin: 1rem auto;
-      padding: 0 1rem;
+      padding: 1.5rem 1rem 3rem;
+      max-width: 720px;
+      margin: auto;
       display: grid;
       grid-template-columns: repeat(2, 1fr);
       gap: 1rem;
     }
-    @media (max-width: 600px) {
+
+    @media (max-width: 640px) {
       main {
         grid-template-columns: repeat(2, 1fr);
       }
     }
-    .card {
-      background: var(--card-bg);
-      border: 2px solid var(--border);
+
+    .stat-card {
+      background: var(--bg-card);
       border-radius: 12px;
-      padding: 1.25rem 1rem;
+      padding: 1.3rem 1.6rem;
       box-shadow:
-        inset 0 0 10px rgba(255,255,255,0.05),
-        0 6px 8px rgba(0,0,0,0.7);
+        inset 0 0 0 2px var(--border-green),
+        0 4px 12px rgb(0 0 0 / 0.8);
       display: flex;
       flex-direction: column;
-      align-items: center;
+      gap: 0.5rem;
+      position: relative;
     }
-    .card h2 {
-      margin: 0 0 0.5rem;
-      font-weight: 700;
-      font-size: 1.1rem;
-      color: var(--cyan);
+
+    .stat-card.red-border {
+      box-shadow:
+        inset 0 0 0 2px var(--border-red),
+        0 4px 12px rgb(0 0 0 / 0.8);
     }
-    .stat-value {
-      font-size: 2.25rem;
-      font-weight: 900;
-      margin-bottom: 0.25rem;
-    }
-    .change {
+
+    .stat-title {
       font-weight: 600;
-      font-size: 0.9rem;
+      font-size: 1.1rem;
+      letter-spacing: 0.05em;
+      color: var(--text-light);
     }
-    .green {
+
+    .stat-value {
+      font-weight: 800;
+      font-size: 2.2rem;
+      letter-spacing: 0.02em;
+      line-height: 1.1;
+      color: var(--text-light);
+    }
+
+    .stat-change {
+      font-weight: 700;
+      font-size: 1rem;
+      user-select: none;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+
+    .stat-change.positive {
       color: var(--green);
     }
-    .red {
+
+    .stat-change.negative {
       color: var(--red);
+    }
+
+    .stat-change::before {
+      content: '+';
+      font-weight: 900;
+    }
+
+    .stat-change.negative::before {
+      content: '-';
     }
   </style>
 </head>
 <body>
   <header>
-    <div class="hamburger" title="Menu" aria-label="Open menu" tabindex="0" role="button">
-      <span></span><span></span><span></span>
+    <div class="left">
+      <button aria-label="Open menu" class="hamburger" id="hamburger">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <div class="logo"><span class="cyber">Cyber</span><span class="chat">Chat</span></div>
     </div>
-    <div class="title"><span class="cyber">Cyber</span><span class="chat">Chat</span></div>
-    <div class="profile" title="Profile" tabindex="0" role="button" id="profile-btn">
-      <!-- Fallback icon -->
+    <button aria-label="User profile" class="profile-btn" id="profileBtn">
+      <!-- Profile img or fallback icon inserted here -->
       <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
         <path d="M12 12c2.7 0 4.9-2.2 4.9-4.9S14.7 2.2 12 2.2 7.1 4.4 7.1 7.1 9.3 12 12 12zm0 2.4c-3.2 0-9.5 1.6-9.5 4.8v2.4h19v-2.4c0-3.2-6.3-4.8-9.5-4.8z"/>
       </svg>
-    </div>
+    </button>
   </header>
-  <main id="stats-container">
-    <!-- Stats cards inserted here -->
+  <main id="statsContainer">
+    <!-- Stats cards get dynamically inserted here -->
   </main>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-analytics.js";
     import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
@@ -181,53 +223,23 @@
     };
 
     const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
+    getAnalytics(app);
     const db = getDatabase(app);
-    const statsContainer = document.getElementById("stats-container");
-    const profileBtn = document.getElementById("profile-btn");
+    const auth = getAuth(app);
 
-    // Create stat card helper
-    function createStatCard(title, value, change) {
-      if (value === null || value === undefined) return null;
-      if (typeof value === "number" && isNaN(value)) return null;
+    const statsContainer = document.getElementById("statsContainer");
+    const profileBtn = document.getElementById("profileBtn");
 
-      const card = document.createElement("div");
-      card.className = "card";
-
-      const h2 = document.createElement("h2");
-      h2.textContent = title;
-      card.appendChild(h2);
-
-      const valSpan = document.createElement("div");
-      valSpan.className = "stat-value";
-      valSpan.textContent = value;
-      card.appendChild(valSpan);
-
-      if (change !== null && change !== undefined) {
-        const changeSpan = document.createElement("div");
-        changeSpan.className = "change " + (change >= 0 ? "green" : "red");
-        const sign = change >= 0 ? "+" : "";
-        changeSpan.textContent = `${sign}${change} ${title === "Earnings" ? "$" : ""} last hour`;
-        card.appendChild(changeSpan);
-      }
-
-      return card;
-    }
-
-    // Update profile avatar
+    // Update profile photo or fallback icon
     function updateProfilePhoto(user) {
-      if (!user) return;
-      const profileDiv = profileBtn;
-      profileDiv.innerHTML = ""; // Clear fallback icon
-
-      // If user has a photoURL, use it
+      profileBtn.innerHTML = "";
+      if (user.photoURL) {
         const img = document.createElement("img");
         img.src = user.photoURL;
-        img.alt = `${user.displayName || "User"} profile photo`;
-        profileDiv.appendChild(img);
+        img.alt = user.displayName ? `${user.displayName} profile photo` : "User profile photo";
+        profileBtn.appendChild(img);
       } else {
-        // Fallback icon (same SVG as before)
-        profileDiv.innerHTML = `
+        profileBtn.innerHTML = `
           <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
             <path d="M12 12c2.7 0 4.9-2.2 4.9-4.9S14.7 2.2 12 2.2 7.1 4.4 7.1 7.1 9.3 12 12 12zm0 2.4c-3.2 0-9.5 1.6-9.5 4.8v2.4h19v-2.4c0-3.2-6.3-4.8-9.5-4.8z"/>
           </svg>
@@ -235,15 +247,41 @@
       }
     }
 
-    // Fetch stats for the logged-in user
-    async function fetchUserStats(uid) {
-      const userRef = ref(db, `users/${uid}`); // Assuming your stats stored under /users/uid/
-      const statsSnapshot = await get(userRef);
-      if (!statsSnapshot.exists()) return null;
-      return statsSnapshot.val();
+    // Create a single stat card element with value and last 24h change
+    function createStatCard(title, value, change) {
+      const card = document.createElement("div");
+      card.classList.add("stat-card");
+
+      // Red border if negative change, green if positive or zero
+      if (change < 0) card.classList.add("red-border");
+
+      const titleEl = document.createElement("div");
+      titleEl.className = "stat-title";
+      titleEl.textContent = title;
+
+      const valueEl = document.createElement("div");
+      valueEl.className = "stat-value";
+      valueEl.textContent = value;
+
+      const changeEl = document.createElement("div");
+      changeEl.className = "stat-change";
+      changeEl.textContent = Math.abs(change);
+      changeEl.classList.add(change >= 0 ? "positive" : "negative");
+
+      card.appendChild(titleEl);
+      card.appendChild(valueEl);
+      card.appendChild(changeEl);
+
+      return card;
     }
 
-    // Main function to load data and update UI
+    async function fetchUserStats(uid) {
+      const userRef = ref(db, `users/${uid}`);
+      const snapshot = await get(userRef);
+      if (!snapshot.exists()) return null;
+      return snapshot.val();
+    }
+
     onAuthStateChanged(auth, async (user) => {
       if (user) {
         updateProfilePhoto(user);
@@ -256,36 +294,22 @@
           return;
         }
 
-        /*
-         Expected stats object example:
-         {
-           followers: 1234,
-           followersChange: 15,
-           earnings: 45.67,
-           earningsChange: -2.3,
-           posts: 12,
-           postsChange: 1,
-           views: 7890,
-           viewsChange: 200
-         }
-        */
-
-        // Build cards with real data
+        // Build cards
         const cards = [
-          createStatCard("Followers", stats.followers, stats.followersChange),
-          createStatCard("Earnings", `$${stats.earnings.toFixed(2)}`, stats.earningsChange),
-          createStatCard("Posts", stats.posts, stats.postsChange),
-          createStatCard("Views", stats.views, stats.viewsChange)
-        ].filter(Boolean);
+          createStatCard("Followers", stats.followers ?? 0, stats.followersChange ?? 0),
+          createStatCard("Earnings", `$${(stats.earnings ?? 0).toFixed(2)}`, stats.earningsChange ?? 0),
+          createStatCard("Posts", stats.posts ?? 0, stats.postsChange ?? 0),
+          createStatCard("Views", stats.views ?? 0, stats.viewsChange ?? 0)
+        ];
 
         cards.forEach(card => statsContainer.appendChild(card));
       } else {
-        statsContainer.innerHTML = `<p style="text-align:center; padding:2rem; color:var(--red);">You are not logged in. Please log in to see your stats.</p>`;
         profileBtn.innerHTML = `
           <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
             <path d="M12 12c2.7 0 4.9-2.2 4.9-4.9S14.7 2.2 12 2.2 7.1 4.4 7.1 7.1 9.3 12 12 12zm0 2.4c-3.2 0-9.5 1.6-9.5 4.8v2.4h19v-2.4c0-3.2-6.3-4.8-9.5-4.8z"/>
           </svg>
         `;
+        statsContainer.innerHTML = "<p style='grid-column: 1/-1; text-align:center;'>Please log in to view stats.</p>";
       }
     });
   </script>
