@@ -1,286 +1,208 @@
 <!DOCTYPE html>
-<html lang="en" >
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>CyberChat Dashboard</title>
-  <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
-
-    :root {
-      --cyber-pink: #ff1eff;
-      --cyber-cyan: #00fff7;
-      --bg-dark: #121212;
-      --card-bg: #1f1f1f;
-      --border-color: #00ff6a;
-      --text-light: #e0e0e0;
-      --positive-green: #4caf50;
-      --negative-red: #f44336;
-    }
-
-    * {
-      box-sizing: border-box;
-    }
-
-    body {
-      margin: 0;
-      background: var(--bg-dark);
-      color: var(--text-light);
-      font-family: 'Inter', sans-serif;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-    }
-
-    header {
-      position: sticky;
-      top: 0;
-      background: var(--card-bg);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 12px 24px;
-      border-radius: 0 0 18px 18px;
-      border: 2px solid var(--border-color);
-      z-index: 1000;
-    }
-
-    .left, .right {
-      display: flex;
-      align-items: center;
-    }
-
-    /* Hamburger menu */
-    .hamburger {
-      cursor: pointer;
-      width: 26px;
-      height: 22px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-    }
-
-    .hamburger span {
-      display: block;
-      height: 3px;
-      background: var(--border-color);
-      border-radius: 2px;
-    }
-
-    /* Profile pic */
-    .profile-pic {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 2px solid var(--border-color);
-      margin-left: 12px;
-    }
-
-    /* CyberChat text */
-    .logo-text {
-      font-weight: 700;
-      font-size: 1.5rem;
-      user-select: none;
-      letter-spacing: 0.05em;
-      margin: 0 auto;
-      display: flex;
-      gap: 4px;
-    }
-
-    .logo-text .cyber {
-      color: var(--cyber-pink);
-    }
-
-    .logo-text .chat {
-      color: var(--cyber-cyan);
-    }
-
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>CyberChat Stats</title>
+<style>
+  /* Dark Theme Nertherite style */
+  :root {
+    --bg: #121212;
+    --header-bg: #1e1e1e;
+    --card-bg: #22272a;
+    --pink: #ff2fa7;
+    --cyan: #00fff7;
+    --green: #4ade80;
+    --red: #f87171;
+    --text-light: #ddd;
+    --text-dark: #222;
+    --border: #2d2f33;
+  }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text-light);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  }
+  header {
+    position: sticky;
+    top: 0;
+    background: var(--header-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.75rem 1rem;
+    border-bottom: 2px solid var(--border);
+    z-index: 10;
+    border-radius: 0 0 12px 12px;
+  }
+  header h1 {
+    margin: 0;
+    font-weight: 900;
+    font-size: 1.75rem;
+  }
+  header h1 .cyber {
+    color: var(--pink);
+  }
+  header h1 .chat {
+    color: var(--cyan);
+  }
+  main {
+    max-width: 800px;
+    margin: 1rem auto;
+    padding: 0 1rem;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+  @media (max-width: 600px) {
     main {
-      max-width: 800px;
-      margin: 24px auto;
-      padding: 0 16px;
-      display: grid;
       grid-template-columns: repeat(2, 1fr);
-      gap: 16px;
     }
-
-    /* Cards */
-    .card {
-      background: var(--card-bg);
-      border: 2px solid var(--border-color);
-      border-radius: 16px;
-      padding: 16px;
-      box-shadow:
-        0 0 8px rgba(0, 255, 106, 0.4),
-        inset 0 0 8px rgba(0, 255, 106, 0.2);
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      text-align: center;
-      user-select: none;
-    }
-
-    .card h3 {
-      margin: 0 0 8px;
-      font-weight: 700;
-      font-size: 1.2rem;
-    }
-
-    .stat-main {
-      font-size: 2rem;
-      font-weight: 900;
-      margin-bottom: 8px;
-      letter-spacing: 0.05em;
-    }
-
-    .stat-change {
-      font-weight: 600;
-      font-size: 1rem;
-      user-select: text;
-    }
-
-    .stat-change.positive {
-      color: var(--positive-green);
-    }
-
-    .stat-change.negative {
-      color: var(--negative-red);
-    }
-
-    /* Responsive: keep 2 cards per row on mobile */
-    @media (max-width: 600px) {
-      main {
-        grid-template-columns: repeat(2, 1fr);
-      }
-    }
-  </style>
+  }
+  .card {
+    background: var(--card-bg);
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem 1rem;
+    box-shadow:
+      inset 0 0 10px rgba(255,255,255,0.05),
+      0 6px 8px rgba(0,0,0,0.7);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .card h2 {
+    margin: 0 0 0.5rem;
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--cyan);
+  }
+  .stat-value {
+    font-size: 2.25rem;
+    font-weight: 900;
+    margin-bottom: 0.25rem;
+  }
+  .change {
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+  .green {
+    color: var(--green);
+  }
+  .red {
+    color: var(--red);
+  }
+</style>
 </head>
 <body>
-  <header>
-    <div class="left">
-      <div class="hamburger" aria-label="Menu" role="button" tabindex="0">
-        <span></span>
-        <span></span>
-        <span></span>
-      </div>
-    </div>
+<header>
+  <h1><span class="cyber">Cyber</span><span class="chat">Chat</span></h1>
+</header>
+<main id="stats-container">
+  <!-- Stats cards inserted here dynamically -->
+</main>
 
-    <h1 class="logo-text" aria-label="CyberChat logo">
-      <span class="cyber">Cyber</span><span class="chat">Chat</span>
-    </h1>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+  import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
 
-    <div class="right">
-      <img src="https://i.pravatar.cc/36" alt="Profile picture" class="profile-pic" />
-    </div>
-  </header>
+  const firebaseConfig = {
+    apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
+    authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
+    databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
+    projectId: "itzhoyoo-f9f7e",
+    storageBucket: "itzhoyoo-f9f7e.firebasestorage.app",
+    messagingSenderId: "1094792075584",
+    appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
+    measurementId: "G-LLT6F9WRKH"
+  };
 
-  <main>
-    <section class="card" aria-label="Followers statistics">
-      <h3>Followers</h3>
-      <div class="stat-main" id="followers">0</div>
-      <div class="stat-change" id="followersChange">+0</div>
-    </section>
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getDatabase(app);
+  const statsContainer = document.getElementById("stats-container");
 
-    <section class="card" aria-label="Earnings statistics">
-      <h3>Earnings</h3>
-      <div class="stat-main" id="earnings">$0</div>
-      <div class="stat-change" id="earningsChange">+0</div>
-    </section>
+  function createStatCard(title, value, change) {
+    if (value === null || value === undefined) return null;
+    if (typeof value === "number" && isNaN(value)) return null;
 
-    <section class="card" aria-label="Posts statistics">
-      <h3>Posts</h3>
-      <div class="stat-main" id="posts">0</div>
-      <div class="stat-change" id="postsChange">+0</div>
-    </section>
+    const card = document.createElement("div");
+    card.className = "card";
 
-    <section class="card" aria-label="Views statistics">
-      <h3>Views</h3>
-      <div class="stat-main" id="views">0</div>
-      <div class="stat-change" id="viewsChange">+0</div>
-    </section>
-  </main>
+    const h2 = document.createElement("h2");
+    h2.textContent = title;
+    card.appendChild(h2);
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-    import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-analytics.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
-    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+    const valSpan = document.createElement("div");
+    valSpan.className = "stat-value";
+    valSpan.textContent = value;
+    card.appendChild(valSpan);
 
-    // Firebase config
-    const firebaseConfig = {
-      apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
-      authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
-      databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
-      projectId: "itzhoyoo-f9f7e",
-      storageBucket: "itzhoyoo-f9f7e.firebasestorage.app",
-      messagingSenderId: "1094792075584",
-      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
-      measurementId: "G-LLT6F9WRKH"
-    };
-
-    // Initialize Firebase
-    const app = initializeApp(firebaseConfig);
-    getAnalytics(app);
-    const auth = getAuth(app);
-    const db = getDatabase(app);
-
-    // DOM elements
-    const followersEl = document.getElementById("followers");
-    const followersChangeEl = document.getElementById("followersChange");
-    const earningsEl = document.getElementById("earnings");
-    const earningsChangeEl = document.getElementById("earningsChange");
-    const postsEl = document.getElementById("posts");
-    const postsChangeEl = document.getElementById("postsChange");
-    const viewsEl = document.getElementById("views");
-    const viewsChangeEl = document.getElementById("viewsChange");
-
-    // Helper to update stat with + or - and color
-    function updateChange(el, val, isMoney = false) {
-      if (val === 0 || val === undefined || val === null) {
-        el.textContent = "+0";
-        el.className = "stat-change";
-      } else if (val > 0) {
-        el.textContent = "+" + (isMoney ? `$${val.toFixed(2)}` : val);
-        el.className = "stat-change positive";
-      } else {
-        el.textContent = (isMoney ? `-$${Math.abs(val).toFixed(2)}` : val);
-        el.className = "stat-change negative";
-      }
+    if (change !== null && change !== undefined) {
+      const changeSpan = document.createElement("div");
+      changeSpan.className = "change " + (change >= 0 ? "green" : "red");
+      const sign = change >= 0 ? "+" : "";
+      changeSpan.textContent = `${sign}${change} ${title === "Earnings" ? "$" : ""} last hour`;
+      card.appendChild(changeSpan);
     }
 
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        const statsRef = ref(db, `users/${user.uid}/stats`);
-        onValue(statsRef, (snapshot) => {
-          const stats = snapshot.val() || {};
+    return card;
+  }
 
-          followersEl.textContent = stats.followers ?? 0;
-          updateChange(followersChangeEl, stats.followersChange);
+  onAuthStateChanged(auth, async (user) => {
+    statsContainer.innerHTML = ""; // Clear on each state change
 
-          earningsEl.textContent = "$" + (stats.earnings?.toFixed(2) ?? "0.00");
-          updateChange(earningsChangeEl, stats.earningsChange, true);
+    if (!user) {
+      // Not logged in, show nothing
+      return;
+    }
 
-          postsEl.textContent = stats.posts ?? 0;
-          updateChange(postsChangeEl, stats.postsChange);
+    const uid = user.uid;
+    try {
+      const statsRef = ref(db, `users/${uid}/stats`);
+      const snapshot = await get(statsRef);
+      if (!snapshot.exists()) return; // No stats, show nothing
 
-          viewsEl.textContent = stats.views ?? 0;
-          updateChange(viewsChangeEl, stats.viewsChange);
-        });
-      } else {
-        followersEl.textContent = "0";
-        followersChangeEl.textContent = "+0";
-        followersChangeEl.className = "stat-change";
-        earningsEl.textContent = "$0";
-        earningsChangeEl.textContent = "+0";
-        earningsChangeEl.className = "stat-change";
-        postsEl.textContent = "0";
-        postsChangeEl.textContent = "+0";
-        postsChangeEl.className = "stat-change";
-        viewsEl.textContent = "0";
-        viewsChangeEl.textContent = "+0";
-        viewsChangeEl.className = "stat-change";
+      const stats = snapshot.val();
+
+      // Example structure expected:
+      // stats = {
+      //   followers: 1234,
+      //   followersChange: 12,
+      //   earnings: 56.78,
+      //   earningsChange: -1.23,
+      //   posts: 45,
+      //   postsChange: 0,
+      //   views: 2345,
+      //   viewsChange: 100
+      // }
+
+      // Only add cards for stats with real data (not null/undefined)
+      const cards = [];
+      if (stats.followers !== undefined) {
+        const card = createStatCard("Followers", stats.followers, stats.followersChange);
+        if(card) cards.push(card);
       }
-    });
-  </script>
+      if (stats.earnings !== undefined) {
+        const card = createStatCard("Earnings", `$${stats.earnings.toFixed(2)}`, stats.earningsChange);
+        if(card) cards.push(card);
+      }
+      if (stats.posts !== undefined) {
+        const card = createStatCard("Posts", stats.posts, stats.postsChange);
+        if(card) cards.push(card);
+      }
+      if (stats.views !== undefined) {
+        const card = createStatCard("Views", stats.views, stats.viewsChange);
+        if(card) cards.push(card);
+      }
+
+      cards.forEach(card => statsContainer.appendChild(card));
+    } catch (error) {
+      console.error("Error fetching user stats:", error);
+    }
+  });
+</script>
 </body>
 </html>
