@@ -3,351 +3,259 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>CyberChat Native App</title>
+<title>Firebase Multi-Tab Demo</title>
 <style>
-  :root {
-    --bg: #fff;
-    --fg: #000;
-    --border: #eee;
-    --subtle: #555;
-    --overlay-bg: rgba(255, 255, 255, 0.95);
-    --upload-bg: #000;
-    --input-bg: #fff;
-  }
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --bg: #121212;
-      --fg: #fff;
-      --border: #333;
-      --subtle: #aaa;
-      --overlay-bg: rgba(18, 18, 18, 0.95);
-      --upload-bg: #fff;
-      --input-bg: #1e1e1e;
-    }
-  }
-  /* Reset & base */
-  * {
-    margin: 0; padding: 0; box-sizing: border-box;
-    -webkit-tap-highlight-color: transparent;
-    user-select: none;
-  }
-  html, body {
-    height: 100%;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    background: var(--bg);
-    color: var(--fg);
-    overflow-x: hidden;
-  }
+  /* Basic styling for tabs and cards */
   body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    background: #f0f2f5;
+    margin: 0; padding: 0;
+  }
+  nav {
     display: flex;
-    flex-direction: column;
+    background: white;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
   }
-  /* Header */
-  header {
-    position: sticky;
-    top: 0;
-    z-index: 1000;
-    background: var(--bg);
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 1rem;
-    justify-content: flex-start;
-  }
-  header svg {
-    width: 24px; height: 24px;
-    fill: var(--subtle);
-    cursor: pointer;
-  }
-  .search-text {
-    font-size: 1rem;
-    color: var(--subtle);
-    cursor: pointer;
-  }
-  .app-name {
-    flex-grow: 1;
-    text-align: center;
-    font-weight: 900;
-    font-size: 1.3rem;
-    user-select: text; /* app name can be selected */
-    cursor: default;
-  }
-  .cyber {
-    color: #ff0080; /* pink */
-  }
-  .chat {
-    color: #007aff; /* blue */
-  }
-  /* Footer */
-  footer {
-    position: sticky;
-    bottom: 0;
-    z-index: 1000;
-    background: var(--bg);
-    border-top: 1px solid var(--border);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0.75rem 2rem;
-  }
-  .icon-btn, .upload-btn {
-    background: none;
-    border: none;
-    padding: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-  }
-  .icon-btn svg {
-    width: 28px; height: 28px;
-    fill: var(--subtle);
-  }
-  .upload-btn {
-    background: var(--upload-bg);
-    width: 48px; height: 48px;
-    border-radius: 999px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transform: translateY(-8px);
-  }
-  .upload-btn svg {
-    width: 24px; height: 24px;
-    stroke: var(--bg);
-    stroke-width: 2;
-    fill: none;
-  }
-  .profile-pic {
-    width: 32px; height: 32px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 1px solid var(--border);
-  }
-  /* Main content */
-  main {
+  nav div.tab {
     flex: 1;
-    overflow-y: auto;
     padding: 1rem;
-  }
-  .container {
-    max-width: 600px;
-    margin: auto;
-  }
-  /* Text selection: ONLY title & description */
-  .title, .description {
-    user-select: text;
-    -webkit-user-select: text;
-  }
-  /* Lists styling */
-  #profilesList ul, #searchResults ul {
-    list-style: none;
-    padding: 0;
-  }
-  #profilesList li, #searchResults li {
-    padding: 0.5rem 0;
-    border-bottom: 1px solid var(--border);
-    cursor: pointer;
-  }
-  #profilesList li:hover, #searchResults li:hover {
-    background: var(--border);
-  }
-  /* Search Overlay */
-  .search-overlay {
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    background: var(--overlay-bg);
-    backdrop-filter: blur(8px);
-    display: flex;
-    flex-direction: column;
-    padding: 1.5rem 1rem;
-    transform: translateY(-100%);
-    transition: transform 0.3s ease;
-    z-index: 2000;
-  }
-  .search-overlay.show {
-    transform: translateY(0);
-  }
-  .search-input {
-    width: 100%;
-    padding: 0.75rem 1rem;
-    font-size: 1rem;
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    background: var(--input-bg);
-    color: var(--fg);
-    outline: none;
-  }
-  .close-btn {
-    margin-top: 1rem;
-    background: none;
-    border: none;
-    color: #007aff;
-    font-weight: 600;
-    font-size: 1rem;
-    align-self: flex-end;
+    text-align: center;
     cursor: pointer;
     user-select: none;
+    font-weight: 600;
+  }
+  nav div.tab.active {
+    border-bottom: 3px solid #007aff;
+    color: #007aff;
+  }
+  .content {
+    display: none;
+    padding: 1rem;
+  }
+  .content.active {
+    display: block;
+  }
+  .card {
+    background: white;
+    border-radius: 12px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 2px 6px rgb(0 0 0 / 0.1);
+  }
+  .post-title, .poll-quiz-title, .user-name {
+    font-weight: 700;
+    font-size: 1.1rem;
+  }
+  .post-body, .poll-quiz-body {
+    margin-top: 0.5rem;
+    color: #444;
+  }
+  .unfollow-btn {
+    margin-top: 0.5rem;
+    padding: 0.3rem 0.6rem;
+    background: #ff3b30;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 600;
   }
 </style>
 </head>
 <body>
 
-<header id="searchTrigger" tabindex="0" role="button" aria-label="Open search">
-  <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-    <path d="M11 4a7 7 0 1 1 0 14 7 7 0 0 1 0-14zm0 0l6 6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
-  </svg>
-  <span class="search-text">Search</span>
-  <div class="app-name" aria-label="App name CyberChat">
-    <span class="cyber">CYBER</span><span class="chat">CHAT</span>
-  </div>
-</header>
+<nav>
+  <div class="tab active" onclick="switchTab('home')">Home</div>
+  <div class="tab" onclick="switchTab('community')">Community</div>
+  <div class="tab" onclick="switchTab('following')">Following</div>
+</nav>
 
-<main>
-  <div class="container">
-    <!-- Default user profiles -->
-    <div id="profilesList">
-      <h2>User Profiles</h2>
-      <ul>
-        <li>Frank - @frank</li>
-        <li>Jane - @jane_doe</li>
-        <li>Alex - @alex123</li>
-      </ul>
-    </div>
-
-    <!-- Search results, hidden by default -->
-    <div id="searchResults" style="display:none;">
-      <h2>Search Results</h2>
-      <ul id="resultsList">
-        <!-- Search results appear here -->
-      </ul>
-    </div>
-  </div>
-</main>
-
-<footer>
-  <button class="icon-btn" aria-label="Home" tabindex="0">
-    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-      <path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1V9.5z" />
-    </svg>
-  </button>
-
-  <button class="upload-btn" aria-label="Upload" tabindex="0">
-    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-      <path d="M12 5v14M5 12h14" />
-    </svg>
-  </button>
-
-  <img src="https://i.imgur.com/3GvwNBf.png" alt="Profile" class="profile-pic" />
-</footer>
-
-<!-- Search Overlay -->
-<div class="search-overlay" id="searchOverlay" role="dialog" aria-modal="true" aria-labelledby="searchLabel" aria-hidden="true">
-  <input id="searchInput" type="text" placeholder="Search..." class="search-input" aria-label="Search input" />
-  <button class="close-btn" id="closeSearch" aria-label="Close search">Cancel</button>
+<div id="homePage" class="content active">
+  <p>Loading posts...</p>
+</div>
+<div id="communityPage" class="content">
+  <p>Loading community content...</p>
+</div>
+<div id="followingPage" class="content">
+  <p>Loading following list...</p>
 </div>
 
-<script>
-  const trigger = document.getElementById('searchTrigger');
-  const overlay = document.getElementById('searchOverlay');
-  const closeBtn = document.getElementById('closeSearch');
-  const searchInput = document.getElementById('searchInput');
-  const profilesList = document.getElementById('profilesList');
-  const searchResults = document.getElementById('searchResults');
-  const resultsList = document.getElementById('resultsList');
+<script type="module">
+// Your Firebase config + imports
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-analytics.js";
+import { getDatabase, ref, get, child, remove } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
 
-  // Sample user data (you can replace with dynamic later)
-  const users = [
-    { name: 'Frank', username: 'frank' },
-    { name: 'Jane', username: 'jane_doe' },
-    { name: 'Alex', username: 'alex123' },
-    { name: 'Chris', username: 'chris_rock' },
-    { name: 'Samantha', username: 'sam_s' }
-  ];
+const firebaseConfig = {
+  apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
+  authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
+  databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
+  projectId: "itzhoyoo-f9f7e",
+  storageBucket: "itzhoyoo-f9f7e.firebasestorage.app",
+  messagingSenderId: "1094792075584",
+  appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
+  measurementId: "G-LLT6F9WRKH"
+};
 
-  function openSearch() {
-    overlay.classList.add('show');
-    overlay.setAttribute('aria-hidden', 'false');
-    searchInput.focus();
-    profilesList.style.display = 'none';
-    searchResults.style.display = 'block';
-    resultsList.innerHTML = ''; // Clear previous results
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
+const db = getDatabase(app);
+const auth = getAuth(app);
+
+const homePage = document.getElementById('homePage');
+const communityPage = document.getElementById('communityPage');
+const followingPage = document.getElementById('followingPage');
+
+let currentUser = null;
+
+const sanitize = str => {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+};
+
+window.switchTab = function(tab) {
+  document.querySelectorAll('.content').forEach(c => c.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById(tab + 'Page').classList.add('active');
+  [...document.querySelectorAll('.tab')]
+    .find(t => t.textContent.toLowerCase() === tab)
+    .classList.add('active');
+
+  if (tab === 'home') loadHomePosts();
+  else if (tab === 'community') loadCommunity();
+  else if (tab === 'following') loadFollowing();
+};
+
+async function loadHomePosts() {
+  homePage.innerHTML = '<p style="text-align:center;padding-top:1rem;">Loading posts...</p>';
+  try {
+    const snapshot = await get(ref(db, 'post'));
+    if (!snapshot.exists()) {
+      homePage.innerHTML = '<p>No posts yet.</p>';
+      return;
+    }
+    const posts = snapshot.val();
+    let html = '';
+    for (const id in posts) {
+      const post = posts[id];
+      html += `
+        <div class="card">
+          <div class="post-title">${sanitize(post.title || 'Untitled')}</div>
+          <div class="post-body">${sanitize(post.description || '')}</div>
+        </div>`;
+    }
+    homePage.innerHTML = html;
+  } catch (e) {
+    console.error(e);
+    homePage.innerHTML = '<p>Error loading posts.</p>';
+  }
+}
+
+async function loadCommunity() {
+  communityPage.innerHTML = '<p style="text-align:center;padding-top:1rem;">Loading community...</p>';
+  try {
+    const pollsSnap = await get(ref(db, 'polls'));
+    const quizSnap = await get(ref(db, 'quiz'));
+    const polls = pollsSnap.exists() ? pollsSnap.val() : {};
+    const quizzes = quizSnap.exists() ? quizSnap.val() : {};
+
+    const combined = [];
+    for (const key in polls) combined.push({ id: key, type: 'Poll', ...polls[key] });
+    for (const key in quizzes) combined.push({ id: key, type: 'Quiz', ...quizzes[key] });
+
+    if (!combined.length) {
+      communityPage.innerHTML = '<p>No polls or quizzes available.</p>';
+      return;
+    }
+    // Sort by timestamp descending if available
+    combined.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+
+    let html = '';
+    combined.forEach(item => {
+      html += `
+      <div class="card">
+        <div class="poll-quiz-title">${sanitize(item.title || 'Untitled')} <small style="color:#888">[${item.type}]</small></div>
+        <div class="poll-quiz-body">${sanitize(item.description || '')}</div>
+      </div>`;
+    });
+
+    communityPage.innerHTML = html;
+  } catch (e) {
+    console.error(e);
+    communityPage.innerHTML = '<p>Error loading community content.</p>';
+  }
+}
+
+async function loadFollowing() {
+  if (!currentUser) {
+    followingPage.innerHTML = '<p>Please log in to see who you are following.</p>';
+    return;
   }
 
-  function closeSearch() {
-    overlay.classList.remove('show');
-    overlay.setAttribute('aria-hidden', 'true');
-    profilesList.style.display = 'block';
-    searchResults.style.display = 'none';
-    searchInput.value = '';
+  followingPage.innerHTML = '<p style="text-align:center;padding-top:1rem;">Loading following...</p>';
+  try {
+    // Get following uids
+    const followingSnap = await get(ref(db, `following/${currentUser.uid}`));
+    if (!followingSnap.exists()) {
+      followingPage.innerHTML = '<p>You are not following anyone.</p>';
+      return;
+    }
+    const following = followingSnap.val(); // Assume format { uid: true, ... }
+
+    // Now get user info for each followed uid
+    let html = '';
+    for (const followedUid in following) {
+      // fetch profile data for followedUid
+      const userSnap = await get(ref(db, `profile/${followedUid}`));
+      if (!userSnap.exists()) continue;
+      const user = userSnap.val();
+
+      // user should have username, handle (or fallback)
+      const username = sanitize(user.username || 'Unknown');
+      const handle = sanitize(user.handle || '@unknown');
+
+      html += `
+      <div class="card">
+        <div class="user-name">${username} <small style="color:#666">${handle}</small></div>
+        <button class="unfollow-btn" onclick="unfollowUser('${followedUid}')">Unfollow</button>
+      </div>`;
+    }
+    followingPage.innerHTML = html || '<p>No followed users found.</p>';
+  } catch (e) {
+    console.error(e);
+    followingPage.innerHTML = '<p>Error loading following list.</p>';
   }
+}
 
-  function searchUsers(query) {
-    const lowerQuery = query.toLowerCase();
-    const filtered = users.filter(user =>
-      user.name.toLowerCase().includes(lowerQuery) || user.username.toLowerCase().includes(lowerQuery)
-    );
-    resultsList.innerHTML = filtered.length
-      ? filtered.map(u => `<li tabindex="0">${u.name} - @${u.username}</li>`).join('')
-      : `<li>No results found</li>`;
+window.unfollowUser = async function(uidToUnfollow) {
+  if (!currentUser) return alert('Not logged in');
+  if (!confirm('Unfollow this user?')) return;
+
+  try {
+    await remove(ref(db, `following/${currentUser.uid}/${uidToUnfollow}`));
+    alert('Unfollowed successfully');
+    loadFollowing();
+  } catch (e) {
+    console.error(e);
+    alert('Error unfollowing user.');
   }
+};
 
-  trigger.addEventListener('click', openSearch);
-  trigger.addEventListener('keydown', e => {
-    if (e.key === 'Enter' || e.key === ' ') {
-      e.preventDefault();
-      openSearch();
-    }
-  });
-
-  closeBtn.addEventListener('click', closeSearch);
-
-  // Close on Escape key anywhere in overlay
-  overlay.addEventListener('keydown', e => {
-    if (e.key === 'Escape') {
-      closeSearch();
-      trigger.focus();
-    }
-  });
-
-  // Live search on input
-  searchInput.addEventListener('input', e => {
-    const val = e.target.value.trim();
-    if (val.length > 0) {
-      searchUsers(val);
-    } else {
-      resultsList.innerHTML = '';
-    }
-  });
-
-  // Optional: handle click on search result items (e.g. navigate or alert)
-  resultsList.addEventListener('click', e => {
-    if (e.target.tagName === 'LI' && e.target.textContent !== 'No results found') {
-      alert(`You selected: ${e.target.textContent}`);
-      closeSearch();
-    }
-  });
-
-  // Keyboard navigation inside results list
-  resultsList.addEventListener('keydown', e => {
-    const focusableItems = Array.from(resultsList.querySelectorAll('li'));
-    if (!focusableItems.length) return;
-    let index = focusableItems.indexOf(document.activeElement);
-    if (e.key === 'ArrowDown') {
-      e.preventDefault();
-      let nextIndex = (index + 1) % focusableItems.length;
-      focusableItems[nextIndex].focus();
-    } else if (e.key === 'ArrowUp') {
-      e.preventDefault();
-      let prevIndex = (index - 1 + focusableItems.length) % focusableItems.length;
-      focusableItems[prevIndex].focus();
-    } else if (e.key === 'Enter') {
-      e.preventDefault();
-      document.activeElement.click();
-    }
-  });
+onAuthStateChanged(auth, user => {
+  currentUser = user;
+  if (!user) {
+    // Not logged in - can show guest view or prompt login
+    homePage.innerHTML = '<p>Please log in to see posts.</p>';
+    communityPage.innerHTML = '<p>Please log in to see community content.</p>';
+    followingPage.innerHTML = '<p>Please log in to see who you follow.</p>';
+  } else {
+    // Load default tab data when user logs in
+    loadHomePosts();
+  }
+});
 </script>
+
 </body>
 </html>
