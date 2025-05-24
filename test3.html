@@ -3,196 +3,178 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Social Media Dashboard</title>
+<title>Social Media Creator Dashboard</title>
 <style>
-  /* Reset & basics */
-  body {
-    margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
-      Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
-    background: #121212;
-    color: #ddd;
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
-  }
-
-  /* Header */
-  header {
-    height: 48px;
-    background: #1f1f1f;
-    display: flex;
-    align-items: center;
-    padding: 0 12px;
-    font-weight: 600;
-    font-size: 18px;
-    user-select: none;
-    position: sticky;
-    top: 0;
-    z-index: 10;
-  }
-  #hamburger {
-    cursor: pointer;
-    margin-right: 12px;
-    font-size: 24px;
-  }
-
-  /* Sidebar */
-  #sidebar {
-    position: fixed;
-    top: 48px;
-    left: -220px;
-    width: 220px;
-    height: calc(100vh - 48px);
-    background: #222;
-    padding: 1rem;
+  /* Reset + base */
+  * {
     box-sizing: border-box;
-    transition: left 0.3s ease;
-    color: #ccc;
-    overflow-y: auto;
-    font-size: 14px;
   }
-  #sidebar.open {
-    left: 0;
-  }
-  #sidebar a {
-    display: block;
-    color: #ccc;
-    padding: 10px 0;
-    text-decoration: none;
-  }
-  #sidebar a:hover {
-    color: #4caf50;
-  }
-
-  /* Main content */
-  main {
-    margin-top: 12px;
-    margin-left: 12px;
-    padding: 0 12px 40px;
-    max-width: 980px;
-    width: 100%;
-    margin-inline: auto;
-  }
-
-  /* User Info bar */
-  .user-info {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 24px;
-  }
-  .user-info img {
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    object-fit: cover;
-    background: #444;
-  }
-  .user-texts {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
-  .username {
-    font-size: 20px;
-    font-weight: 700;
-    color: #fff;
-  }
-  .handle {
-    color: #999;
-    font-size: 14px;
-  }
-  .followers {
-    margin-left: auto;
-    font-weight: 600;
-    font-size: 16px;
-    color: #ddd;
-  }
-
-  /* Stats Bars Container */
-  .stats-container {
-    display: flex;
-    gap: 16px;
-    flex-wrap: wrap;
-    margin-bottom: 24px;
-  }
-
-  /* Single stat card */
-  .stat-card {
-    flex: 1 1 48%;
-    background: #1f1f1f;
-    padding: 16px;
-    border-radius: 12px;
-    box-shadow: 0 0 8px #111 inset;
-    color: #ddd;
-  }
-
-  .stat-title {
-    font-size: 14px;
-    color: #aaa;
-    margin-bottom: 8px;
-  }
-  .stat-value {
-    font-size: 28px;
-    font-weight: 700;
-    margin-bottom: 4px;
+  body {
+    margin:0; padding:0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
+      Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    background: #121212;
     color: #eee;
   }
-  .stat-change {
-    font-size: 14px;
-    font-weight: 600;
+  a {
+    color: #4caf50;
+    text-decoration: none;
+  }
+  a:hover {
+    text-decoration: underline;
+  }
+  /* Layout */
+  header {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 50px;
+    background: #1f1f1f;
+    display: flex;
+    align-items: center;
+    padding: 0 1rem;
+    z-index: 1000;
+  }
+  #hamburger {
+    font-size: 1.5rem;
+    cursor: pointer;
+    user-select: none;
+    margin-right: 1rem;
     color: #4caf50;
   }
-  .stat-change.negative {
+  #sidebar {
+    position: fixed;
+    top: 50px; left: 0;
+    width: 220px;
+    height: calc(100vh - 50px);
+    background: #222;
+    padding: 1rem;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    overflow-y: auto;
+    z-index: 999;
+  }
+  #sidebar.open {
+    transform: translateX(0);
+  }
+  #sidebar nav a {
+    display: block;
+    margin-bottom: 1rem;
+    color: #eee;
+    font-weight: 600;
+  }
+  main {
+    margin-top: 50px;
+    padding: 1rem;
+    max-width: 720px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .profile-overview {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+  .profile-overview img {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #4caf50;
+  }
+  .profile-info {
+    flex-grow: 1;
+  }
+  .profile-info h2 {
+    margin: 0;
+    font-size: 1.25rem;
+  }
+  .profile-info p {
+    margin: 0;
+    opacity: 0.7;
+  }
+  .stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+  .stat-box {
+    background: #1f1f1f;
+    padding: 1rem;
+    border-radius: 10px;
+    position: relative;
+  }
+  .stat-title {
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+    color: #aaa;
+  }
+  .stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+  }
+  .stat-change {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+  }
+  .positive {
+    color: #4caf50;
+  }
+  .negative {
     color: #f44336;
   }
-
-  /* Progress bar */
-  .progress-container {
-    margin-top: 12px;
+  .progress-bar-container {
     background: #333;
-    border-radius: 8px;
     height: 12px;
+    border-radius: 6px;
     overflow: hidden;
+    margin-top: 0.5rem;
   }
   .progress-bar {
-    height: 100%;
     background: #4caf50;
-    width: 0;
+    height: 100%;
+    width: 0%;
     transition: width 0.5s ease;
   }
-
-  /* Monetization card specifics */
-  #monetize-card {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
+  .monetization-box {
+    background: #272727;
+    padding: 1rem;
+    border-radius: 10px;
+    margin-top: 1rem;
+    text-align: center;
   }
-  #monetize-status {
+  .monetization-status {
     font-weight: 700;
-    font-size: 18px;
+    margin-bottom: 0.5rem;
   }
-  #monetize-now-btn {
-    padding: 8px 16px;
-    border: none;
+  button#monetize-btn {
     background: #4caf50;
-    color: #121212;
+    border: none;
+    color: white;
+    padding: 0.75rem 1.5rem;
     font-weight: 700;
-    border-radius: 6px;
+    font-size: 1rem;
+    border-radius: 8px;
     cursor: pointer;
-    max-width: 140px;
+    transition: background-color 0.3s ease;
   }
-  #monetize-now-btn:disabled {
-    background: #666;
+  button#monetize-btn:disabled {
+    background: #555;
     cursor: not-allowed;
   }
-
-  /* Earnings bar */
-  #earnings-bar {
-    margin-top: 8px;
-    font-weight: 700;
-    font-size: 22px;
-    color: #4caf50;
+  /* Responsive */
+  @media (max-width: 600px) {
+    main {
+      padding: 1rem 0.5rem;
+      max-width: 100%;
+    }
+    .stats-grid {
+      grid-template-columns: 1fr;
+    }
   }
 </style>
 </head>
@@ -200,73 +182,78 @@
 
 <header>
   <div id="hamburger">&#9776;</div>
-  Social Media Dashboard
+  <h1 style="font-weight:700; font-size:1.2rem; color:#4caf50; margin:0;">Creator Dashboard</h1>
 </header>
 
-<nav id="sidebar">
-  <a href="#">Home</a>
-  <a href="#">Posts</a>
-  <a href="#">Monetization</a>
-  <a href="#">Settings</a>
-  <a href="#" id="logout-btn">Logout</a>
-</nav>
+<aside id="sidebar">
+  <nav>
+    <a href="#">Dashboard</a>
+    <a href="#">Monetize</a>
+    <a href="#">Posts</a>
+    <a href="#">Profile</a>
+    <a href="#" id="logout-btn">Logout</a>
+  </nav>
+</aside>
 
 <main>
-  <section class="user-info">
-    <img src="https://via.placeholder.com/48" alt="Profile Picture" id="profile-pic" />
-    <div class="user-texts">
-      <div class="username" id="username">Username</div>
-      <div class="handle" id="handle">@handle</div>
+  <section class="profile-overview">
+    <img id="user-photo" src="https://via.placeholder.com/64" alt="User Photo" />
+    <div class="profile-info">
+      <h2 id="username">Loading...</h2>
+      <p id="userhandle">@loading</p>
+      <p><strong>Followers:</strong> <span id="followers-count">0</span></p>
     </div>
-    <div class="followers" id="followers-count">Followers (0)</div>
   </section>
 
-  <section class="stats-container">
-    <div class="stat-card" id="views-card">
+  <section class="stats-grid">
+    <div class="stat-box">
       <div class="stat-title">Total Views</div>
-      <div class="stat-value" id="views-count">0</div>
-      <div class="stat-change" id="views-change">+0 today</div>
-      <div class="progress-container">
-        <div class="progress-bar" id="views-progress-bar"></div>
+      <div class="stat-value" id="total-views">0</div>
+      <div class="stat-change positive" id="views-change">+0 today</div>
+      <div class="progress-bar-container">
+        <div id="views-progress" class="progress-bar"></div>
       </div>
     </div>
-
-    <div class="stat-card" id="posts-card">
+    <div class="stat-box">
+      <div class="stat-title">Total Earnings</div>
+      <div class="stat-value" id="total-earnings">$0.00</div>
+      <div class="stat-change positive" id="earnings-change">+ $0.00 today</div>
+      <div class="progress-bar-container">
+        <div id="earnings-progress" class="progress-bar"></div>
+      </div>
+    </div>
+    <div class="stat-box">
       <div class="stat-title">Total Posts</div>
       <div class="stat-value" id="total-posts">0</div>
-      <div class="stat-change" id="posts-change">+0 today</div>
+      <div class="stat-change positive" id="posts-change">+0 today</div>
     </div>
-
-    <div class="stat-card" id="earnings-card">
-      <div class="stat-title">Total Earnings</div>
-      <div class="stat-value" id="earnings">$0.00</div>
-      <div class="stat-change" id="earnings-change">+ $0.00 today</div>
-      <div id="earnings-bar"></div>
-    </div>
-
-    <div class="stat-card" id="monetize-card">
+    <div class="stat-box monetization-box">
       <div class="stat-title">Monetization Status</div>
-      <div id="monetize-status">Not Eligible</div>
-      <button id="monetize-now-btn" disabled>Monetize Now</button>
-      <div class="progress-container">
-        <div class="progress-bar" id="followers-progress-bar"></div>
-      </div>
-      <div class="progress-container" style="margin-top:8px;">
-        <div class="progress-bar" id="views-progress-bar-2"></div>
-      </div>
-      <div style="font-size:12px; color:#bbb; margin-top:4px;">
-        Followers (100) | Views (1000) Required
-      </div>
+      <div class="monetization-status" id="monetize-status">Checking...</div>
+      <button id="monetize-btn" disabled>Monetize Now</button>
     </div>
   </section>
 </main>
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-  import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-analytics.js";
-  import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
-  import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+  import {
+    getDatabase,
+    ref,
+    onValue,
+    get,
+    child,
+    query,
+    orderByChild,
+    limitToLast
+  } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+  import {
+    getAuth,
+    onAuthStateChanged,
+    signOut
+  } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
 
+  // Your Firebase config
   const firebaseConfig = {
     apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
     authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
@@ -279,217 +266,157 @@
   };
 
   const app = initializeApp(firebaseConfig);
-  const analytics = getAnalytics(app);
   const db = getDatabase(app);
   const auth = getAuth(app);
 
-  // UI Elements
-  const monetizeStatusEl = document.getElementById("monetize-status");
-  const monetizeBtnEl = document.getElementById("monetize-now-btn");
-  const followersCountEl = document.getElementById("followers-count");
-  const viewsCountEl = document.getElementById("views-count");
-  const viewsChangeEl = document.getElementById("views-change");
-  const postsCountEl = document.getElementById("total-posts");
-  const postsChangeEl = document.getElementById("posts-change");
-  const earningsEl = document.getElementById("earnings");
-  const earningsChangeEl = document.getElementById("earnings-change");
-  const profilePicEl = document.getElementById("profile-pic");
-  const usernameEl = document.getElementById("username");
-  const handleEl = document.getElementById("handle");
-
-  const viewsProgressBar = document.getElementById("views-progress-bar");
-  const followersProgressBar = document.getElementById("followers-progress-bar");
-  const viewsProgressBar2 = document.getElementById("views-progress-bar-2");
-
-  // Sidebar toggle
+  // UI elements
   const hamburger = document.getElementById("hamburger");
   const sidebar = document.getElementById("sidebar");
-  hamburger.addEventListener("click", () => {
-    sidebar.classList.toggle("open");
-  });
-
-  // Logout handler (dummy, you can customize)
   const logoutBtn = document.getElementById("logout-btn");
-  logoutBtn.addEventListener("click", () => {
-    signOut(auth).then(() => {
-      alert("Logged out!");
-      // redirect or whatever you want
-    });
-  });
 
-  let currentUserUID = null;
+  const userPhoto = document.getElementById("user-photo");
+  const usernameEl = document.getElementById("username");
+  const userhandleEl = document.getElementById("userhandle");
+  const followersCountEl = document.getElementById("followers-count");
 
-  // Store previous stats to calculate deltas
-  let prevViews = 0;
-  let prevFollowers = 0;
-  let prevPosts = 0;
-  let prevEarnings = 0;
+  const totalViewsEl = document.getElementById("total-views");
+  const earningsChangeEl = document.getElementById("earnings-change");
+  const viewsChangeEl = document.getElementById("views-change");
+  const postsChangeEl = document.getElementById("posts-change");
+  const monetizeStatusEl = document.getElementById("monetize-status");
+  const monetizeBtn = document.getElementById("monetize-btn");
+  const viewsProgressEl = document.getElementById("views-progress");
+  const earningsProgressEl = document.getElementById("earnings-progress");
 
-  const FOLLOWERS_REQ = 100;
-  const VIEWS_REQ = 1000;
-
-  onAuthStateChanged(auth, user => {
+  // Check if user is logged in
+  onAuthStateChanged(auth, (user) => {
     if (user) {
-      currentUserUID = user.uid;
-      loadUserProfile(currentUserUID);
-      loadDashboardData(currentUserUID);
+      // User is logged in
+      fetchUserData(user.uid);
     } else {
-      // Reset UI if needed
-      currentUserUID = null;
-      // You could redirect to login here
+      // User is not logged in, redirect to login page
+      window.location.href = 'login.html';
     }
   });
 
-  function loadUserProfile(uid) {
-    const userRef = ref(db, `users/${uid}/profile`);
-    onValue(userRef, (snap) => {
-      const data = snap.val() || {};
-      profilePicEl.src = data.photoURL || "https://via.placeholder.com/48";
-      usernameEl.textContent = data.username || "Unknown User";
-      handleEl.textContent = data.handle ? `@${data.handle}` : "@handle";
+  function fetchUserData(uid) {
+    const userRef = ref(db, 'users/' + uid);
+    const postsRef = ref(db, 'posts/');
+    const followersRef = ref(db, 'followers/' + uid);
+
+    onValue(userRef, (snapshot) => {
+      const userData = snapshot.val();
+      updateUserInfo(userData);
+    });
+
+    // Get user's total posts
+    onValue(postsRef, (snapshot) => {
+      const posts = snapshot.val() || {};
+      const userPosts = Object.values(posts).filter(post => post.userId === uid);
+      const totalPosts = userPosts.length;
+      updatePostsStats(totalPosts);
+    });
+
+    // Get user's total followers and views
+    onValue(followersRef, (snapshot) => {
+      const followers = snapshot.val() || {};
+      const totalFollowers = Object.keys(followers).length;
+      updateFollowersStats(totalFollowers);
     });
   }
 
-  function loadDashboardData(uid) {
-    const followersRef = ref(db, `users/${uid}/followersCount`);
-    const viewsRef = ref(db, `users/${uid}/viewsCount`);
-    const postsRef = ref(db, `users/${uid}/totalPosts`);
-    const earningsRef = ref(db, `users/${uid}/earnings`);
-    const monetizeRef = ref(db, `users/${uid}/monetization`);
+  function updateUserInfo(data) {
+    usernameEl.innerText = data.username || 'No username';
+    userhandleEl.innerText = `@${data.handle}`;
+    userPhoto.src = data.photoURL || 'https://via.placeholder.com/64';
+    monetizeStatusEl.innerText = data.monitizeStatus === 'on' ? 'Eligible' : 'Not Eligible';
 
-    // Followers
-    onValue(followersRef, snap => {
-      const val = snap.val() || 0;
-      followersCountEl.textContent = `Followers (${val})`;
-      updateFollowersProgress(val);
-      updateFollowersChange(val);
-      prevFollowers = val;
-    });
-
-    // Views
-    onValue(viewsRef, snap => {
-      const val = snap.val() || 0;
-      viewsCountEl.textContent = val;
-      updateViewsProgress(val);
-      updateViewsChange(val);
-      prevViews = val;
-    });
-
-    // Posts
-    onValue(postsRef, snap => {
-      const val = snap.val() || 0;
-      postsCountEl.textContent = val;
-      updatePostsChange(val);
-      prevPosts = val;
-    });
-
-    // Earnings
-    onValue(earningsRef, snap => {
-      const val = snap.val() || 0;
-      earningsEl.textContent = `$${val.toFixed(2)}`;
-      updateEarningsChange(val);
-      prevEarnings = val;
-      updateEarningsBar(val);
-    });
-
-    // Monetization status
-    onValue(monetizeRef, snap => {
-      const status = snap.val() || "not_eligible";
-      updateMonetizationUI(status);
-    });
-  }
-
-  // Helpers for progress bars and changes
-
-  function updateFollowersProgress(count) {
-    const pct = Math.min(100, (count / FOLLOWERS_REQ) * 100);
-    followersProgressBar.style.width = pct + "%";
-  }
-  function updateViewsProgress(count) {
-    const pct = Math.min(100, (count / VIEWS_REQ) * 100);
-    viewsProgressBar.style.width = pct + "%";
-    viewsProgressBar2.style.width = pct + "%";
-  }
-
-  // Calculate deltas and show + or - with color
-  function updateFollowersChange(current) {
-    const diff = current - prevFollowers;
-    // No UI element needed now but could add if wanted
-  }
-  function updateViewsChange(current) {
-    const diff = current - prevViews;
-    if (diff >= 0) {
-      viewsChangeEl.textContent = `+${diff} today`;
-      viewsChangeEl.classList.remove("negative");
+    // Update monetization button
+    if (data.monitizeStatus === 'on') {
+      monetizeBtn.disabled = true;
+      monetizeBtn.innerText = 'Already Monetized';
     } else {
-      viewsChangeEl.textContent = `${diff} today`;
-      viewsChangeEl.classList.add("negative");
+      monetizeBtn.disabled = false;
+      monetizeBtn.innerText = 'Monetize Now';
     }
+
+    // Update stats from data
+    updateFollowersStats(data.followers || 0);
+    updateViewsStats(data.views || 0);
+    updateEarningsStats(data.earnings || 0);
   }
-  function updatePostsChange(current) {
-    const diff = current - prevPosts;
-    if (diff >= 0) {
-      postsChangeEl.textContent = `+${diff} today`;
-      postsChangeEl.classList.remove("negative");
+
+  function updateFollowersStats(totalFollowers) {
+    followersCountEl.innerText = totalFollowers;
+    updateProgressBar(totalFollowers, 100, followersProgressEl);
+  }
+
+  function updateViewsStats(totalViews) {
+    totalViewsEl.innerText = totalViews;
+    updateProgressBar(totalViews, 1000, viewsProgressEl);
+  }
+
+  function updateEarningsStats(totalEarnings) {
+    const earningsFormatted = `$${totalEarnings.toFixed(2)}`;
+    totalEarningsEl.innerText = earningsFormatted;
+    updateProgressBar(totalEarnings, 100, earningsProgressEl);
+  }
+
+  function updateProgressBar(current, goal, progressBarEl) {
+    const progressPercentage = Math.min((current / goal) * 100, 100);
+    progressBarEl.style.width = progressPercentage + '%';
+  }
+
+  // Real-time change in earnings, views, and posts
+  function updateStatsChange(statsType, currentStat, previousStat) {
+    const delta = currentStat - previousStat;
+    let sign = '';
+    let color = '';
+
+    if (delta > 0) {
+      sign = `+${delta}`;
+      color = 'positive';
+    } else if (delta < 0) {
+      sign = `${delta}`;
+      color = 'negative';
     } else {
-      postsChangeEl.textContent = `${diff} today`;
-      postsChangeEl.classList.add("negative");
+      sign = '+0';
+      color = 'positive';
     }
-  }
-  function updateEarningsChange(current) {
-    const diff = current - prevEarnings;
-    if (diff >= 0) {
-      earningsChangeEl.textContent = `+ $${diff.toFixed(2)} today`;
-      earningsChangeEl.classList.remove("negative");
-    } else {
-      earningsChangeEl.textContent = `- $${Math.abs(diff).toFixed(2)} today`;
-      earningsChangeEl.classList.add("negative");
+
+    if (statsType === 'views') {
+      viewsChangeEl.innerText = `${sign} today`;
+      viewsChangeEl.classList.add(color);
+    } else if (statsType === 'earnings') {
+      earningsChangeEl.innerText = `${sign} today`;
+      earningsChangeEl.classList.add(color);
+    } else if (statsType === 'posts') {
+      postsChangeEl.innerText = `${sign} today`;
+      postsChangeEl.classList.add(color);
     }
   }
 
-  // Earnings bar grows with earnings, max at $100 for visual
-  function updateEarningsBar(earnings) {
-    const max = 100;
-    const pct = Math.min(100, (earnings / max) * 100);
-    document.getElementById("earnings-bar").style.width = pct + "%";
-  }
+  // Sidebar toggle
+  hamburger.addEventListener('click', () => {
+    sidebar.classList.toggle('open');
+  });
 
-  // Monetization UI updates
-  function updateMonetizationUI(status) {
-    if (status === "eligible") {
-      monetizeStatusEl.textContent = "Eligible to Monetize";
-      monetizeStatusEl.style.color = "#4caf50";
-      monetizeBtnEl.disabled = false;
-    } else if (status === "pending") {
-      monetizeStatusEl.textContent = "Monetization Pending Approval";
-      monetizeStatusEl.style.color = "#ff9800";
-      monetizeBtnEl.disabled = true;
-    } else if (status === "active") {
-      monetizeStatusEl.textContent = "Monetization Active";
-      monetizeStatusEl.style.color = "#4caf50";
-      monetizeBtnEl.disabled = true;
-    } else {
-      monetizeStatusEl.textContent = "Not Eligible";
-      monetizeStatusEl.style.color = "#f44336";
-      monetizeBtnEl.disabled = true;
-    }
-  }
-
-  // Monetize button click handler
-  monetizeBtnEl.addEventListener("click", () => {
-    if (!currentUserUID) return alert("You must be logged in.");
-    // Set monetization status to pending in Firebase
-    const monetizeStatusRef = ref(db, `users/${currentUserUID}/monetization`);
-    monetizeStatusRef.set("pending").then(() => {
-      alert("Monetization request submitted! Await approval.");
-      monetizeBtnEl.disabled = true;
-      monetizeStatusEl.textContent = "Monetization Pending Approval";
-      monetizeStatusEl.style.color = "#ff9800";
-    }).catch(err => {
-      alert("Error submitting monetization request: " + err.message);
+  // Logout functionality
+  logoutBtn.addEventListener('click', () => {
+    signOut(auth).then(() => {
+      window.location.href = 'login.html';
+    }).catch((error) => {
+      console.error("Logout error:", error);
     });
   });
 
+  // Handle Monetize Now button
+  monetizeBtn.addEventListener('click', () => {
+    if (monetizeBtn.disabled) return;
+
+    // Redirect to monetize page
+    window.location.href = 'monetize.html';
+  });
 </script>
 
 </body>
