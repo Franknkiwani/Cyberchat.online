@@ -1,208 +1,224 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" >
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>CyberChat Stats</title>
-<style>
-  /* Dark Theme Nertherite style */
-  :root {
-    --bg: #121212;
-    --header-bg: #1e1e1e;
-    --card-bg: #22272a;
-    --pink: #ff2fa7;
-    --cyan: #00fff7;
-    --green: #4ade80;
-    --red: #f87171;
-    --text-light: #ddd;
-    --text-dark: #222;
-    --border: #2d2f33;
-  }
-  body {
-    margin: 0;
-    background: var(--bg);
-    color: var(--text-light);
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  }
-  header {
-    position: sticky;
-    top: 0;
-    background: var(--header-bg);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0.75rem 1rem;
-    border-bottom: 2px solid var(--border);
-    z-index: 10;
-    border-radius: 0 0 12px 12px;
-  }
-  header h1 {
-    margin: 0;
-    font-weight: 900;
-    font-size: 1.75rem;
-  }
-  header h1 .cyber {
-    color: var(--pink);
-  }
-  header h1 .chat {
-    color: var(--cyan);
-  }
-  main {
-    max-width: 800px;
-    margin: 1rem auto;
-    padding: 0 1rem;
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1rem;
-  }
-  @media (max-width: 600px) {
-    main {
-      grid-template-columns: repeat(2, 1fr);
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CyberChat Stats with Hamburger & Profile</title>
+  <style>
+    /* Dark Nertherite vibe */
+    :root {
+      --bg: #121212;
+      --header-bg: #1e1e1e;
+      --card-bg: #22272a;
+      --pink: #ff2fa7;
+      --cyan: #00fff7;
+      --green: #4ade80;
+      --red: #f87171;
+      --text-light: #ddd;
+      --border: #2d2f33;
     }
-  }
-  .card {
-    background: var(--card-bg);
-    border: 2px solid var(--border);
-    border-radius: 12px;
-    padding: 1.25rem 1rem;
-    box-shadow:
-      inset 0 0 10px rgba(255,255,255,0.05),
-      0 6px 8px rgba(0,0,0,0.7);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
-  .card h2 {
-    margin: 0 0 0.5rem;
-    font-weight: 700;
-    font-size: 1.1rem;
-    color: var(--cyan);
-  }
-  .stat-value {
-    font-size: 2.25rem;
-    font-weight: 900;
-    margin-bottom: 0.25rem;
-  }
-  .change {
-    font-weight: 600;
-    font-size: 0.9rem;
-  }
-  .green {
-    color: var(--green);
-  }
-  .red {
-    color: var(--red);
-  }
-</style>
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text-light);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    /* HEADER */
+    header {
+      position: sticky;
+      top: 0;
+      background: var(--header-bg);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.75rem 1rem;
+      border-bottom: 2px solid var(--border);
+      z-index: 10;
+      border-radius: 0 0 12px 12px;
+      user-select: none;
+    }
+    /* Hamburger */
+    .hamburger {
+      width: 30px;
+      height: 22px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .hamburger span {
+      display: block;
+      height: 4px;
+      background: var(--pink);
+      border-radius: 2px;
+      transition: 0.3s;
+    }
+    /* Title */
+    .title {
+      font-weight: 900;
+      font-size: 1.75rem;
+      color: var(--text-light);
+      flex-grow: 1;
+      text-align: center;
+      user-select: none;
+    }
+    .title .cyber {
+      color: var(--pink);
+    }
+    .title .chat {
+      color: var(--cyan);
+    }
+    /* Profile */
+    .profile {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: var(--border);
+      overflow: hidden;
+      flex-shrink: 0;
+      cursor: pointer;
+      border: 2px solid var(--pink);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: border-color 0.3s;
+    }
+    .profile:hover {
+      border-color: var(--cyan);
+    }
+    .profile img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .profile svg {
+      fill: var(--pink);
+      width: 22px;
+      height: 22px;
+    }
+
+    /* MAIN and CARDS */
+    main {
+      max-width: 800px;
+      margin: 1rem auto;
+      padding: 0 1rem;
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+    }
+    @media (max-width: 600px) {
+      main {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+    .card {
+      background: var(--card-bg);
+      border: 2px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem 1rem;
+      box-shadow:
+        inset 0 0 10px rgba(255,255,255,0.05),
+        0 6px 8px rgba(0,0,0,0.7);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .card h2 {
+      margin: 0 0 0.5rem;
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: var(--cyan);
+    }
+    .stat-value {
+      font-size: 2.25rem;
+      font-weight: 900;
+      margin-bottom: 0.25rem;
+    }
+    .change {
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+    .green {
+      color: var(--green);
+    }
+    .red {
+      color: var(--red);
+    }
+  </style>
 </head>
 <body>
-<header>
-  <h1><span class="cyber">Cyber</span><span class="chat">Chat</span></h1>
-</header>
-<main id="stats-container">
-  <!-- Stats cards inserted here dynamically -->
-</main>
+  <header>
+    <div class="hamburger" title="Menu" aria-label="Open menu" tabindex="0" role="button">
+      <span></span><span></span><span></span>
+    </div>
+    <div class="title"><span class="cyber">Cyber</span><span class="chat">Chat</span></div>
+    <div class="profile" title="Profile" tabindex="0" role="button" id="profile-btn">
+      <!-- Fallback icon -->
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="M12 12c2.7 0 4.9-2.2 4.9-4.9S14.7 2.2 12 2.2 7.1 4.4 7.1 7.1 9.3 12 12 12zm0 2.4c-3.2 0-9.5 1.6-9.5 4.8v2.4h19v-2.4c0-3.2-6.3-4.8-9.5-4.8z"/>
+      </svg>
+    </div>
+  </header>
+  <main id="stats-container">
+    <!-- Stats cards inserted here -->
+  </main>
 
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
-  import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+    import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
-    authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
-    databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
-    projectId: "itzhoyoo-f9f7e",
-    storageBucket: "itzhoyoo-f9f7e.firebasestorage.app",
-    messagingSenderId: "1094792075584",
-    appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
-    measurementId: "G-LLT6F9WRKH"
-  };
+    const firebaseConfig = {
+      apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
+      authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
+      databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
+      projectId: "itzhoyoo-f9f7e",
+      storageBucket: "itzhoyoo-f9f7e.firebasestorage.app",
+      messagingSenderId: "1094792075584",
+      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
+      measurementId: "G-LLT6F9WRKH"
+    };
 
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const db = getDatabase(app);
-  const statsContainer = document.getElementById("stats-container");
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
+    const statsContainer = document.getElementById("stats-container");
+    const profileBtn = document.getElementById("profile-btn");
 
-  function createStatCard(title, value, change) {
-    if (value === null || value === undefined) return null;
-    if (typeof value === "number" && isNaN(value)) return null;
+    // Create stat card helper
+    function createStatCard(title, value, change) {
+      if (value === null || value === undefined) return null;
+      if (typeof value === "number" && isNaN(value)) return null;
 
-    const card = document.createElement("div");
-    card.className = "card";
+      const card = document.createElement("div");
+      card.className = "card";
 
-    const h2 = document.createElement("h2");
-    h2.textContent = title;
-    card.appendChild(h2);
+      const h2 = document.createElement("h2");
+      h2.textContent = title;
+      card.appendChild(h2);
 
-    const valSpan = document.createElement("div");
-    valSpan.className = "stat-value";
-    valSpan.textContent = value;
-    card.appendChild(valSpan);
+      const valSpan = document.createElement("div");
+      valSpan.className = "stat-value";
+      valSpan.textContent = value;
+      card.appendChild(valSpan);
 
-    if (change !== null && change !== undefined) {
-      const changeSpan = document.createElement("div");
-      changeSpan.className = "change " + (change >= 0 ? "green" : "red");
-      const sign = change >= 0 ? "+" : "";
-      changeSpan.textContent = `${sign}${change} ${title === "Earnings" ? "$" : ""} last hour`;
-      card.appendChild(changeSpan);
+      if (change !== null && change !== undefined) {
+        const changeSpan = document.createElement("div");
+        changeSpan.className = "change " + (change >= 0 ? "green" : "red");
+        const sign = change >= 0 ? "+" : "";
+        changeSpan.textContent = `${sign}${change} ${title === "Earnings" ? "$" : ""} last hour`;
+        card.appendChild(changeSpan);
+      }
+
+      return card;
     }
 
-    return card;
-  }
+    // Update profile avatar
+    function updateProfilePhoto(user) {
+      if (!user) return;
+      const profileDiv = profileBtn;
+      profileDiv.innerHTML = ""; // Clear fallback icon
 
-  onAuthStateChanged(auth, async (user) => {
-    statsContainer.innerHTML = ""; // Clear on each state change
-
-    if (!user) {
-      // Not logged in, show nothing
-      return;
-    }
-
-    const uid = user.uid;
-    try {
-      const statsRef = ref(db, `users/${uid}/stats`);
-      const snapshot = await get(statsRef);
-      if (!snapshot.exists()) return; // No stats, show nothing
-
-      const stats = snapshot.val();
-
-      // Example structure expected:
-      // stats = {
-      //   followers: 1234,
-      //   followersChange: 12,
-      //   earnings: 56.78,
-      //   earningsChange: -1.23,
-      //   posts: 45,
-      //   postsChange: 0,
-      //   views: 2345,
-      //   viewsChange: 100
-      // }
-
-      // Only add cards for stats with real data (not null/undefined)
-      const cards = [];
-      if (stats.followers !== undefined) {
-        const card = createStatCard("Followers", stats.followers, stats.followersChange);
-        if(card) cards.push(card);
-      }
-      if (stats.earnings !== undefined) {
-        const card = createStatCard("Earnings", `$${stats.earnings.toFixed(2)}`, stats.earningsChange);
-        if(card) cards.push(card);
-      }
-      if (stats.posts !== undefined) {
-        const card = createStatCard("Posts", stats.posts, stats.postsChange);
-        if(card) cards.push(card);
-      }
-      if (stats.views !== undefined) {
-        const card = createStatCard("Views", stats.views, stats.viewsChange);
-        if(card) cards.push(card);
-      }
-
-      cards.forEach(card => statsContainer.appendChild(card));
-    } catch (error) {
-      console.error("Error fetching user stats:", error);
-    }
-  });
-</script>
-</body>
-</html>
+      if (user.photoURL) {
+        const img =
