@@ -1,210 +1,263 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" >
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Instagram Style Posts Feed (Firebase)</title>
-<style>
-  body {
-    background: #111;
-    color: #eee;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
-      Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
-    margin: 0;
-    padding: 20px;
-  }
-  #posts-container {
-    max-width: 600px;
-    margin: 0 auto;
-  }
-  .post {
-    background: rgba(255 255 255 / 0.05);
-    border-radius: 12px;
-    margin-bottom: 20px;
-    padding: 15px;
-    box-shadow: 0 0 10px #222 inset;
-  }
-  .post-header {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 8px;
-  }
-  .avatar {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 2px solid #fff;
-  }
-  .username {
-    font-weight: 700;
-    font-size: 1.1rem;
-  }
-  .post-title {
-    font-weight: 600;
-    font-size: 1.2rem;
-    margin-bottom: 10px;
-  }
-  .post-image {
-    width: 100%;
-    border-radius: 10px;
-    margin-bottom: 10px;
-    object-fit: cover;
-    max-height: 400px;
-  }
-  .description {
-    font-size: 0.95rem;
-    line-height: 1.3;
-    margin-bottom: 10px;
-  }
-  .read-more {
-    cursor: pointer;
-    color: #0af;
-    font-weight: 700;
-    user-select: none;
-  }
-  .actions {
-    display: flex;
-    gap: 15px;
-  }
-  .action {
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-  }
-  .action svg {
-    fill: #fff;
-    transition: fill 0.2s ease;
-  }
-  .action:hover svg {
-    fill: #0af;
-  }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Native Instagram Style Feed (Firebase)</title>
+  <style>
+    /* Reset */
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0; 
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+        Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+      background: #fefefe;
+      color: #1c1c1e;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      padding: 16px;
+      display: flex;
+      justify-content: center;
+    }
+    #posts-container {
+      max-width: 600px;
+      width: 100%;
+    }
+    .post {
+      background: #fff;
+      border-radius: 20px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+      margin-bottom: 24px;
+      overflow: hidden;
+      transition: box-shadow 0.3s ease;
+      border: 1px solid #e5e5ea;
+      display: flex;
+      flex-direction: column;
+    }
+    .post:hover {
+      box-shadow: 0 12px 36px rgba(0,0,0,0.15);
+    }
+    .post-header {
+      display: flex;
+      align-items: center;
+      padding: 12px 16px 12px 16px;
+      gap: 12px;
+    }
+    .avatar {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid #007aff;
+      flex-shrink: 0;
+      box-shadow: 0 2px 6px rgba(0,122,255,0.25);
+    }
+    .username-date {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .username {
+      font-weight: 700;
+      font-size: 17px;
+      color: #1c1c1e;
+      letter-spacing: -0.3px;
+    }
+    .post-date {
+      font-size: 13px;
+      color: #8e8e93;
+      margin-top: 2px;
+      font-weight: 500;
+    }
+    .post-title {
+      font-size: 19px;
+      font-weight: 700;
+      padding: 0 16px 12px 16px;
+      line-height: 1.25;
+      color: #111;
+    }
+    .post-image {
+      width: 100%;
+      max-height: 450px;
+      object-fit: cover;
+      border-top: 1px solid #e5e5ea;
+      border-bottom: 1px solid #e5e5ea;
+      user-select: none;
+      cursor: pointer;
+      transition: transform 0.3s ease;
+    }
+    .post-image:hover {
+      transform: scale(1.03);
+    }
+    .description {
+      font-size: 15px;
+      color: #2c2c2e;
+      padding: 12px 16px 0 16px;
+      line-height: 1.4;
+      position: relative;
+      user-select: text;
+    }
+    .read-more {
+      color: #007aff;
+      font-weight: 600;
+      cursor: pointer;
+      user-select: none;
+      padding-left: 6px;
+      font-size: 14px;
+      letter-spacing: 0.2px;
+    }
+    .actions {
+      display: flex;
+      justify-content: space-around;
+      padding: 12px 0 16px 0;
+      border-top: 1px solid #e5e5ea;
+      background: #fafafa;
+    }
+    .action {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      color: #8e8e93;
+      font-weight: 600;
+      font-size: 13px;
+      transition: color 0.25s ease;
+      user-select: none;
+    }
+    .action svg {
+      width: 20px;
+      height: 20px;
+      fill: currentColor;
+      transition: transform 0.2s ease;
+    }
+    .action:hover {
+      color: #007aff;
+    }
+    .action:hover svg {
+      transform: scale(1.1);
+    }
+  </style>
 </head>
 <body>
+  <div id="posts-container">
+    <p style="text-align:center; color:#aaa;">Loading posts...</p>
+  </div>
 
-<div id="posts-container">
-  <p>Loading posts...</p>
-</div>
+  <svg style="display:none;" xmlns="http://www.w3.org/2000/svg">
+    <symbol id="icon-like" viewBox="0 0 24 24"><path d="M2 21h4V9H2v12zM23 10c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 2 7.59 8.59C7.22 8.95 7 9.45 7 10v9c0 1.1.9 2 2 2h7c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-1z"/></symbol>
+    <symbol id="icon-dislike" viewBox="0 0 24 24"><path d="M22 3h-4v12h4V3zM1 14c0 1.1.9 2 2 2h6.31l-.95 4.57-.03.32c0 .41.17.79.44 1.06L9.83 22l6.59-6.59c.36-.36.59-.86.59-1.41V5c0-1.1-.9-2-2-2H7c-.83 0-1.54.5-1.84 1.22L2.14 9.27c-.09.23-.14.47-.14.73v1z"/></symbol>
+    <symbol id="icon-share" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.02-4.11c.53.5 1.23.81 2.01.81 1.66 0 3-1.34 3-3s-1.34-3-3-3S16 4.34 16 6c0 .24.04.47.09.7L9.07 10.8C8.53 10.3 7.83 10 7.05 10 5.39 10 4.05 11.34 4.05 13s1.34 3 3 3c.78 0 1.48-.3 2.01-.8l7.13 4.18c-.05.21-.09.43-.09.66 0 1.66 1.34 3 3 3s3-1.34 3-3-1.34-3-3-3z"/></symbol>
+    <symbol id="icon-save" viewBox="0 0 24 24"><path d="M17 3H7c-1.1 0-2 .9-2 2v16l7-3 7 3V5c0-1.1-.9-2-2-2z"/></symbol>
+    <symbol id="icon-eye" viewBox="0 0 24 24"><path d="M12 5c-7 0-11 7-11 7s4 7 11 7 11-7 11-7-4-7-11-7zm0 12a5 5 0 1 1 0-10 5 5 0 0 1 0 10z"/></symbol>
+  </svg>
 
-<!-- SVG Icons Hidden, use <use> later -->
-<svg style="display:none;" xmlns="http://www.w3.org/2000/svg">
-  <symbol id="icon-like" viewBox="0 0 24 24" width="22" height="22" fill="#fff">
-    <path d="M2 21h4V9H2v12zM23 10c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 2 7.59 8.59C7.22 8.95 7 9.45 7 10v9c0 1.1.9 2 2 2h7c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-1z"/>
-  </symbol>
-  <symbol id="icon-dislike" viewBox="0 0 24 24" width="22" height="22" fill="#fff">
-    <path d="M22 3h-4v12h4V3zM1 14c0 1.1.9 2 2 2h6.31l-.95 4.57-.03.32c0 .41.17.79.44 1.06L9.83 22l6.59-6.59c.36-.36.59-.86.59-1.41V5c0-1.1-.9-2-2-2H7c-.83 0-1.54.5-1.84 1.22L2.14 9.27c-.09.23-.14.47-.14.73v1z"/>
-  </symbol>
-  <symbol id="icon-share" viewBox="0 0 24 24" width="22" height="22" fill="#fff">
-    <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.02-4.11c.53.5 1.23.81 2.01.81 1.66 0 3-1.34 3-3s-1.34-3-3-3S16 4.34 16 6c0 .24.04.47.09.7L9.07 10.8C8.53 10.3 7.83 10 7.05 10 5.39 10 4.05 11.34 4.05 13s1.34 3 3 3c.78 0 1.48-.3 2.01-.8l7.13 4.18c-.05.21-.09.43-.09.66 0 1.66 1.34 3 3 3s3-1.34 3-3-1.34-3-3-3z"/>
-  </symbol>
-  <symbol id="icon-save" viewBox="0 0 24 24" width="22" height="22" fill="#fff">
-    <path d="M17 3H7c-1.1 0-2 .9-2 2v16l7-3 7 3V5c0-1.1-.9-2-2-2z"/>
-  </symbol>
-</svg>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
 
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-  import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+    const firebaseConfig = {
+      apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
+      authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
+      databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
+      projectId: "itzhoyoo-f9f7e",
+      storageBucket: "itzhoyoo-f9f7e.filestorage.app",
+      messagingSenderId: "1094792075584",
+      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
+      measurementId: "G-LLT6F9WRKH"
+    };
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
-    authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
-    databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
-    projectId: "itzhoyoo-f9f7e",
-    storageBucket: "itzhoyoo-f9f7e.filestorage.app",
-    messagingSenderId: "1094792075584",
-    appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
-    measurementId: "G-LLT6F9WRKH"
-  };
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const postsRef = ref(db, 'post');
+    const container = document.getElementById("posts-container");
 
-  const app = initializeApp(firebaseConfig);
-  const db = getDatabase(app);
-
-  const postsRef = ref(db, 'post');
-  const container = document.getElementById("posts-container");
-
-  function createPostHTML(post) {
-    const { username, avatar, title, description, image } = post;
-
-    let descHTML;
-    if (description && description.length > 30) {
-      const shortText = description.slice(0, 30);
-      descHTML = `
-        <div class="description">
-          <span class="short-text">${shortText}...</span>
-          <span class="full-text" style="display:none;">${description}</span>
-          <span class="read-more">Read more</span>
-        </div>`;
-    } else {
-      descHTML = `<div class="description">${description || ""}</div>`;
+    // Utility: Format date to "X time ago"
+    function timeAgo(timestamp) {
+      if (!timestamp) return "";
+      const now = Date.now();
+      const seconds = Math.floor((now - timestamp) / 1000);
+      if (seconds < 60) return `${seconds}s ago`;
+      const minutes = Math.floor(seconds / 60);
+      if (minutes < 60) return `${minutes}m ago`;
+      const hours = Math.floor(minutes / 60);
+      if (hours < 24) return `${hours}h ago`;
+      const days = Math.floor(hours / 24);
+      if (days < 7) return `${days}d ago`;
+      const weeks = Math.floor(days / 7);
+      return `${weeks}w ago`;
     }
 
-    return `
-      <div class="post">
-        <div class="post-header">
-          <img src="${avatar || 'https://i.imgur.com/6VBx3io.png'}" alt="${username || 'User'}'s avatar" class="avatar" />
-          <div class="username">${username || 'Unknown'}</div>
-        </div>
-        <div class="post-title">${title || "No Title"}</div>
-        ${image ? `<img src="${image}" alt="Post image" class="post-image" />` : ""}
-        ${descHTML}
+    function createPostElement(postData, postId) {
+      // Destructure with fallbacks
+      const {
+        username = "Unknown User",
+        profilePic = "https://via.placeholder.com/52?text=👤",
+        imageUrl = "",
+        title = "",
+        description = "",
+        views = 0,
+        timestamp = Date.now(),
+        likes = 0,
+      } = postData;
+
+      // Create container
+      const post = document.createElement("article");
+      post.className = "post";
+
+      post.innerHTML = `
+        <header class="post-header">
+          <img src="${profilePic}" alt="${username}'s avatar" class="avatar" />
+          <div class="username-date">
+            <div class="username">${username}</div>
+            <time class="post-date" datetime="${new Date(timestamp).toISOString()}">${timeAgo(timestamp)}</time>
+          </div>
+        </header>
+        <h2 class="post-title">${title || "(No Title)"}</h2>
+        ${imageUrl ? `<img src="${imageUrl}" alt="Post image" class="post-image" loading="lazy" />` : ""}
+        <p class="description">${description || ""}</p>
         <div class="actions">
-          <span class="action" title="Like">
-            <svg width="22" height="22" fill="#fff">
-              <use xlink:href="#icon-like"></use>
-            </svg>
-          </span>
-          <span class="action" title="Dislike">
-            <svg width="22" height="22" fill="#fff">
-              <use xlink:href="#icon-dislike"></use>
-            </svg>
-          </span>
-          <span class="action" title="Share">
-            <svg width="22" height="22" fill="#fff">
-              <use xlink:href="#icon-share"></use>
-            </svg>
-          </span>
-          <span class="action" title="Save">
-            <svg width="22" height="22" fill="#fff">
-              <use xlink:href="#icon-save"></use>
-            </svg>
-          </span>
+          <div class="action" title="Views">
+            <svg><use href="#icon-eye"></use></svg>${views.toLocaleString()}
+          </div>
+          <div class="action" title="Likes">
+            <svg><use href="#icon-like"></use></svg>${likes.toLocaleString()}
+          </div>
+          <div class="action" title="Share">
+            <svg><use href="#icon-share"></use></svg>Share
+          </div>
+          <div class="action" title="Save">
+            <svg><use href="#icon-save"></use></svg>Save
+          </div>
         </div>
-      </div>
-    `;
-  }
+      `;
 
-  onValue(postsRef, (snapshot) => {
-    const postsData = snapshot.val();
-    if (!postsData) {
-      container.innerHTML = "<p>No posts found.</p>";
-      return;
+      // Optional: Add click handlers or hover effects here if you want (e.g. share modal)
+
+      return post;
     }
 
-    const postsArray = Object.values(postsData);
-    container.innerHTML = postsArray.map(createPostHTML).join("");
-  });
+    // Listen for posts data changes
+    onValue(postsRef, (snapshot) => {
+      const posts = snapshot.val();
+      container.innerHTML = ""; // Clear loading or previous posts
 
-  container.addEventListener("click", (e) => {
-    if (e.target.classList.contains("read-more")) {
-      const descDiv = e.target.closest(".description");
-      const shortText = descDiv.querySelector(".short-text");
-      const fullText = descDiv.querySelector(".full-text");
-
-      if (fullText.style.display === "none") {
-        fullText.style.display = "inline";
-        shortText.style.display = "none";
-        e.target.textContent = "Show less";
-      } else {
-        fullText.style.display = "none";
-        shortText.style.display = "inline";
-        e.target.textContent = "Read more";
+      if (!posts) {
+        container.innerHTML = '<p style="text-align:center; color:#aaa;">No posts to show.</p>';
+        return;
       }
-    }
-  });
-</script>
 
+      // Sort posts by timestamp descending (newest first)
+      const sortedPosts = Object.entries(posts).sort((a, b) => b[1].timestamp - a[1].timestamp);
+
+      for (const [postId, postData] of sortedPosts) {
+        const postEl = createPostElement(postData, postId);
+        container.appendChild(postEl);
+      }
+    }, {
+      onlyOnce: false
+    });
+  </script>
 </body>
 </html>
