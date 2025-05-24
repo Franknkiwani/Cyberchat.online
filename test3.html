@@ -293,4 +293,37 @@
   const contactBtn = document.getElementById('contactBtn');
   const logoutBtn = document.getElementById('logoutBtn');
 
-  settingsBtn.add
+  settingsBtn.addEventListener('click', () => {
+  const isOpen = settingsDropdown.style.display === 'flex';
+  settingsDropdown.style.display = isOpen ? 'none' : 'flex';
+  settingsBtn.setAttribute('aria-expanded', !isOpen);
+});
+
+// Close dropdown if clicking outside
+document.addEventListener('click', (e) => {
+  if (!settingsBtn.contains(e.target) && !settingsDropdown.contains(e.target)) {
+    settingsDropdown.style.display = 'none';
+    settingsBtn.setAttribute('aria-expanded', false);
+  }
+});
+
+// Toggle Light/Dark Theme
+toggleThemeBtn.addEventListener('click', () => {
+  document.body.classList.toggle('dark-theme');
+  settingsDropdown.style.display = 'none';
+  settingsBtn.setAttribute('aria-expanded', false);
+});
+
+// Contact Us — just alert for demo
+contactBtn.addEventListener('click', () => {
+  alert('Contact us at support@cyberchat.fake');
+  settingsDropdown.style.display = 'none';
+  settingsBtn.setAttribute('aria-expanded', false);
+});
+
+// Logout — just alert for demo
+logoutBtn.addEventListener('click', () => {
+  alert('Logging out... (not really, this is a demo)');
+  settingsDropdown.style.display = 'none';
+  settingsBtn.setAttribute('aria-expanded', false);
+});
