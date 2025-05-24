@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Your Next-Level Social Dashboard</title>
+  <style>
+    /* Reset and base */
+    body, html {
+      margin: 0; padding: 0; height: 100%;
+      background: #121212;
+      color: #eee;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    .container {
+      display: flex;
+      height: 100vh;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+      flex-direction: column;
+    }
+    h1 {
+      margin-bottom: 10px;
+      color: #00ffcc;
+      font-weight: 700;
+    }
+    .card {
+      background: rgba(30, 30, 30, 0.8);
+      padding: 20px;
+      border-radius: 14px;
+      box-shadow: 0 0 15px #00ffcc44;
+      margin-bottom: 30px;
+    }
+    /* Monetization Progress Bars */
+    .progress-group {
+      margin-bottom: 15px;
+    }
+    .progress-bar {
+      width: 100%;
+      height: 14px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 10px;
+      overflow: hidden;
+      margin-top: 6px;
+      box-shadow: inset 0 1px 3px rgba(0,0,0,0.3);
+    }
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #00ffcc, #006655);
+      border-radius: 10px;
+      transition: width 0.6s ease;
+      box-shadow: 0 0 8px #00ffccaa;
+    }
+    .progress-text {
+      font-size: 13px;
+      margin-top: 4px;
+      color: #aaa;
+      font-family: monospace;
+      text-align: right;
+    }
+    #monetize-status {
+      margin-top: 10px;
+      font-weight: 700;
+      color: #00ffcc;
+      font-family: 'Segoe UI', sans-serif;
+    }
+    /* Chart Container */
+    #chart-container {
+      width: 100%;
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+    canvas {
+      background: #222;
+      border-radius: 14px;
+      box-shadow: 0 0 20px #00ffcc88;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Welcome to Your Dashboard</h1>
+
+    <div class="card">
+      <h3>Monetization Progress</h3>
+      <div class="progress-group">
+        <label>Followers</label>
+        <div class="progress-bar">
+          <div id="followers-progress" class="progress-fill"></div>
+        </div>
+        <div class="progress-text"><span id="followers-count">0</span>/100</div>
+      </div>
+      <div class="progress-group">
+        <label>Views</label>
+        <div class="progress-bar">
+          <div id="views-progress" class="progress-fill"></div>
+        </div>
+        <div class="progress-text"><span id="views-count">0</span>/1000</div>
+      </div>
+      <div id="monetize-status">Loading...</div>
+    </div>
+
+    <div class="card" id="chart-container">
+      <canvas id="performanceChart" width="900" height="400"></canvas>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+    import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
+      authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
+      databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
+      projectId: "itzhoyoo-f9f7e",
+      storageBucket: "itzhoyoo-f9f7e.filestorage.app",
+      messagingSenderId: "1094792075584",
+      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const auth = getAuth(app);
+
+    // Globals to keep chart reference
+    let chartInstance;
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        alert("Log in to view dashboard.");
+        return;
+      }
+
+      const uid = user.uid;
+      try {
+        // Fetch analytics data
+        const analyticsSnap = await get(ref(db, `analytics/${uid}`));
+        // Fetch monetization stats (followers & views)
+        const followersSnap = await get(ref(db, `users/${uid}/followersCount`));
+        const viewsSnap = await get(ref(db, `users/${uid}/totalViews`));
+
+        if (!analyticsSnap.exists()) {
+          alert("No analytics data found.");
+          return;
+        }
+
+        const analyticsData = analyticsSnap.val();
+        const followers = followersSnap.exists() ? followersSnap.val() : 0;
+        const views = viewsSnap.exists() ? viewsSnap.val() : 0;
+
+        updateMonetizationProgress(followers, views);
+
+        const labels = [];
+        const viewsData = [];
+        const earningsData = [];
+
+        Object.keys(analyticsData).sort().forEach(date => {
+          labels.push(date);
+          viewsData.push(analyticsData[date].views || 0);
+          earningsData.push(analyticsData[date].earnings || 0);
+        });
+
+        drawChart(labels, viewsData, earningsData);
+
+      } catch (e) {
+        console.error(e);
+        alert("Error loading dashboard data.");
+      }
+    });
+
+    function updateMonetizationProgress(followers, views) {
+      const followersGoal = 100;
+      const viewsGoal = 1000;
+
+      const followersProgress = Math.min((followers / followersGoal) * 100, 100);
+      const viewsProgress = Math.min((views / viewsGoal) * 100, 100);
+
+      document.getElementById('followers-progress').style.width = followersProgress + '%';
+      document.getElementById('views-progress').style.width = viewsProgress + '%';
+
+      document.getElementById('followers-count').textContent = followers;
+      document.getElementById('views-count').textContent = views;
+
+      const monetizeStatus = document.getElementById('monetize-status');
+      if (followers >= followersGoal && views >= viewsGoal) {
+        monetizeStatus.textContent = "You are eligible to monetize! Start earning now.";
+      } else {
+        monetizeStatus.textContent = `Keep going! Need ${Math.max(0, followersGoal - followers)} more followers and ${Math.max(0, viewsGoal - views)} more views.`;
+      }
+    }
+
+    function drawChart(labels, views, earnings) {
+      const ctx = document.getElementById('performanceChart').getContext('2d');
+
+      if (chartInstance) {
+        chartInstance.destroy(); // cleanup old chart
+      }
+
+      chartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [
+            {
+              label: 'Views',
+              data: views,
+              borderColor: '#00ffcc',
+              backgroundColor: 'rgba(0,255,204,0.2)',
+              tension: 0.4,
+              fill: true,
+              pointRadius: 3,
+            },
+            {
+              label: 'Earnings ($)',
+              data: earnings,
+              borderColor: '#ff66cc',
+              backgroundColor: 'rgba(255,102,204,0.2)',
+              tension: 0.4,
+              fill: true,
+              pointRadius: 3,
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { labels: { color: '#ccc', font: { size: 14, weight: 'bold' } } }
+          },
+          scales: {
+            x: { ticks: { color: '#aaa' } },
+            y: { ticks: { color: '#aaa' }, beginAtZero: true }
+          },
+          interaction: {
+            mode: 'nearest',
+            intersect: false
+          }
+        }
+      });
+    }
+  </script>
+</body>
+</html>
