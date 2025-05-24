@@ -1,238 +1,347 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>CyberChat Ads</title>
-  <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-database-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-auth-compat.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
-    body { background: #0f0f0f; color: white; }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>CyberChat</title>
+<style>
+  :root {
+    --bg: #fff;
+    --fg: #222;
+    --subtle: #666;
+    --border: #ddd;
+    --pink: #ff0080;
+    --blue: #007aff;
+  }
+  body.dark-theme {
+    --bg: #121212;
+    --fg: #eee;
+    --subtle: #aaa;
+    --border: #333;
+  }
 
-    header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: #fff;
-      color: #000;
-      padding: 10px 20px;
-    }
-    .logo {
-      font-size: 1rem;
-      font-weight: bold;
-    }
-    .balance-btn {
-      background: #90ee90;
-      color: #000;
-      padding: 6px 12px;
-      border: none;
-      border-radius: 4px;
-      font-weight: bold;
-      cursor: default;
-    }
-    .hamburger {
-      width: 30px;
-      cursor: pointer;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      gap: 5px;
-    }
-    .hamburger span {
-      height: 4px;
-      border-radius: 2px;
-      background: black;
-    }
-    .hamburger span:nth-child(1) { width: 16px; }
-    .hamburger span:nth-child(2) { width: 22px; }
-    .hamburger span:nth-child(3) { width: 28px; }
+  /* Reset & basics */
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+      Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+    background: var(--bg);
+    color: var(--fg);
+    -webkit-tap-highlight-color: transparent;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+  h1, p {
+    user-select: text;
+  }
 
-    main {
-      padding: 20px;
-    }
-    #chartContainer {
-      margin-top: 20px;
-      background: #0ff2;
-      border-radius: 10px;
-      padding: 20px;
-    }
-    
-  </style>
+  /* No blue highlight on click */
+  *:focus {
+    outline: none;
+  }
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Header */
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg);
+    gap: 0.75rem;
+    position: relative;
+  }
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    color: var(--subtle);
+  }
+  .header-left svg {
+    width: 24px;
+    height: 24px;
+    stroke: currentColor;
+    stroke-width: 2;
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .search-text {
+    font-size: 1rem;
+  }
+  .app-name {
+    flex-grow: 1;
+    text-align: center;
+    font-weight: 900;
+    font-size: 1.3rem;
+    user-select: text;
+    color: var(--fg);
+    cursor: default;
+  }
+  .cyber {
+    color: var(--pink);
+  }
+  .chat {
+    color: var(--blue);
+  }
+  .settings-btn {
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    color: var(--subtle);
+    display: flex;
+    align-items: center;
+  }
+  .settings-btn svg {
+    width: 24px;
+    height: 24px;
+    fill: currentColor;
+  }
+
+  /* Settings dropdown */
+  .settings-dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    border-radius: 8px;
+    width: 180px;
+    display: none;
+    flex-direction: column;
+    padding: 0.5rem 0;
+    z-index: 1100;
+  }
+  .settings-dropdown button {
+    background: none;
+    border: none;
+    padding: 0.75rem 1rem;
+    text-align: left;
+    font-size: 1rem;
+    cursor: pointer;
+    color: var(--fg);
+    transition: background-color 0.2s ease;
+    user-select: none;
+  }
+  .settings-dropdown button:hover {
+    background-color: var(--border);
+  }
+
+  /* Search bar */
+  #searchBar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    padding: 0.75rem 1rem;
+    display: none;
+    z-index: 1050;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  }
+  #searchBar input {
+    width: 100%;
+    padding: 0.5rem 1rem;
+    font-size: 1rem;
+    border: 1px solid var(--border);
+    border-radius: 24px;
+    outline: none;
+    background: var(--bg);
+    color: var(--fg);
+    user-select: text;
+  }
+  #searchBar input::placeholder {
+    color: var(--subtle);
+  }
+
+  /* Footer */
+  footer {
+    position: sticky;
+    bottom: 0;
+    z-index: 1000;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1.5rem;
+    border-top: 1px solid var(--border);
+    background: var(--bg);
+  }
+  footer button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--subtle);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 0.75rem;
+    user-select: none;
+  }
+  footer button svg {
+    width: 24px;
+    height: 24px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    margin-bottom: 2px;
+  }
+  footer button:focus {
+    outline: none;
+  }
+
+  /* Profile pic as circle */
+  .profile-pic svg {
+    stroke: currentColor;
+    stroke-width: 2;
+    fill: none;
+    border-radius: 50%;
+  }
+
+</style>
 </head>
 <body>
-  <header>
-    <div class="logo">CyberChat Ads</div>
-    <button class="balance-btn">$0.000</button>
-    <div class="hamburger" onclick="toggleMenu()">
-      <span></span>
-      <span></span>
-      <span></span>
-    </div>
-  </header>
 
-  <main>
-    <div id="chartContainer">
-      <canvas id="adsChart"></canvas>
-    </div>
-  </main>
-<section id="adsList" style="margin-top: 30px;">
-  <h2 style="margin-bottom: 10px; font-size: 1.2rem;">Your Ads</h2>
-  <div id="adsContainer" style="display: grid; gap: 15px;"></div>
-</section>
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
-      authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
-      databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
-      projectId: "itzhoyoo-f9f7e",
-      storageBucket: "itzhoyoo-f9f7e.filestorage.app",
-      messagingSenderId: "1094792075584",
-      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
-      measurementId: "G-LLT6F9WRKH"
-    };
+<header>
+  <div class="header-left" id="searchTrigger" tabindex="0" role="button" aria-label="Open Search">
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <circle cx="11" cy="11" r="7"/>
+      <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+    </svg>
+    <span class="search-text">Search</span>
+  </div>
 
-    firebase.initializeApp(firebaseConfig);
+  <div class="app-name" aria-label="App name CyberChat">
+    <span class="cyber">CYBER</span><span class="chat">CHAT</span>
+  </div>
 
-    const db = firebase.database();
-    const ctx = document.getElementById('adsChart').getContext('2d');
+  <button class="settings-btn" aria-label="Settings" aria-haspopup="true" aria-expanded="false">
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z"/>
+      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.09a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h.09a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.09a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+    </svg>
+  </button>
 
-    const adsChart = new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: [],
-        datasets: [
-          {
-            label: 'Ad Views',
-            borderColor: '#00ffff',
-            backgroundColor: '#00ffff44',
-            data: [],
-            fill: true,
-            tension: 0.4,
-          },
-          {
-            label: 'Ad Clicks',
-            borderColor: '#00ff88',
-            backgroundColor: '#00ff8844',
-            data: [],
-            fill: true,
-            tension: 0.4,
-          }
-        ]
-      },
-      options: {
-        responsive: true,
-        plugins: {
-          legend: { labels: { color: 'white' } }
-        },
-        scales: {
-          x: { ticks: { color: 'white' } },
-          y: { ticks: { color: 'white' } }
-        }
-      }
-    });
+  <div class="settings-dropdown" id="settingsDropdown" aria-hidden="true" role="menu">
+    <button id="toggleThemeBtn" role="menuitem">Toggle Light/Dark Theme</button>
+    <button id="contactBtn" role="menuitem">Contact Us</button>
+    <button id="logoutBtn" role="menuitem">Logout</button>
+  </div>
+</header>
 
-    function drawNoDataText() {
-      const chart = adsChart;
-      const ctx = chart.ctx;
-      ctx.save();
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.font = '16px sans-serif';
-      ctx.fillStyle = 'white';
-      ctx.fillText('No Data', chart.width / 2, chart.height / 2);
-      ctx.restore();
+<div id="searchBar" role="search">
+  <input type="search" placeholder="Search CyberChat..." aria-label="Search CyberChat" />
+</div>
+
+<main style="padding: 4rem 1rem 4rem 1rem; user-select:none;">
+  <h1>Welcome to CyberChat</h1>
+  <p>This is a neat empty app shell with native UI vibes.</p>
+</main>
+<main style="padding: 4rem 1rem 4rem 1rem; user-select:none;">
+  <h1>Welcome to CyberChat</h1>
+  <p>This is a neat empty app shell with native UI vibes.</p>
+</main>
+<main style="padding: 4rem 1rem 4rem 1rem; user-select:none;">
+  <h1>Welcome to CyberChat</h1>
+  <p>This is a neat empty app shell with native UI vibes.</p>
+</main>
+<main style="padding: 4rem 1rem 4rem 1rem; user-select:none;">
+  <h1>Welcome to CyberChat</h1>
+  <p>This is a neat empty app shell with native UI vibes.</p>
+</main>
+<main style="padding: 4rem 1rem 4rem 1rem; user-select:none;">
+  <h1>Welcome to CyberChat</h1>
+  <p>This is a neat empty app shell with native UI vibes.</p>
+</main>
+<footer>
+  <button aria-label="Home">
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M3 12l9-9 9 9v9a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3z" />
+      <path d="M9 21V12h6v9" />
+    </svg>
+    Home
+  </button>
+  <button aria-label="Upload">
+    <svg viewBox="0 0 24 24" aria-hidden="true" style="stroke-width:3;">
+      <line x1="12" y1="5" x2="12" y2="19" />
+      <line x1="5" y1="12" x2="19" y2="12" />
+    </svg>
+    Upload
+  </button>
+  <button class="profile-pic" aria-label="Profile">
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <circle cx="12" cy="7" r="4" />
+      <path d="M5.5 21a7 7 0 0 1 13 0" />
+    </svg>
+    Profile
+  </button>
+</footer>
+
+<script>
+  // Search toggle
+  const searchTrigger = document.getElementById('searchTrigger');
+  const searchBar = document.getElementById('searchBar');
+  searchTrigger.addEventListener('click', () => {
+    if (searchBar.style.display === 'block') {
+      searchBar.style.display = 'none';
+    } else {
+      searchBar.style.display = 'block';
+      searchBar.querySelector('input').focus();
     }
-
-    function updateChartWithFirebaseData() {
-      const userId = firebase.auth().currentUser?.uid || 'anonymous';
-      db.ref(`user/${userId}/adscampaign`).on('value', (snapshot) => {
-        const data = snapshot.val();
-        if (!data) {
-          adsChart.data.labels = [];
-          adsChart.data.datasets.forEach(ds => ds.data = []);
-          adsChart.update();
-          drawNoDataText();
-          document.querySelector('.balance-btn').textContent = '$0.000';
-          return;
-        }
-
-        const labels = [], views = [], clicks = [];
-        Object.entries(data).forEach(([date, stats]) => {
-          labels.push(date);
-          views.push(stats.views || 0);
-          clicks.push(stats.clicks || 0);
-        });
-
-        adsChart.data.labels = labels;
-        adsChart.data.datasets[0].data = views;
-        adsChart.data.datasets[1].data = clicks;
-        adsChart.update();
-
-        const totalClicks = clicks.reduce((a, b) => a + b, 0);
-        const balance = totalClicks * 0.01;
-        document.querySelector('.balance-btn').textContent = `$${balance.toFixed(3)}`;
-      }, (error) => {
-        adsChart.data.labels = [];
-        adsChart.data.datasets.forEach(ds => ds.data = []);
-        adsChart.update();
-        drawNoDataText();
-        document.querySelector('.balance-btn').textContent = '$0.000';
-        console.error('Firebase error:', error);
-      });
-    }
-
-    firebase.auth().onAuthStateChanged((user) => {
-      if (user) updateChartWithFirebaseData();
-    });
-
-    function toggleMenu() {
-      alert('Sidebar toggle coming soon!');
-    }
-function renderUserAds(adsData) {
-  const container = document.getElementById('adsContainer');
-  container.innerHTML = '';
-
-  if (!adsData || Object.keys(adsData).length === 0) {
-    container.innerHTML = '<p>No ads created yet.</p>';
-    return;
-  }
-
-  Object.entries(adsData).forEach(([key, ad]) => {
-    const card = document.createElement('div');
-    card.style.background = '#111';
-    card.style.border = '1px solid #333';
-    card.style.borderRadius = '10px';
-    card.style.padding = '15px';
-    card.style.color = '#fff';
-
-    card.innerHTML = `
-      <h3 style="font-size: 1.1rem;">${ad.title || 'Untitled Ad'}</h3>
-      <p>${ad.description || ''}</p>
-      ${ad.image ? `<img src="${ad.image}" alt="Ad Image" style="width:100%; max-height:200px; object-fit:cover; margin-top:10px; border-radius:8px;">` : ''}
-      <p style="margin-top:10px;">Views: ${ad.views || 0} | Clicks: ${ad.clicks || 0}</p>
-    `;
-
-    container.appendChild(card);
   });
-}
 
-function loadUserAds() {
-  const userId = firebase.auth().currentUser?.uid || 'anonymous';
-  db.ref(`user/${userId}/adscampaign`).once('value').then((snapshot) => {
-    const ads = snapshot.val();
-    renderUserAds(ads);
-  });
-}
+  // Settings dropdown toggle and actions
+  const settingsBtn = document.querySelector('.settings-btn');
+  const settingsDropdown = document.getElementById('settingsDropdown');
+  const toggleThemeBtn = document.getElementById('toggleThemeBtn');
+  const contactBtn = document.getElementById('contactBtn');
+  const logoutBtn = document.getElementById('logoutBtn');
 
-firebase.auth().onAuthStateChanged((user) => {
-  if (user) {
-    updateChartWithFirebaseData();
-    loadUserAds();
+  settingsBtn.addEventListener('click', () => {
+  const isOpen = settingsDropdown.style.display === 'flex';
+  settingsDropdown.style.display = isOpen ? 'none' : 'flex';
+  settingsBtn.setAttribute('aria-expanded', !isOpen);
+});
+
+// Close dropdown if clicking outside
+document.addEventListener('click', (e) => {
+  if (!settingsBtn.contains(e.target) && !settingsDropdown.contains(e.target)) {
+    settingsDropdown.style.display = 'none';
+    settingsBtn.setAttribute('aria-expanded', false);
   }
 });
-  </script>
+
+// Toggle Light/Dark Theme
+toggleThemeBtn.addEventListener('click', () => {
+  document.body.classList.toggle('dark-theme');
+  settingsDropdown.style.display = 'none';
+  settingsBtn.setAttribute('aria-expanded', false);
+});
+
+// Contact Us — just alert for demo
+contactBtn.addEventListener('click', () => {
+  alert('Contact us at support@cyberchat.fake');
+  settingsDropdown.style.display = 'none';
+  settingsBtn.setAttribute('aria-expanded', false);
+});
+
+// Logout — just alert for demo
+logoutBtn.addEventListener('click', () => {
+  alert('Logging out... (not really, this is a demo)');
+  settingsDropdown.style.display = 'none';
+  settingsBtn.setAttribute('aria-expanded', false);
+});
+</script>
 </body>
 </html>
