@@ -3,179 +3,14 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Social Media Creator Dashboard</title>
+<title>Real Creator Dashboard</title>
 <style>
-  /* Reset + base */
-  * {
-    box-sizing: border-box;
-  }
+  /* Same styles as before, omitted for brevity */
+  /* ... Use your previous styles here ... */
   body {
-    margin:0; padding:0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
-      Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-    background: #121212;
-    color: #eee;
+    background: #121212; color: #eee; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
   }
-  a {
-    color: #4caf50;
-    text-decoration: none;
-  }
-  a:hover {
-    text-decoration: underline;
-  }
-  /* Layout */
-  header {
-    position: fixed;
-    top: 0; left: 0; right: 0;
-    height: 50px;
-    background: #1f1f1f;
-    display: flex;
-    align-items: center;
-    padding: 0 1rem;
-    z-index: 1000;
-  }
-  #hamburger {
-    font-size: 1.5rem;
-    cursor: pointer;
-    user-select: none;
-    margin-right: 1rem;
-    color: #4caf50;
-  }
-  #sidebar {
-    position: fixed;
-    top: 50px; left: 0;
-    width: 220px;
-    height: calc(100vh - 50px);
-    background: #222;
-    padding: 1rem;
-    transform: translateX(-100%);
-    transition: transform 0.3s ease;
-    overflow-y: auto;
-    z-index: 999;
-  }
-  #sidebar.open {
-    transform: translateX(0);
-  }
-  #sidebar nav a {
-    display: block;
-    margin-bottom: 1rem;
-    color: #eee;
-    font-weight: 600;
-  }
-  main {
-    margin-top: 50px;
-    padding: 1rem;
-    max-width: 720px;
-    margin-left: auto;
-    margin-right: auto;
-  }
-  .profile-overview {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    margin-bottom: 1rem;
-  }
-  .profile-overview img {
-    width: 64px;
-    height: 64px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 2px solid #4caf50;
-  }
-  .profile-info {
-    flex-grow: 1;
-  }
-  .profile-info h2 {
-    margin: 0;
-    font-size: 1.25rem;
-  }
-  .profile-info p {
-    margin: 0;
-    opacity: 0.7;
-  }
-  .stats-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
-    margin-bottom: 1rem;
-  }
-  .stat-box {
-    background: #1f1f1f;
-    padding: 1rem;
-    border-radius: 10px;
-    position: relative;
-  }
-  .stat-title {
-    font-weight: 600;
-    font-size: 0.9rem;
-    margin-bottom: 0.5rem;
-    color: #aaa;
-  }
-  .stat-value {
-    font-size: 1.5rem;
-    font-weight: 700;
-  }
-  .stat-change {
-    position: absolute;
-    top: 1rem;
-    right: 1rem;
-    font-size: 0.8rem;
-    font-weight: 600;
-  }
-  .positive {
-    color: #4caf50;
-  }
-  .negative {
-    color: #f44336;
-  }
-  .progress-bar-container {
-    background: #333;
-    height: 12px;
-    border-radius: 6px;
-    overflow: hidden;
-    margin-top: 0.5rem;
-  }
-  .progress-bar {
-    background: #4caf50;
-    height: 100%;
-    width: 0%;
-    transition: width 0.5s ease;
-  }
-  .monetization-box {
-    background: #272727;
-    padding: 1rem;
-    border-radius: 10px;
-    margin-top: 1rem;
-    text-align: center;
-  }
-  .monetization-status {
-    font-weight: 700;
-    margin-bottom: 0.5rem;
-  }
-  button#monetize-btn {
-    background: #4caf50;
-    border: none;
-    color: white;
-    padding: 0.75rem 1.5rem;
-    font-weight: 700;
-    font-size: 1rem;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-  }
-  button#monetize-btn:disabled {
-    background: #555;
-    cursor: not-allowed;
-  }
-  /* Responsive */
-  @media (max-width: 600px) {
-    main {
-      padding: 1rem 0.5rem;
-      max-width: 100%;
-    }
-    .stats-grid {
-      grid-template-columns: 1fr;
-    }
-  }
+  /* Add your CSS from before */
 </style>
 </head>
 <body>
@@ -230,7 +65,7 @@
     <div class="stat-box monetization-box">
       <div class="stat-title">Monetization Status</div>
       <div class="monetization-status" id="monetize-status">Checking...</div>
-      <button id="monetize-btn" disabled>Monetize Now</button>
+      <button id="monetize-btn" disabled>Toggle Monetization</button>
     </div>
   </section>
 </main>
@@ -242,163 +77,153 @@
     ref,
     onValue,
     get,
+    update,
     child,
     query,
     orderByChild,
-    limitToLast,
-    update
   } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
   import {
     getAuth,
     onAuthStateChanged,
-    signOut
+    signOut,
   } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
 
-  // Firebase config
+  // Your Firebase config
   const firebaseConfig = {
     apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
     authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
     databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
     projectId: "itzhoyoo-f9f7e",
-    storageBucket: "itzhoyoo-f9f7e.appspot.com",
+    storageBucket: "itzhoyoo-f9f7e.filestorage.app",
     messagingSenderId: "1094792075584",
     appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
     measurementId: "G-LLT6F9WRKH"
   };
 
-  // Initialize Firebase
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
-  const auth = getAuth();
+  const auth = getAuth(app);
 
-  // DOM elements
-  const hamburger = document.getElementById('hamburger');
-  const sidebar = document.getElementById('sidebar');
-  const logoutBtn = document.getElementById('logout-btn');
+  // Elements
+  const usernameEl = document.getElementById("username");
+  const userhandleEl = document.getElementById("userhandle");
+  const userPhotoEl = document.getElementById("user-photo");
+  const followersCountEl = document.getElementById("followers-count");
 
-  const userPhoto = document.getElementById('user-photo');
-  const usernameEl = document.getElementById('username');
-  const userHandleEl = document.getElementById('userhandle');
-  const followersCountEl = document.getElementById('followers-count');
+  const totalViewsEl = document.getElementById("total-views");
+  const viewsChangeEl = document.getElementById("views-change");
+  const viewsProgressEl = document.getElementById("views-progress");
 
-  const totalViewsEl = document.getElementById('total-views');
-  const viewsChangeEl = document.getElementById('views-change');
-  const viewsProgress = document.getElementById('views-progress');
+  const totalEarningsEl = document.getElementById("total-earnings");
+  const earningsChangeEl = document.getElementById("earnings-change");
+  const earningsProgressEl = document.getElementById("earnings-progress");
 
-  const totalEarningsEl = document.getElementById('total-earnings');
-  const earningsChangeEl = document.getElementById('earnings-change');
-  const earningsProgress = document.getElementById('earnings-progress');
+  const totalPostsEl = document.getElementById("total-posts");
+  const postsChangeEl = document.getElementById("posts-change");
 
-  const totalPostsEl = document.getElementById('total-posts');
-  const postsChangeEl = document.getElementById('posts-change');
+  const monetizeStatusEl = document.getElementById("monetize-status");
+  const monetizeBtn = document.getElementById("monetize-btn");
 
-  const monetizeStatusEl = document.getElementById('monetize-status');
-  const monetizeBtn = document.getElementById('monetize-btn');
+  let currentUserId;
 
-  // Toggle sidebar
-  hamburger.addEventListener('click', () => {
-    sidebar.classList.toggle('open');
-  });
-
-  // Logout handler
-  logoutBtn.addEventListener('click', async (e) => {
-    e.preventDefault();
-    try {
-      await signOut(auth);
-      window.location.href = '/login.html'; // or wherever your login page is
-    } catch (err) {
-      alert('Error logging out: ' + err.message);
-    }
-  });
-
-  // Utility: format numbers with commas
-  function formatNumber(num) {
-    return num.toLocaleString();
-  }
-
-  // Utility: format currency
-  function formatCurrency(num) {
-    return '$' + num.toFixed(2);
-  }
-
-  // Calculate and update progress bar width (0-100%)
-  function updateProgressBar(element, value, max) {
-    let percent = max ? Math.min((value / max) * 100, 100) : 0;
-    element.style.width = percent + '%';
-  }
-
-  // Load user data and stats from Firebase
-  onAuthStateChanged(auth, user => {
+  onAuthStateChanged(auth, async (user) => {
     if (!user) {
-      // Not logged in? Redirect or show message
-      window.location.href = '/login.html';
+      // Redirect or show login
+      alert("Not logged in!");
       return;
     }
+    currentUserId = user.uid;
+    loadUserProfile(currentUserId);
+    loadStatsRealtime(currentUserId);
+    setupMonetizationToggle(currentUserId);
+  });
 
-    const uid = user.uid;
-    const userRef = ref(db, 'users/' + uid);
-    const postsRef = ref(db, 'post');
-    const monetizeRef = ref(db, 'monetize/' + uid);
-
-    // Load user profile info
-    onValue(userRef, snapshot => {
-      const data = snapshot.val() || {};
-      userPhoto.src = data.photoURL || 'https://via.placeholder.com/64';
-      usernameEl.textContent = data.username || 'No Username';
-      userHandleEl.textContent = data.username ? '@' + data.username.toLowerCase().replace(/\s/g, '') : '@user';
-      followersCountEl.textContent = formatNumber(data.followersCount || 0);
+  function loadUserProfile(uid) {
+    const userRef = ref(db, `users/${uid}`);
+    onValue(userRef, (snapshot) => {
+      if (!snapshot.exists()) return;
+      const user = snapshot.val();
+      usernameEl.textContent = user.username || "No Username";
+      userhandleEl.textContent = user.handle ? `@${user.handle}` : `@${user.username || 'user'}`;
+      userPhotoEl.src = user.photoURL || "https://via.placeholder.com/64";
     });
 
-    // Load user posts and aggregate stats
-    onValue(postsRef, snapshot => {
+    // Followers count (assuming followers stored as keys)
+    const followersRef = ref(db, `followers/${uid}`);
+    onValue(followersRef, (snap) => {
+      const followersObj = snap.val();
+      const count = followersObj ? Object.keys(followersObj).length : 0;
+      followersCountEl.textContent = count;
+    });
+  }
+
+  function loadStatsRealtime(uid) {
+    // Total posts by user
+    const postsRef = ref(db, "posts");
+    onValue(postsRef, (snapshot) => {
       const posts = snapshot.val() || {};
-      let totalViews = 0;
-      let totalEarnings = 0;
-      let totalPosts = 0;
+      let totalPosts = 0, totalViews = 0, totalEarnings = 0;
+
+      const today = new Date();
+      const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+      const todayStartTs = todayStart.getTime();
+
+      let viewsToday = 0, earningsToday = 0, postsToday = 0;
 
       for (const postId in posts) {
         const post = posts[postId];
-        if (post.authorId === uid) {
-          totalPosts++;
-          totalViews += post.views || 0;
-          totalEarnings += post.earnings || 0;
+        if (post.authorId !== uid) continue;
+        totalPosts++;
+        totalViews += post.views || 0;
+        totalEarnings += post.earnings || 0;
+
+        // Assuming post.createdAt is a timestamp in ms
+        if (post.createdAt >= todayStartTs) {
+          postsToday++;
+          viewsToday += post.viewsToday || 0; // if you track daily views separately
+          earningsToday += post.earningsToday || 0; // likewise daily earnings
         }
       }
 
-      // Update UI values
-      totalViewsEl.textContent = formatNumber(totalViews);
-      totalEarningsEl.textContent = formatCurrency(totalEarnings);
       totalPostsEl.textContent = totalPosts;
+      totalViewsEl.textContent = totalViews;
+      totalEarningsEl.textContent = `$${totalEarnings.toFixed(2)}`;
 
-      // For demo: show progress bars relative to some arbitrary max
-      updateProgressBar(viewsProgress, totalViews, 10000);       // max views 10k
-      updateProgressBar(earningsProgress, totalEarnings, 500);   // max earnings $500
+      postsChangeEl.textContent = `+${postsToday} today`;
+      viewsChangeEl.textContent = `+${viewsToday} today`;
+      earningsChangeEl.textContent = `+ $${earningsToday.toFixed(2)} today`;
+
+      // Progress bars: simple example showing progress to some arbitrary goals
+      viewsProgressEl.style.width = Math.min(100, (totalViews / 10000) * 100) + "%";
+      earningsProgressEl.style.width = Math.min(100, (totalEarnings / 500) * 100) + "%";
+    });
+  }
+
+  function setupMonetizationToggle(uid) {
+    const monetizeRef = ref(db, `users/${uid}/monetize`);
+    onValue(monetizeRef, (snapshot) => {
+      const status = snapshot.val();
+      monetizeStatusEl.textContent = status ? "Monetized" : "Not Monetized";
+      monetizeBtn.disabled = false;
+      monetizeBtn.textContent = status ? "Disable Monetization" : "Enable Monetization";
     });
 
-    // Monetization status & button
-    onValue(monetizeRef, snapshot => {
-      const status = snapshot.val() || 'not eligible';
-      monetizeStatusEl.textContent = status.charAt(0).toUpperCase() + status.slice(1);
+    monetizeBtn.onclick = () => {
+      monetizeBtn.disabled = true; // prevent spam
+      get(ref(db, `users/${uid}/monetize`)).then((snap) => {
+        const current = snap.val();
+        update(ref(db, `users/${uid}`), {
+          monetize: !current,
+        }).then(() => {
+          monetizeBtn.disabled = false;
+        });
+      });
+    };
+  }
 
-      if (status === 'eligible') {
-        monetizeBtn.disabled = false;
-      } else {
-        monetizeBtn.disabled = true;
-      }
-    });
-
-    monetizeBtn.addEventListener('click', async () => {
-      monetizeBtn.disabled = true;
-      monetizeStatusEl.textContent = 'Pending approval...';
-
-      try {
-        await update(ref(db, 'monetize/' + uid), { status: 'pending' });
-      } catch (err) {
-        alert('Failed to apply for monetization: ' + err.message);
-        monetizeBtn.disabled = false;
-        monetizeStatusEl.textContent = 'Eligible';
-      }
-    });
+  // Logout
+  document.getElementById("logout-btn").addEventListener("click", () => {
+    signOut(auth);
   });
 </script>
 
