@@ -1,104 +1,48 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en" class="bg-black text-white">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Social Media Dashboard</title>
-  <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js"></script>
-  <style>
-    /* Basic Dark mode styling + layout */
-    body {
-      margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: #121212; color: #eee; padding: 2rem;
-      display: flex; flex-direction: column; gap: 1.5rem; max-width: 700px; margin-left: auto; margin-right: auto;
-    }
-    .flex { display: flex; }
-    .items-center { align-items: center; }
-    .space-x-1 > * + * { margin-left: 0.25rem; }
-    .space-x-4 > * + * { margin-left: 1rem; }
-    .text-gray-400 { color: #999; }
-    .text-green-500 { color: #22c55e; }
-    .text-red-500 { color: #ef4444; }
-    .rounded { border-radius: 0.5rem; }
-    .rounded-full { border-radius: 9999px; }
-    .border { border: 1px solid #444; }
-    .border-white { border-color: #fff; }
-    .border-gray-600 { border-color: #666; }
-    .shadow-lg { box-shadow: 0 10px 15px -3px rgba(0,0,0,0.7); }
-    .bg-gray-900 { background: #1e1e1e; }
-    .bg-gray-700 { background: #333; }
-    .bg-green-500 { background: #22c55e; }
-    .bg-green-600 { background: #16a34a; }
-    .hover\:bg-green-700:hover { background: #15803d; }
-    .text-sm { font-size: 0.875rem; }
-    .text-xs { font-size: 0.75rem; }
-    .text-lg { font-size: 1.125rem; }
-    .font-semibold { font-weight: 600; }
-    .font-bold { font-weight: 700; }
-    .p-4 { padding: 1rem; }
-    .px-3 { padding-left: 0.75rem; padding-right: 0.75rem; }
-    .py-1 { padding-top: 0.25rem; padding-bottom: 0.25rem; }
-    .relative { position: relative; }
-    .absolute { position: absolute; }
-    .top-4 { top: 1rem; }
-    .right-4 { right: 1rem; }
-    .grid { display: grid; }
-    .grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
-    @media(min-width: 768px) {
-      .md\:grid-cols-4 { grid-template-columns: repeat(4, 1fr); }
-    }
-    .gap-4 { gap: 1rem; }
-    .w-12 { width: 3rem; }
-    .h-12 { height: 3rem; }
-    .object-cover { object-fit: cover; }
-    .overflow-hidden { overflow: hidden; }
-    .ml-auto { margin-left: auto; }
-    .hidden { display: none; }
-    button {
-      cursor: pointer; border: none; color: white; transition: background 0.3s ease;
-      font-family: inherit;
-    }
-  </style>
+  <title>Creator Dashboard v2</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-<body>
+<body class="p-4 space-y-6 max-w-4xl mx-auto">
+
+  <!-- Profile Section -->
   <div class="flex items-center space-x-4">
-    <img id="profilePic" src="https://placehold.co/100x100" alt="Profile" class="w-12 h-12 rounded-full border border-white"/>
+    <img id="profilePic" src="" alt="Profile" class="w-12 h-12 rounded-full border border-white"/>
     <div>
       <h2 id="username" class="text-lg font-bold">Loading...</h2>
       <p id="handle" class="text-sm text-gray-400">@handle</p>
-      <p id="followers" class="text-sm text-gray-400 flex items-center space-x-1">
-        <span id="followersCount">0 followers</span>
-        <span id="followersDelta" class="text-xs"></span>
-      </p>
-    </div>
-    <div id="latestPost" class="ml-auto rounded border border-gray-600 overflow-hidden w-12 h-12">
-      <img id="latestPostImg" src="https://placehold.co/100x100?text=No+Post" alt="Latest Post" class="w-full h-full object-cover" />
+      <p id="followers" class="text-sm text-gray-400">0 followers</p>
     </div>
   </div>
 
+  <!-- Stats Grid -->
   <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-    <div class="bg-gray-900 p-4 rounded shadow-lg relative">
+    <div class="bg-gray-900 p-4 rounded-2xl shadow-lg relative">
       <p class="text-sm text-gray-400">Total Views</p>
       <h2 id="totalViews" class="text-xl font-semibold">Loading...</h2>
-      <span id="viewsDelta" class="absolute top-4 right-4 text-sm font-semibold"></span>
+      <p id="viewsChange" class="absolute top-2 right-3 text-sm font-bold"></p>
     </div>
-    <div class="bg-gray-900 p-4 rounded shadow-lg relative">
+    <div class="bg-gray-900 p-4 rounded-2xl shadow-lg relative">
       <p class="text-sm text-gray-400">Total Earnings</p>
       <h2 id="totalEarnings" class="text-xl font-semibold">$0.00</h2>
-      <span id="earningsDelta" class="absolute top-4 right-4 text-sm font-semibold"></span>
+      <p id="earningsChange" class="absolute top-2 right-3 text-sm font-bold"></p>
     </div>
-    <div class="bg-gray-900 p-4 rounded shadow-lg relative">
+    <div class="bg-gray-900 p-4 rounded-2xl shadow-lg relative">
       <p class="text-sm text-gray-400">Total Posts</p>
       <h2 id="totalPosts" class="text-xl font-semibold">0</h2>
-      <span id="postsDelta" class="absolute top-4 right-4 text-sm font-semibold"></span>
+      <p id="postsChange" class="absolute top-2 right-3 text-sm font-bold"></p>
+      <!-- Latest Post Thumbnail -->
+      <img id="latestPostThumb" src="" alt="Latest Post" class="absolute bottom-2 right-2 w-10 h-10 rounded border border-gray-700 object-cover" style="box-shadow: 0 0 10px #22c55e;" />
     </div>
-    <div class="bg-gray-900 p-4 rounded shadow-lg space-y-2">
+    <div class="bg-gray-900 p-4 rounded-2xl shadow-lg space-y-3">
       <p class="text-sm text-gray-400">Monetization Status</p>
       <h2 id="monetizationStatus" class="text-xl font-semibold">Loading...</h2>
       <button id="monetizeBtn" class="hidden px-3 py-1 text-sm rounded bg-green-600 hover:bg-green-700">Monetize Now</button>
-      <div id="monetizeReqs" class="space-y-2">
+      <div id="monetizeReqs" class="space-y-3">
         <div>
           <p class="text-xs text-gray-400">Followers (100)</p>
           <div class="w-full bg-gray-700 rounded h-2">
@@ -115,175 +59,169 @@
     </div>
   </div>
 
+  <!-- Earnings Chart -->
+  <div class="bg-gray-900 p-4 rounded-2xl shadow-lg">
+    <h3 class="text-lg font-semibold mb-2">Earnings Over Time</h3>
+    <canvas id="earningsChart" height="120"></canvas>
+  </div>
+
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+    import { getDatabase, ref, get, child, onValue } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
-    import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
 
-    // Your Firebase config (replace with your own)
     const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_AUTH_DOMAIN",
-      databaseURL: "YOUR_DATABASE_URL",
-      projectId: "YOUR_PROJECT_ID",
-      storageBucket: "YOUR_STORAGE_BUCKET",
-      messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-      appId: "YOUR_APP_ID"
+      apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
+      authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
+      databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
+      projectId: "itzhoyoo-f9f7e",
+      storageBucket: "itzhoyoo-f9f7e.filestorage.app",
+      messagingSenderId: "1094792075584",
+      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5"
     };
 
     const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getDatabase(app);
+    const db = getDatabase();
+    const auth = getAuth();
 
-   function formatDelta(current, previous) {
-      const diff = current - previous;
-      if (diff === 0) return "";
-      const sign = diff > 0 ? "+" : "";
-      const color = diff > 0 ? "text-green-500" : "text-red-500";
-      return `<span class="${color}">${sign}${diff.toLocaleString()}</span>`;
+    let earningsChart;
+
+    // Helper for coloring changes
+    function formatChange(number) {
+      const sign = number > 0 ? "+" : "";
+      const color = number > 0 ? "text-green-400" : number < 0 ? "text-red-500" : "text-gray-400";
+      return `<span class="${color}">${sign}${number}</span>`;
     }
 
-    // Helper to safely get numbers or 0 if undefined/null
-    function safeNum(val) {
-      return typeof val === "number" ? val : 0;
+    // Store previous stats in localStorage to compare changes
+    function getPrevStat(key) {
+      return Number(localStorage.getItem(key) || "0");
+    }
+    function setPrevStat(key, val) {
+      localStorage.setItem(key, val);
     }
 
-    onAuthStateChanged(auth, async (user) => {
-      if (!user) {
-        // Not logged in, show message or redirect
-        alert("Please log in to see your dashboard.");
-        return;
-      }
-
+    onAuthStateChanged(auth, async user => {
+      if (!user) return;
       const uid = user.uid;
 
-      try {
-        // Fetch user profile (username, photo, followers)
-        const userRef = ref(db, `users/${uid}`);
-        const userSnap = await get(userRef);
-        const userData = userSnap.exists() ? userSnap.val() : {};
+      const userRef = ref(db, `users/${uid}`);
+      const postsRef = ref(db, `posts`);
+      const viewsRef = ref(db, `views/${uid}`);
 
-        const username = userData.username || user.email.split("@")[0];
-        const photoURL = userData.photoURL || "https://placehold.co/100x100";
-        const followersCount = safeNum(userData.followers);
+      // Fetch user profile and totals
+      const snap = await get(userRef);
+      const data = snap.val() || {};
 
-        // Fetch posts of this user (assume posts keyed by userId/postId)
-        // We'll fetch all posts and filter by user id
-        const postsRef = ref(db, "post");
-        const postsSnap = await get(postsRef);
-        const postsData = postsSnap.exists() ? postsSnap.val() : {};
+      document.getElementById("username").textContent = data.username || "Unnamed";
+      document.getElementById("handle").textContent = `@${data.username || "handle"}`;
+      document.getElementById("followers").textContent = `${data.followers || 0} followers`;
+      document.getElementById("totalViews").textContent = data.totalViews || 0;
+      document.getElementById("totalEarnings").textContent = `$${(data.totalEarnings || 0).toFixed(2)}`;
+      document.getElementById("profilePic").src = data.profilePic || "https://placehold.co/100x100";
 
-        // Extract user's posts array + sort descending by createdAt or key (assuming timestamp key or property)
-        let userPosts = [];
-        for (const postId in postsData) {
-          if (postsData[postId].userId === uid) {
-            userPosts.push(postsData[postId]);
+      // Monetization progress bars
+      const followers = data.followers || 0;
+      const views = data.totalViews || 0;
+      const monetize = data.monetize || false;
+
+      document.getElementById("followersBar").style.width = `${Math.min((followers / 100) * 100, 100)}%`;
+      document.getElementById("viewsBar").style.width = `${Math.min((views / 1000) * 100, 100)}%`;
+
+      if (monetize) {
+        document.getElementById("monetizationStatus").textContent = "Eligible";
+        document.getElementById("monetizeBtn").classList.remove("hidden");
+      } else {
+        const eligible = followers >= 100 && views >= 1000;
+        document.getElementById("monetizationStatus").textContent = eligible ? "Eligible" : "Not Eligible";
+        if (eligible) document.getElementById("monetizeBtn").classList.remove("hidden");
+        else document.getElementById("monetizeBtn").classList.add("hidden");
+      }
+
+      // Fetch posts count + latest post image
+      const postsSnap = await get(postsRef);
+      let count = 0;
+      let latestPost = null;
+      postsSnap.forEach(child => {
+        const post = child.val();
+        if (post.uid === uid) {
+          count++;
+          // Keep track of latest post by timestamp or key
+          if (!latestPost || (post.createdAt && post.createdAt > latestPost.createdAt)) {
+            latestPost = post;
           }
         }
-        // Sort newest first - assuming 'createdAt' timestamp in ms or ISO string
-        userPosts.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
-
-        const totalPosts = userPosts.length;
-
-        // Total views and earnings from user posts
-        let totalViews = 0;
-        let totalEarnings = 0;
-        userPosts.forEach(post => {
-          totalViews += safeNum(post.views);
-          totalEarnings += safeNum(post.earnings);
-        });
-
-        // Monetization status (pending, active, none)
-        // Assume userData.monetizeStatus holds status string or false/null
-        const monetizeStatus = userData.monetizeStatus || "none";
-
-        // Monetization progress requirements (example thresholds)
-        const requiredFollowers = 100;
-        const requiredViews = 1000;
-
-        // Show profile info
-        document.getElementById("username").textContent = username;
-        document.getElementById("profilePic").src = photoURL;
-        document.getElementById("followersCount").textContent = `${followersCount.toLocaleString()} followers`;
-
-        // Show latest post image or placeholder
-        if (userPosts.length > 0 && userPosts[0].imageURL) {
-          document.getElementById("latestPostImg").src = userPosts[0].imageURL;
-          document.getElementById("latestPostImg").alt = userPosts[0].title || "Latest post";
-        } else {
-          document.getElementById("latestPostImg").src = "https://placehold.co/100x100?text=No+Post";
-          document.getElementById("latestPostImg").alt = "No post";
-        }
-
-        // Load previous stats from localStorage to compute deltas
-        const prevStatsRaw = localStorage.getItem(`dashboardStats_${uid}`);
-        const prevStats = prevStatsRaw ? JSON.parse(prevStatsRaw) : {};
-
-        // Calculate deltas or show nothing if first time
-        const followersDeltaHTML = formatDelta(followersCount, prevStats.followers || 0);
-        const viewsDeltaHTML = formatDelta(totalViews, prevStats.views || 0);
-        const earningsDeltaHTML = formatDelta(totalEarnings, prevStats.earnings || 0);
-        const postsDeltaHTML = formatDelta(totalPosts, prevStats.posts || 0);
-
-        // Update localStorage for next time
-        localStorage.setItem(`dashboardStats_${uid}`, JSON.stringify({
-          followers: followersCount,
-          views: totalViews,
-          earnings: totalEarnings,
-          posts: totalPosts
-        }));
-
-        // Set followers delta span
-        document.getElementById("followersDelta").innerHTML = followersDeltaHTML ? `(${followersDeltaHTML})` : "";
-
-        // Show totals + deltas
-        document.getElementById("totalViews").textContent = totalViews.toLocaleString();
-        document.getElementById("viewsDelta").innerHTML = viewsDeltaHTML;
-
-        document.getElementById("totalEarnings").textContent = `$${totalEarnings.toFixed(2)}`;
-        document.getElementById("earningsDelta").innerHTML = earningsDeltaHTML;
-
-        document.getElementById("totalPosts").textContent = totalPosts.toLocaleString();
-        document.getElementById("postsDelta").innerHTML = postsDeltaHTML;
-
-        // Monetization status UI
-        const monetizeStatusEl = document.getElementById("monetizationStatus");
-        const monetizeBtn = document.getElementById("monetizeBtn");
-        const monetizeReqs = document.getElementById("monetizeReqs");
-        const followersBar = document.getElementById("followersBar");
-        const viewsBar = document.getElementById("viewsBar");
-
-        // Show status text with first-letter uppercase
-        monetizeStatusEl.textContent = monetizeStatus.charAt(0).toUpperCase() + monetizeStatus.slice(1);
-
-        // Show monetize button only if eligible but not active or pending
-        if (monetizeStatus === "none" &&
-            followersCount >= requiredFollowers &&
-            totalViews >= requiredViews) {
-          monetizeBtn.classList.remove("hidden");
-          monetizeBtn.onclick = () => {
-            alert("Applying for monetization... (simulate backend action)");
-            // Here you would update Firebase user monetization status to "pending"
-          };
-        } else {
-          monetizeBtn.classList.add("hidden");
-        }
-
-        // Show progress bars (percentage capped at 100%)
-        const followersPercent = Math.min((followersCount / requiredFollowers) * 100, 100);
-        const viewsPercent = Math.min((totalViews / requiredViews) * 100, 100);
-        followersBar.style.width = `${followersPercent}%`;
-        viewsBar.style.width = `${viewsPercent}%`;
-
-        // Hide progress bar section if user is monetized active
-        if (monetizeStatus === "active") {
-          monetizeReqs.style.display = "none";
-        } else {
-          monetizeReqs.style.display = "block";
-        }
-      } catch (error) {
-        console.error("Error loading dashboard data:", error);
+      });
+      document.getElementById("totalPosts").textContent = count;
+      if (latestPost && latestPost.imageUrl) {
+        document.getElementById("latestPostThumb").src = latestPost.imageUrl;
+      } else {
+        document.getElementById("latestPostThumb").style.display = "none";
       }
+// Calculate and display changes for views, earnings, and posts
+      function updateChange(id, key, currentValue) {
+        const prev = getPrevStat(key);
+        const diff = currentValue - prev;
+        const el = document.getElementById(id);
+        if (diff === 0) {
+          el.innerHTML = "";
+        } else {
+          el.innerHTML = formatChange(diff);
+        }
+        setPrevStat(key, currentValue);
+      }
+
+      updateChange("viewsChange", "prevViews", data.totalViews || 0);
+      updateChange("earningsChange", "prevEarnings", data.totalEarnings || 0);
+      updateChange("postsChange", "prevPosts", count);
+
+      // Earnings Over Time Chart
+      const earningsDataSnap = await get(viewsRef);
+      const earningsDates = [];
+      const earningsValues = [];
+      if (earningsDataSnap.exists()) {
+        const earningsData = earningsDataSnap.val();
+        Object.keys(earningsData).sort().forEach(date => {
+          earningsDates.push(date);
+          earningsValues.push(earningsData[date].earnings || 0);
+        });
+      }
+
+      if (earningsChart) earningsChart.destroy();
+      const ctx = document.getElementById("earningsChart").getContext("2d");
+      earningsChart = new Chart(ctx, {
+        type: "line",
+        data: {
+          labels: earningsDates,
+          datasets: [{
+            label: "Earnings",
+            data: earningsValues,
+            borderColor: "#22c55e",
+            backgroundColor: "rgba(34, 197, 94, 0.2)",
+            fill: true,
+            tension: 0.3,
+          }],
+        },
+        options: {
+          scales: {
+            x: { 
+              ticks: { color: "white" },
+              grid: { color: "#444" },
+            },
+            y: {
+              ticks: { color: "white" },
+              grid: { color: "#444" },
+              beginAtZero: true,
+            }
+          },
+          plugins: { legend: { labels: { color: "white" } } }
+        }
+      });
+
+      // Monetize button click handler
+      document.getElementById("monetizeBtn").onclick = () => {
+        window.location.href = "monetize.html";
+      };
     });
   </script>
 </body>
