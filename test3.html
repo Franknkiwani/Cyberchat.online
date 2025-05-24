@@ -220,5 +220,74 @@
       const profileDiv = profileBtn;
       profileDiv.innerHTML = ""; // Clear fallback icon
 
-      if (user.photoURL) {
-        const img =
+      // If user has a photoURL, use it
+        const img = document.createElement("img");
+        img.src = user.photoURL;
+        img.alt = `${user.displayName || "User"} profile photo`;
+        profileDiv.appendChild(img);
+      } else {
+        // Fallback icon (same SVG as before)
+        profileDiv.innerHTML = `
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M12 12c2.7 0 4.9-2.2 4.9-4.9S14.7 2.2 12 2.2 7.1 4.4 7.1 7.1 9.3 12 12 12zm0 2.4c-3.2 0-9.5 1.6-9.5 4.8v2.4h19v-2.4c0-3.2-6.3-4.8-9.5-4.8z"/>
+          </svg>
+        `;
+      }
+    }
+
+    // Fetch stats for the logged-in user
+    async function fetchUserStats(uid) {
+      const userRef = ref(db, `users/${uid}`); // Assuming your stats stored under /users/uid/
+      const statsSnapshot = await get(userRef);
+      if (!statsSnapshot.exists()) return null;
+      return statsSnapshot.val();
+    }
+
+    // Main function to load data and update UI
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        updateProfilePhoto(user);
+
+        const stats = await fetchUserStats(user.uid);
+        statsContainer.innerHTML = "";
+
+        if (!stats) {
+          statsContainer.textContent = "No stats found for this user.";
+          return;
+        }
+
+        /*
+         Expected stats object example:
+         {
+           followers: 1234,
+           followersChange: 15,
+           earnings: 45.67,
+           earningsChange: -2.3,
+           posts: 12,
+           postsChange: 1,
+           views: 7890,
+           viewsChange: 200
+         }
+        */
+
+        // Build cards with real data
+        const cards = [
+          createStatCard("Followers", stats.followers, stats.followersChange),
+          createStatCard("Earnings", `$${stats.earnings.toFixed(2)}`, stats.earningsChange),
+          createStatCard("Posts", stats.posts, stats.postsChange),
+          createStatCard("Views", stats.views, stats.viewsChange)
+        ].filter(Boolean);
+
+        cards.forEach(card => statsContainer.appendChild(card));
+      } else {
+        statsContainer.innerHTML = `<p style="text-align:center; padding:2rem; color:var(--red);">You are not logged in. Please log in to see your stats.</p>`;
+        profileBtn.innerHTML = `
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M12 12c2.7 0 4.9-2.2 4.9-4.9S14.7 2.2 12 2.2 7.1 4.4 7.1 7.1 9.3 12 12 12zm0 2.4c-3.2 0-9.5 1.6-9.5 4.8v2.4h19v-2.4c0-3.2-6.3-4.8-9.5-4.8z"/>
+          </svg>
+        `;
+      }
+    });
+  </script>
+</body>
+</html>
