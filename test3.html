@@ -1,248 +1,447 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Your Next-Level Social Dashboard</title>
-  <style>
-    /* Reset and base */
-    body, html {
-      margin: 0; padding: 0; height: 100%;
-      background: #121212;
-      color: #eee;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
-    .container {
-      display: flex;
-      height: 100vh;
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 20px;
-      flex-direction: column;
-    }
-    h1 {
-      margin-bottom: 10px;
-      color: #00ffcc;
-      font-weight: 700;
-    }
-    .card {
-      background: rgba(30, 30, 30, 0.8);
-      padding: 20px;
-      border-radius: 14px;
-      box-shadow: 0 0 15px #00ffcc44;
-      margin-bottom: 30px;
-    }
-    /* Monetization Progress Bars */
-    .progress-group {
-      margin-bottom: 15px;
-    }
-    .progress-bar {
-      width: 100%;
-      height: 14px;
-      background: rgba(255,255,255,0.1);
-      border-radius: 10px;
-      overflow: hidden;
-      margin-top: 6px;
-      box-shadow: inset 0 1px 3px rgba(0,0,0,0.3);
-    }
-    .progress-fill {
-      height: 100%;
-      width: 0%;
-      background: linear-gradient(90deg, #00ffcc, #006655);
-      border-radius: 10px;
-      transition: width 0.6s ease;
-      box-shadow: 0 0 8px #00ffccaa;
-    }
-    .progress-text {
-      font-size: 13px;
-      margin-top: 4px;
-      color: #aaa;
-      font-family: monospace;
-      text-align: right;
-    }
-    #monetize-status {
-      margin-top: 10px;
-      font-weight: 700;
-      color: #00ffcc;
-      font-family: 'Segoe UI', sans-serif;
-    }
-    /* Chart Container */
-    #chart-container {
-      width: 100%;
-      max-width: 1000px;
-      margin: 0 auto;
-    }
-    canvas {
-      background: #222;
-      border-radius: 14px;
-      box-shadow: 0 0 20px #00ffcc88;
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Next-Level Social Media Dashboard</title>
+<style>
+  /* Reset & base */
+  * {
+    box-sizing: border-box;
+  }
+  body, html {
+    margin: 0; padding: 0; height: 100%;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+    color: #eee;
+    overflow: hidden;
+  }
+
+  /* Layout */
+  .app {
+    display: flex;
+    height: 100vh;
+    width: 100vw;
+  }
+
+  /* Sidebar */
+  .sidebar {
+    width: 72px;
+    background: rgba(15, 30, 45, 0.9);
+    box-shadow: 2px 0 10px #00ffcc55;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 0;
+    backdrop-filter: blur(8px);
+    transition: width 0.3s ease;
+    position: relative;
+  }
+  .sidebar:hover {
+    width: 200px;
+  }
+  .sidebar:hover .icon-label {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  /* Sidebar icons container */
+  .nav-item {
+    width: 100%;
+    color: #00ffcc;
+    padding: 15px 20px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 14px;
+    user-select: none;
+    transition: background 0.25s ease;
+  }
+  .nav-item:hover {
+    background: #00ffcc22;
+  }
+  .nav-icon {
+    width: 28px;
+    height: 28px;
+    fill: #00ffcc;
+    flex-shrink: 0;
+  }
+  .icon-label {
+    margin-left: 16px;
+    opacity: 0;
+    pointer-events: none;
+    white-space: nowrap;
+    transition: opacity 0.3s ease;
+  }
+
+  /* Main content area */
+  .main-content {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 25px 40px;
+    overflow-y: auto;
+  }
+
+  /* Header */
+  header {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 30px;
+  }
+  .user-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+  }
+  .user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border: 2px solid #00ffcc;
+    background: url('https://i.pravatar.cc/40') no-repeat center/cover;
+  }
+  .username {
+    color: #00ffcc;
+    font-weight: 700;
+  }
+
+  /* Cards */
+  .card {
+    background: rgba(15, 30, 45, 0.8);
+    padding: 25px;
+    border-radius: 18px;
+    box-shadow: 0 0 30px #00ffcc55;
+    margin-bottom: 40px;
+    max-width: 900px;
+    width: 100%;
+  }
+  .card h2 {
+    margin: 0 0 18px 0;
+    font-weight: 700;
+    color: #00ffcc;
+    font-size: 22px;
+  }
+
+  /* Monetization bars */
+  .progress-group {
+    margin-bottom: 20px;
+  }
+  .progress-label {
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: #a0fff3;
+  }
+  .progress-bar {
+    width: 100%;
+    height: 16px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: inset 0 2px 5px #0008;
+  }
+  .progress-fill {
+    height: 100%;
+    width: 0;
+    background: linear-gradient(90deg, #00ffcc, #006655);
+    border-radius: 10px;
+    box-shadow: 0 0 10px #00ffccbb;
+    transition: width 0.8s ease;
+  }
+  .progress-text {
+    font-family: monospace;
+    font-size: 13px;
+    margin-top: 6px;
+    text-align: right;
+    color: #a0fff3;
+  }
+  #monetize-status {
+    margin-top: 10px;
+    font-weight: 700;
+    color: #00ffcc;
+    font-family: 'Segoe UI', sans-serif;
+  }
+
+  /* Chart container */
+  #chart-container {
+    position: relative;
+    height: 400px;
+  }
+
+  /* Scrollbar styling for main-content */
+  .main-content::-webkit-scrollbar {
+    width: 8px;
+  }
+  .main-content::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .main-content::-webkit-scrollbar-thumb {
+    background: #00ffcc88;
+    border-radius: 10px;
+  }
+</style>
 </head>
 <body>
-  <div class="container">
-    <h1>Welcome to Your Dashboard</h1>
 
-    <div class="card">
-      <h3>Monetization Progress</h3>
+<div class="app">
+  <nav class="sidebar">
+    <div class="nav-item" title="Dashboard">
+      <svg class="nav-icon" viewBox="0 0 24 24"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8v-10h-8v10zm0-18v6h8V3h-8z"/></svg>
+      <span class="icon-label">Dashboard</span>
+    </div>
+    <div class="nav-item" title="Posts">
+      <svg class="nav-icon" viewBox="0 0 24 24"><path d="M5 4v3h5.5v12H19v-3h-5.5V4z"/></svg>
+      <span class="icon-label">Posts</span>
+    </div>
+    <div class="nav-item" title="Monetization">
+      <svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 2L1 7l11 5 9-4.09V17h2V7L12 2z"/></svg>
+      <span class="icon-label">Monetize</span>
+    </div>
+    <div class="nav-item" title="Settings">
+      <svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 8a4 4 0 100 8 4 4 0 000-8zm0-6v2.18a6.015 6.015 0 014.2 1.61l1.46-1.46 1.41 1.41-1.46 1.46A6.015 6.015 0 0120.82 12H23v2h-2.18a6.015 6.015 0 01-1.61 4.2l1.46 1.46-1.41 1.41-1.46-1.46A6.015 6.015 0 0112 20.82V23h-2v-2.18a6.015 6.015 0 01-4.2-1.61l-1.46 1.46-1.41-1.41 1.46-1.46A6.015 6.015 0 013.18 14H1v-2h2.18a6.015 6.015 0 011.61-4.2L2.33 6.33l1.41-1.41 1.46 1.46A6.015 6.015 0 0110 4.18V2h2z"/></svg>
+      <span class="icon-label">Settings</span>
+    </div>
+  </nav>
+
+  <main class="main-content">
+    <header>
+      <div class="user-info" title="Profile">
+        <div class="user-avatar"></div>
+        <div class="username" id="username">Loading...</div>
+      </div>
+    </header>
+
+    <section class="card">
+      <h2>Monetization Progress</h2>
       <div class="progress-group">
-        <label>Followers</label>
+        <div class="progress-label">Followers</div>
         <div class="progress-bar">
           <div id="followers-progress" class="progress-fill"></div>
         </div>
         <div class="progress-text"><span id="followers-count">0</span>/100</div>
       </div>
       <div class="progress-group">
-        <label>Views</label>
+        <div class="progress-label">Views</div>
         <div class="progress-bar">
           <div id="views-progress" class="progress-fill"></div>
         </div>
         <div class="progress-text"><span id="views-count">0</span>/1000</div>
       </div>
-      <div id="monetize-status">Loading...</div>
-    </div>
+      <div id="monetize-status">Loading monetization status...</div>
+    </section>
 
-    <div class="card" id="chart-container">
-      <canvas id="performanceChart" width="900" height="400"></canvas>
-    </div>
-  </div>
+    <section class="card" id="chart-container">
+      <h2>Analytics Overview</h2>
+      <canvas id="performanceChart"></canvas>
+    </section>
+  </main>
+</div>
 
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-    import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+  import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
-      authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
-      databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
-      projectId: "itzhoyoo-f9f7e",
-      storageBucket: "itzhoyoo-f9f7e.filestorage.app",
-      messagingSenderId: "1094792075584",
-      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5"
+  const firebaseConfig = {
+    apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
+    authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
+    databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
+    projectId: "itzhoyoo-f9f7e",
+    storageBucket: "itzhoyoo-f9f7e.filestorage.app",
+    messagingSenderId: "1094792075584",
+    appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
+    measurementId: "G-LLT6F9WRKH"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  const auth = getAuth(app);
+
+  // DOM Elements
+  const followersProgress = document.getElementById('followers-progress');
+  const viewsProgress = document.getElementById('views-progress');
+  const followersCountEl = document.getElementById('followers-count');
+  const viewsCountEl = document.getElementById('views-count');
+  const monetizeStatus = document.getElementById('monetize-status');
+  const usernameEl = document.getElementById('username');
+
+  // Sample thresholds
+  const FOLLOWERS_TARGET = 100;
+  const VIEWS_TARGET = 1000;
+
+  // Mock data fetch function (replace with real Firebase calls)
+  async function fetchUserStats(uid) {
+    // Example: fetch from Firebase DB at `/users/${uid}/stats`
+    // For demo, return dummy data that changes randomly
+    return {
+      followers: Math.floor(Math.random() * 120), // sometimes over target
+      views: Math.floor(Math.random() * 1500),
+      monetizeStatus: 'eligible', // 'pending', 'not eligible', etc.
+      username: 'frank_legend'
     };
+  }
 
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-    const auth = getAuth(app);
+  // Update progress bars & UI
+  function updateProgressBars(stats) {
+    // Clamp values to max target for progress bar width
+    const followersPercent = Math.min(stats.followers / FOLLOWERS_TARGET, 1) * 100;
+    const viewsPercent = Math.min(stats.views / VIEWS_TARGET, 1) * 100;
 
-    // Globals to keep chart reference
-    let chartInstance;
+    followersProgress.style.width = followersPercent + '%';
+    viewsProgress.style.width = viewsPercent + '%';
 
-    onAuthStateChanged(auth, async (user) => {
-      if (!user) {
-        alert("Log in to view dashboard.");
-        return;
-      }
+    followersCountEl.textContent = stats.followers;
+    viewsCountEl.textContent = stats.views;
 
-      const uid = user.uid;
-      try {
-        // Fetch analytics data
-        const analyticsSnap = await get(ref(db, `analytics/${uid}`));
-        // Fetch monetization stats (followers & views)
-        const followersSnap = await get(ref(db, `users/${uid}/followersCount`));
-        const viewsSnap = await get(ref(db, `users/${uid}/totalViews`));
-
-        if (!analyticsSnap.exists()) {
-          alert("No analytics data found.");
-          return;
-        }
-
-        const analyticsData = analyticsSnap.val();
-        const followers = followersSnap.exists() ? followersSnap.val() : 0;
-        const views = viewsSnap.exists() ? viewsSnap.val() : 0;
-
-        updateMonetizationProgress(followers, views);
-
-        const labels = [];
-        const viewsData = [];
-        const earningsData = [];
-
-        Object.keys(analyticsData).sort().forEach(date => {
-          labels.push(date);
-          viewsData.push(analyticsData[date].views || 0);
-          earningsData.push(analyticsData[date].earnings || 0);
-        });
-
-        drawChart(labels, viewsData, earningsData);
-
-      } catch (e) {
-        console.error(e);
-        alert("Error loading dashboard data.");
-      }
-    });
-
-    function updateMonetizationProgress(followers, views) {
-      const followersGoal = 100;
-      const viewsGoal = 1000;
-
-      const followersProgress = Math.min((followers / followersGoal) * 100, 100);
-      const viewsProgress = Math.min((views / viewsGoal) * 100, 100);
-
-      document.getElementById('followers-progress').style.width = followersProgress + '%';
-      document.getElementById('views-progress').style.width = viewsProgress + '%';
-
-      document.getElementById('followers-count').textContent = followers;
-      document.getElementById('views-count').textContent = views;
-
-      const monetizeStatus = document.getElementById('monetize-status');
-      if (followers >= followersGoal && views >= viewsGoal) {
-        monetizeStatus.textContent = "You are eligible to monetize! Start earning now.";
-      } else {
-        monetizeStatus.textContent = `Keep going! Need ${Math.max(0, followersGoal - followers)} more followers and ${Math.max(0, viewsGoal - views)} more views.`;
-      }
+    let statusText = '';
+    switch (stats.monetizeStatus) {
+      case 'eligible':
+        statusText = 'You are eligible for monetization! Keep it up!';
+        break;
+      case 'pending':
+        statusText = 'Monetization application pending...';
+        break;
+      default:
+        statusText = 'Keep growing to unlock monetization.';
     }
+    monetizeStatus.textContent = statusText;
+  }
 
-    function drawChart(labels, views, earnings) {
-      const ctx = document.getElementById('performanceChart').getContext('2d');
-
-      if (chartInstance) {
-        chartInstance.destroy(); // cleanup old chart
-      }
-
-      chartInstance = new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels,
-          datasets: [
-            {
-              label: 'Views',
-              data: views,
-              borderColor: '#00ffcc',
-              backgroundColor: 'rgba(0,255,204,0.2)',
-              tension: 0.4,
-              fill: true,
-              pointRadius: 3,
-            },
-            {
-              label: 'Earnings ($)',
-              data: earnings,
-              borderColor: '#ff66cc',
-              backgroundColor: 'rgba(255,102,204,0.2)',
-              tension: 0.4,
-              fill: true,
-              pointRadius: 3,
-            }
-          ]
+  // Chart.js setup for analytics
+  const ctx = document.getElementById('performanceChart').getContext('2d');
+  const performanceChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: [], // dynamic dates
+      datasets: [
+        {
+          label: 'Views',
+          data: [],
+          borderColor: '#00ffcc',
+          backgroundColor: 'rgba(0,255,204,0.3)',
+          tension: 0.3,
+          fill: true,
+          pointRadius: 3,
+          pointHoverRadius: 6,
+          yAxisID: 'y',
         },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: { labels: { color: '#ccc', font: { size: 14, weight: 'bold' } } }
-          },
-          scales: {
-            x: { ticks: { color: '#aaa' } },
-            y: { ticks: { color: '#aaa' }, beginAtZero: true }
-          },
-          interaction: {
-            mode: 'nearest',
-            intersect: false
-          }
+        {
+          label: 'Earnings ($)',
+          data: [],
+          borderColor: '#006655',
+          backgroundColor: 'rgba(0,102,85,0.3)',
+          tension: 0.3,
+          fill: true,
+          pointRadius: 3,
+          pointHoverRadius: 6,
+          yAxisID: 'y1',
         }
-      });
+      ]
+    },
+    options: {
+      responsive: true,
+      interaction: {
+        mode: 'index',
+        intersect: false,
+      },
+      stacked: false,
+      scales: {
+        y: {
+          type: 'linear',
+          position: 'left',
+          ticks: { color: '#00ffcc' },
+          title: {
+            display: true,
+            text: 'Views',
+            color: '#00ffcc',
+            font: { weight: 'bold' }
+          }
+        },
+        y1: {
+          type: 'linear',
+          position: 'right',
+          ticks: { color: '#006655' },
+          grid: { drawOnChartArea: false },
+          title: {
+            display: true,
+            text: 'Earnings ($)',
+            color: '#006655',
+            font: { weight: 'bold' }
+          }
+        },
+        x: {
+          ticks: { color: '#eee' },
+          grid: { color: '#00ffcc22' }
+        }
+      },
+      plugins: {
+        legend: {
+          labels: { color: '#00ffcc' }
+        },
+        tooltip: {
+          mode: 'nearest',
+          intersect: false,
+          backgroundColor: '#00ffccdd',
+          titleColor: '#002222',
+          bodyColor: '#002222'
+        }
+      }
     }
-  </script>
+  });
+
+  // Generate dummy analytics data for the last 14 days
+  function generateAnalyticsData() {
+    const labels = [];
+    const views = [];
+    const earnings = [];
+    const now = new Date();
+
+    for (let i = 13; i >= 0; i--) {
+      const d = new Date(now);
+      d.setDate(now.getDate() - i);
+      labels.push(d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }));
+
+      // Dummy views: 500 to 1200 random range
+      views.push(Math.floor(500 + Math.random() * 700));
+
+      // Dummy earnings: based on views with fake CPM, $0.5 to $1.5 per 1000 views
+      const cpm = 0.5 + Math.random();
+      earnings.push(parseFloat(((views[views.length - 1] / 1000) * cpm).toFixed(2)));
+    }
+
+    return { labels, views, earnings };
+  }
+
+  // Load user stats & update UI on auth state
+  onAuthStateChanged(auth, async user => {
+    if (user) {
+      // fetch user stats from Firebase (mocked here)
+      const stats = await fetchUserStats(user.uid);
+
+      updateProgressBars(stats);
+      usernameEl.textContent = stats.username || 'User';
+
+      // Setup analytics graph data
+      const analyticsData = generateAnalyticsData();
+      performanceChart.data.labels = analyticsData.labels;
+      performanceChart.data.datasets[0].data = analyticsData.views;
+      performanceChart.data.datasets[1].data = analyticsData.earnings;
+      performanceChart.update();
+
+    } else {
+      // Not logged in
+      monetizeStatus.textContent = 'Please log in to see your stats.';
+      usernameEl.textContent = 'Guest';
+    }
+  });
+
+</script>
+
 </body>
 </html>
