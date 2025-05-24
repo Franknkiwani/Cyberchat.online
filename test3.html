@@ -1,243 +1,353 @@
-<!DOCTYPE html>  
-<html lang="en">  
-<head>  
-<meta charset="UTF-8" />  
-<meta name="viewport" content="width=device-width, initial-scale=1" />  
-<title>CyberChat Native App</title>  
-<style>  
-  :root {  
-    --bg: #fff;  
-    --fg: #000;  
-    --border: #eee;  
-    --subtle: #555;  
-    --overlay-bg: rgba(255, 255, 255, 0.95);  
-    --upload-bg: #000;  
-    --input-bg: #fff;  
-  }  
-  @media (prefers-color-scheme: dark) {  
-    :root {  
-      --bg: #121212;  
-      --fg: #fff;  
-      --border: #333;  
-      --subtle: #aaa;  
-      --overlay-bg: rgba(18, 18, 18, 0.95);  
-      --upload-bg: #fff;  
-      --input-bg: #1e1e1e;  
-    }  
-  }  
-  /* Reset & base */  
-  * {  
-    margin: 0; padding: 0; box-sizing: border-box;  
-    -webkit-tap-highlight-color: transparent;  
-    user-select: none;  
-  }  
-  html, body {  
-    height: 100%;  
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;  
-    background: var(--bg);  
-    color: var(--fg);  
-    overflow-x: hidden;  
-  }  
-  body {  
-    display: flex;  
-    flex-direction: column;  
-  }  
-  /* Header */  
-  header {  
-    position: sticky;  
-    top: 0;  
-    z-index: 1000;  
-    background: var(--bg);  
-    border-bottom: 1px solid var(--border);  
-    display: flex;  
-    align-items: center;  
-    gap: 0.5rem;  
-    padding: 1rem;  
-    justify-content: flex-start;  
-  }  
-  header svg {  
-    width: 24px; height: 24px;  
-    fill: var(--subtle);  
-    cursor: pointer;  
-  }  
-  .search-text {  
-    font-size: 1rem;  
-    color: var(--subtle);  
-    cursor: pointer;  
-  }  
-  .app-name {  
-    flex-grow: 1;  
-    text-align: center;  
-    font-weight: 900;  
-    font-size: 1.3rem;  
-    user-select: text; /* app name can be selected */  
-    cursor: default;  
-  }  
-  .cyber {  
-    color: #ff0080; /* pink */  
-  }  
-  .chat {  
-    color: #007aff; /* blue */  
-  }  
-  /* Footer */  
-  footer {  
-    position: sticky;  
-    bottom: 0;  
-    z-index: 1000;  
-    background: var(--bg);  
-    border-top: 1px solid var(--border);  
-    display: flex;  
-    justify-content: space-between;  
-    align-items: center;  
-    padding: 0.75rem 2rem;  
-  }  
-  .icon-btn, .upload-btn {  
-    background: none;  
-    border: none;  
-    padding: 0;  
-    display: flex;  
-    align-items: center;  
-    justify-content: center;  
-    cursor: pointer;  
-  }  
-  .icon-btn svg {  
-    width: 28px; height: 28px;  
-    fill: var(--subtle);  
-  }  
-  .upload-btn {  
-    background: var(--upload-bg);  
-    width: 48px; height: 48px;  
-    border-radius: 999px;  
-    display: flex;  
-    align-items: center;  
-    justify-content: center;  
-    transform: translateY(-8px);  
-  }  
-  .upload-btn svg {  
-    width: 24px; height: 24px;  
-    stroke: var(--bg);  
-    stroke-width: 2;  
-    fill: none;  
-  }  
-  .profile-pic {  
-    width: 32px; height: 32px;  
-    border-radius: 50%;  
-    object-fit: cover;  
-    border: 1px solid var(--border);  
-  }  
-  /* Main content */  
-  main {  
-    flex: 1;  
-    overflow-y: auto;  
-    padding: 1rem;  
-  }  
-  .container {  
-    max-width: 600px;  
-    margin: auto;  
-  }  
-  /* Text selection: ONLY title & description */  
-  .title, .description {  
-    user-select: text;  
-    -webkit-user-select: text;  
-  }  
-  /* Search Overlay */  
-  .search-overlay {  
-    position: fixed;  
-    top: 0; left: 0;  
-    width: 100%; height: 100%;  
-    background: var(--overlay-bg);  
-    backdrop-filter: blur(8px);  
-    display: flex;  
-    flex-direction: column;  
-    padding: 1.5rem 1rem;  
-    transform: translateY(-100%);  
-    transition: transform 0.3s ease;  
-    z-index: 2000;  
-  }  
-  .search-overlay.show {  
-    transform: translateY(0);  
-  }  
-  .search-input {  
-    width: 100%;  
-    padding: 0.75rem 1rem;  
-    font-size: 1rem;  
-    border: 1px solid var(--border);  
-    border-radius: 10px;  
-    background: var(--input-bg);  
-    color: var(--fg);  
-    outline: none;  
-  }  
-  .close-btn {  
-    margin-top: 1rem;  
-    background: none;  
-    border: none;  
-    color: #007aff;  
-    font-weight: 600;  
-    font-size: 1rem;  
-    align-self: flex-end;  
-    cursor: pointer;  
-    user-select: none;  
-  }  
-</style>  
-</head>  
-<body>  
-  
-<header id="searchTrigger">  
-  <svg viewBox="0 0 24 24" aria-hidden="true">  
-    <path d="M11 4a7 7 0 1 1 0 14 7 7 0 0 1 0-14zm0 0l6 6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>  
-  </svg>  
-  <span class="search-text">Search</span>  
-  <div class="app-name" aria-label="App name CyberChat">  
-    <span class="cyber">CYBER</span><span class="chat">CHAT</span>  
-  </div>  
-</header>  
-  
-<main>  
-  <div class="container">  
-    <h1 class="title">Welcome to CyberChat</h1>  
-    <p class="description">This is your slick native-style app. Try searching up top.</p>  
-    <p>Text here is not selectable because we keep it clean.</p>  
-  </div>  
-</main>  
-  
-<footer>  
-  <button class="icon-btn" aria-label="Home">  
-    <svg viewBox="0 0 24 24" aria-hidden="true">  
-      <path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1V9.5z" />  
-    </svg>  
-  </button>  
-  
-  <button class="upload-btn" aria-label="Upload">  
-    <svg viewBox="0 0 24 24" aria-hidden="true">  
-      <path d="M12 5v14M5 12h14" />  
-    </svg>  
-  </button>  
-  
-  <img src="https://i.imgur.com/3GvwNBf.png" alt="Profile" class="profile-pic" />  
-</footer>  
-  
-<!-- Search Overlay -->  
-<div class="search-overlay" id="searchOverlay" role="dialog" aria-modal="true" aria-labelledby="searchLabel">  
-  <input id="searchInput" type="text" placeholder="Search..." class="search-input" aria-label="Search input" />  
-  <button class="close-btn" id="closeSearch" aria-label="Close search">Cancel</button>  
-</div>  
-  
-<script>  
-  const trigger = document.getElementById('searchTrigger');  
-  const overlay = document.getElementById('searchOverlay');  
-  const closeBtn = document.getElementById('closeSearch');  
-  const searchInput = document.getElementById('searchInput');  
-  
-  trigger.addEventListener('click', () => {  
-    overlay.classList.add('show');  
-    setTimeout(() => searchInput.focus(), 300);  
-  });  
-  
-  closeBtn.addEventListener('click', () => {  
-    overlay.classList.remove('show');  
-    searchInput.value = '';  
-  });  
-</script>  
-  
-</body>  
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>CyberChat Native App</title>
+<style>
+  :root {
+    --bg: #fff;
+    --fg: #000;
+    --border: #eee;
+    --subtle: #555;
+    --overlay-bg: rgba(255, 255, 255, 0.95);
+    --upload-bg: #000;
+    --input-bg: #fff;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #121212;
+      --fg: #fff;
+      --border: #333;
+      --subtle: #aaa;
+      --overlay-bg: rgba(18, 18, 18, 0.95);
+      --upload-bg: #fff;
+      --input-bg: #1e1e1e;
+    }
+  }
+  /* Reset & base */
+  * {
+    margin: 0; padding: 0; box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+  }
+  html, body {
+    height: 100%;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--fg);
+    overflow-x: hidden;
+  }
+  body {
+    display: flex;
+    flex-direction: column;
+  }
+  /* Header */
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem;
+    justify-content: flex-start;
+  }
+  header svg {
+    width: 24px; height: 24px;
+    fill: var(--subtle);
+    cursor: pointer;
+  }
+  .search-text {
+    font-size: 1rem;
+    color: var(--subtle);
+    cursor: pointer;
+  }
+  .app-name {
+    flex-grow: 1;
+    text-align: center;
+    font-weight: 900;
+    font-size: 1.3rem;
+    user-select: text; /* app name can be selected */
+    cursor: default;
+  }
+  .cyber {
+    color: #ff0080; /* pink */
+  }
+  .chat {
+    color: #007aff; /* blue */
+  }
+  /* Footer */
+  footer {
+    position: sticky;
+    bottom: 0;
+    z-index: 1000;
+    background: var(--bg);
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 2rem;
+  }
+  .icon-btn, .upload-btn {
+    background: none;
+    border: none;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+  .icon-btn svg {
+    width: 28px; height: 28px;
+    fill: var(--subtle);
+  }
+  .upload-btn {
+    background: var(--upload-bg);
+    width: 48px; height: 48px;
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform: translateY(-8px);
+  }
+  .upload-btn svg {
+    width: 24px; height: 24px;
+    stroke: var(--bg);
+    stroke-width: 2;
+    fill: none;
+  }
+  .profile-pic {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid var(--border);
+  }
+  /* Main content */
+  main {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem;
+  }
+  .container {
+    max-width: 600px;
+    margin: auto;
+  }
+  /* Text selection: ONLY title & description */
+  .title, .description {
+    user-select: text;
+    -webkit-user-select: text;
+  }
+  /* Lists styling */
+  #profilesList ul, #searchResults ul {
+    list-style: none;
+    padding: 0;
+  }
+  #profilesList li, #searchResults li {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+  }
+  #profilesList li:hover, #searchResults li:hover {
+    background: var(--border);
+  }
+  /* Search Overlay */
+  .search-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: var(--overlay-bg);
+    backdrop-filter: blur(8px);
+    display: flex;
+    flex-direction: column;
+    padding: 1.5rem 1rem;
+    transform: translateY(-100%);
+    transition: transform 0.3s ease;
+    z-index: 2000;
+  }
+  .search-overlay.show {
+    transform: translateY(0);
+  }
+  .search-input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    font-size: 1rem;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--input-bg);
+    color: var(--fg);
+    outline: none;
+  }
+  .close-btn {
+    margin-top: 1rem;
+    background: none;
+    border: none;
+    color: #007aff;
+    font-weight: 600;
+    font-size: 1rem;
+    align-self: flex-end;
+    cursor: pointer;
+    user-select: none;
+  }
+</style>
+</head>
+<body>
+
+<header id="searchTrigger" tabindex="0" role="button" aria-label="Open search">
+  <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+    <path d="M11 4a7 7 0 1 1 0 14 7 7 0 0 1 0-14zm0 0l6 6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  </svg>
+  <span class="search-text">Search</span>
+  <div class="app-name" aria-label="App name CyberChat">
+    <span class="cyber">CYBER</span><span class="chat">CHAT</span>
+  </div>
+</header>
+
+<main>
+  <div class="container">
+    <!-- Default user profiles -->
+    <div id="profilesList">
+      <h2>User Profiles</h2>
+      <ul>
+        <li>Frank - @frank</li>
+        <li>Jane - @jane_doe</li>
+        <li>Alex - @alex123</li>
+      </ul>
+    </div>
+
+    <!-- Search results, hidden by default -->
+    <div id="searchResults" style="display:none;">
+      <h2>Search Results</h2>
+      <ul id="resultsList">
+        <!-- Search results appear here -->
+      </ul>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <button class="icon-btn" aria-label="Home" tabindex="0">
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1V9.5z" />
+    </svg>
+  </button>
+
+  <button class="upload-btn" aria-label="Upload" tabindex="0">
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      <path d="M12 5v14M5 12h14" />
+    </svg>
+  </button>
+
+  <img src="https://i.imgur.com/3GvwNBf.png" alt="Profile" class="profile-pic" />
+</footer>
+
+<!-- Search Overlay -->
+<div class="search-overlay" id="searchOverlay" role="dialog" aria-modal="true" aria-labelledby="searchLabel" aria-hidden="true">
+  <input id="searchInput" type="text" placeholder="Search..." class="search-input" aria-label="Search input" />
+  <button class="close-btn" id="closeSearch" aria-label="Close search">Cancel</button>
+</div>
+
+<script>
+  const trigger = document.getElementById('searchTrigger');
+  const overlay = document.getElementById('searchOverlay');
+  const closeBtn = document.getElementById('closeSearch');
+  const searchInput = document.getElementById('searchInput');
+  const profilesList = document.getElementById('profilesList');
+  const searchResults = document.getElementById('searchResults');
+  const resultsList = document.getElementById('resultsList');
+
+  // Sample user data (you can replace with dynamic later)
+  const users = [
+    { name: 'Frank', username: 'frank' },
+    { name: 'Jane', username: 'jane_doe' },
+    { name: 'Alex', username: 'alex123' },
+    { name: 'Chris', username: 'chris_rock' },
+    { name: 'Samantha', username: 'sam_s' }
+  ];
+
+  function openSearch() {
+    overlay.classList.add('show');
+    overlay.setAttribute('aria-hidden', 'false');
+    searchInput.focus();
+    profilesList.style.display = 'none';
+    searchResults.style.display = 'block';
+    resultsList.innerHTML = ''; // Clear previous results
+  }
+
+  function closeSearch() {
+    overlay.classList.remove('show');
+    overlay.setAttribute('aria-hidden', 'true');
+    profilesList.style.display = 'block';
+    searchResults.style.display = 'none';
+    searchInput.value = '';
+  }
+
+  function searchUsers(query) {
+    const lowerQuery = query.toLowerCase();
+    const filtered = users.filter(user =>
+      user.name.toLowerCase().includes(lowerQuery) || user.username.toLowerCase().includes(lowerQuery)
+    );
+    resultsList.innerHTML = filtered.length
+      ? filtered.map(u => `<li tabindex="0">${u.name} - @${u.username}</li>`).join('')
+      : `<li>No results found</li>`;
+  }
+
+  trigger.addEventListener('click', openSearch);
+  trigger.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      openSearch();
+    }
+  });
+
+  closeBtn.addEventListener('click', closeSearch);
+
+  // Close on Escape key anywhere in overlay
+  overlay.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      closeSearch();
+      trigger.focus();
+    }
+  });
+
+  // Live search on input
+  searchInput.addEventListener('input', e => {
+    const val = e.target.value.trim();
+    if (val.length > 0) {
+      searchUsers(val);
+    } else {
+      resultsList.innerHTML = '';
+    }
+  });
+
+  // Optional: handle click on search result items (e.g. navigate or alert)
+  resultsList.addEventListener('click', e => {
+    if (e.target.tagName === 'LI' && e.target.textContent !== 'No results found') {
+      alert(`You selected: ${e.target.textContent}`);
+      closeSearch();
+    }
+  });
+
+  // Keyboard navigation inside results list
+  resultsList.addEventListener('keydown', e => {
+    const focusableItems = Array.from(resultsList.querySelectorAll('li'));
+    if (!focusableItems.length) return;
+    let index = focusableItems.indexOf(document.activeElement);
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      let nextIndex = (index + 1) % focusableItems.length;
+      focusableItems[nextIndex].focus();
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      let prevIndex = (index - 1 + focusableItems.length) % focusableItems.length;
+      focusableItems[prevIndex].focus();
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      document.activeElement.click();
+    }
+  });
+</script>
+</body>
 </html>
