@@ -2,400 +2,189 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-<title>iPhone Style Tabs with Firebase Content</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Frank's Post Feed</title>
 <style>
-  /* Reset + basics */
   body {
-    margin: 0; 
-    background: #f0f0f5;
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-    color: #111;
-    -webkit-font-smoothing: antialiased;
+    background: #121212;
+    color: #eee;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+      Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+    margin: 20px;
   }
-  /* Top tab container */
-  .tab-bar {
-    display: flex;
-    justify-content: space-around;
-    background: linear-gradient(145deg, #f8f8f8, #e0e0e0);
-    padding: 12px 0;
-    box-shadow:
-      0 5px 10px rgba(0,0,0,0.05),
-      inset 0 -1px 0 #ccc;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    border-radius: 0 0 18px 18px;
-    margin-bottom: 10px;
+  .post {
+    background: rgba(255 255 255 / 0.05);
+    border-radius: 12px;
+    padding: 15px;
+    margin-bottom: 20px;
+    max-width: 500px;
+    box-shadow: 0 0 10px rgba(0 0 0 / 0.8);
   }
-  /* Tab buttons with iOS 3D style */
-  .tab-bar button {
-    background: linear-gradient(145deg, #ffffff, #d7d7d7);
-    border: none;
-    border-radius: 15px;
-    box-shadow:
-      5px 5px 8px #bebebe,
-      -5px -5px 8px #ffffff;
-    padding: 8px 18px;
-    font-weight: 600;
-    font-size: 16px;
-    color: #444;
-    cursor: pointer;
-    transition: all 0.25s ease;
-    flex: 1;
-    margin: 0 6px;
-    max-width: 120px;
-  }
-  .tab-bar button.active {
-    background: linear-gradient(145deg, #d6d6f0, #a1a1f7);
-    color: white;
-    box-shadow:
-      inset 5px 5px 8px #6b6bcd,
-      inset -5px -5px 8px #b1b1ff;
-    transform: translateY(-3px);
-  }
-  .tab-bar button:hover:not(.active) {
-    box-shadow:
-      5px 5px 8px #bfbfbf,
-      -5px -5px 8px #f7f7f7;
-  }
-
-  /* Content container */
-  #content > section {
-    display: none;
-    padding: 0 12px 30px;
-    max-width: 600px;
-    margin: auto;
-  }
-  #content > section.active {
-    display: block;
-  }
-
-  /* Instagram style posts */
-  .insta-post {
-    background: white;
-    border-radius: 16px;
-    box-shadow: 0 3px 10px rgb(0 0 0 / 0.1);
-    margin-bottom: 1.5rem;
-    overflow: hidden;
-  }
-  .insta-post img {
-    width: 100%;
-    display: block;
-    object-fit: cover;
-  }
-  .insta-caption {
-    padding: 12px 16px;
-    font-weight: 600;
-    font-size: 1rem;
-    color: #111;
-  }
-  .insta-views {
-    padding: 0 16px 12px;
-    color: #999;
-    font-size: 0.875rem;
-  }
-
-  /* Community item */
-  .community-item {
-    background: white;
-    border-radius: 14px;
-    padding: 12px 16px;
-    margin-bottom: 12px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.07);
-  }
-  .community-item h3 {
-    margin: 0 0 6px 0;
-    font-weight: 700;
-  }
-  .community-item p {
-    margin: 0;
-    color: #444;
-  }
-
-  /* Following list */
-  .follow-list {
-    max-width: 600px;
-    margin: auto;
-  }
-  .follow-item {
+  .post-header {
     display: flex;
     align-items: center;
-    background: white;
-    border-radius: 14px;
-    padding: 10px 16px;
-    margin-bottom: 12px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.07);
+    margin-bottom: 10px;
   }
-  .follow-item img {
-    width: 48px;
-    height: 48px;
+  .avatar {
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
     object-fit: cover;
-    margin-right: 14px;
+    margin-right: 10px;
   }
-  .follow-info {
-    flex-grow: 1;
-  }
-  .follow-info .username {
+  .username {
     font-weight: 700;
-    font-size: 1.1rem;
-    color: #111;
+    font-size: 1.1em;
   }
-  .follow-info .handle {
-    font-size: 0.9rem;
-    color: #777;
+  .post-title {
+    font-weight: 700;
+    font-size: 1.3em;
+    margin-bottom: 8px;
   }
-  .unfollow-btn {
-    background: #ff3b30;
-    border: none;
-    color: white;
-    padding: 6px 14px;
-    border-radius: 14px;
+  .post-image {
+    width: 100%;
+    border-radius: 12px;
+    margin-bottom: 10px;
+    object-fit: cover;
+  }
+  .description {
+    font-size: 0.9em;
+    line-height: 1.3;
+    margin-bottom: 8px;
+    white-space: pre-wrap;
+  }
+  .read-more {
+    color: #5eaaff;
     cursor: pointer;
-    font-weight: 700;
-    transition: background 0.3s ease;
-  }
-  .unfollow-btn:hover {
-    background: #e32b20;
-  }
-
-  /* Loading text style */
-  .loading {
-    text-align: center;
-    padding: 40px 0;
+    user-select: none;
     font-weight: 600;
-    color: #666;
+    font-size: 0.9em;
+  }
+  .actions {
+    display: flex;
+    gap: 18px;
+  }
+  .action svg {
+    cursor: pointer;
+    transition: fill 0.3s;
+  }
+  .action svg:hover {
+    fill: #5eaaff;
   }
 </style>
 </head>
 <body>
 
-<!-- Top tab buttons -->
-<div class="tab-bar">
-  <button id="tab-home" class="active">Home</button>
-  <button id="tab-community">Community</button>
-  <button id="tab-following">Following</button>
-</div>
+<!-- Hidden SVG sprites -->
+<svg style="display:none;">
+  <symbol id="icon-like" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M2 21h4V9H2v12zM23 10c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 2 7.59 8.59C7.22 8.95 7 9.45 7 10v9c0 1.1.9 2 2 2h7c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-1z"/>
+  </symbol>
+  <symbol id="icon-dislike" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M22 3h-4v12h4V3zM1 14c0 1.1.9 2 2 2h6.31l-.95 4.57-.03.32c0 .41.17.79.44 1.06L9.83 22l6.59-6.59c.36-.36.59-.86.59-1.41V5c0-1.1-.9-2-2-2H7c-.83 0-1.54.5-1.84 1.22L2.14 9.27c-.09.23-.14.47-.14.73v1z"/>
+  </symbol>
+  <symbol id="icon-share" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.02-4.11c.53.5 1.23.81 2.01.81 1.66 0 3-1.34 3-3s-1.34-3-3-3S16 4.34 16 6c0 .24.04.47.09.7L9.07 10.8C8.53 10.3 7.83 10 7.05 10 5.39 10 4.05 11.34 4.05 13s1.34 3 3 3c.78 0 1.48-.3 2.01-.8l7.13 4.18c-.05.21-.09.43-.09.66 0 1.66 1.34 3 3 3s3-1.34 3-3-1.34-3-3-3z"/>
+  </symbol>
+  <symbol id="icon-save" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M17 3H7c-1.1 0-2 .9-2 2v16l7-3 7 3V5c0-1.1-.9-2-2-2z"/>
+  </symbol>
+</svg>
 
-<!-- Content Sections -->
-<div id="content">
-  <section id="home" class="active"></section>
-  <section id="community"></section>
-  <section id="following"></section>
-</div>
+<div id="posts-container"></div>
 
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-  import { getDatabase, ref, get, child, onValue, update } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
-  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
-
-  // Your Firebase config
-  const firebaseConfig = {
-    apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
-    authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
-    databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
-    projectId: "itzhoyoo-f9f7e",
-    storageBucket: "itzhoyoo-f9f7e.firebasestorage.app",
-    messagingSenderId: "1094792075584",
-    appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
-    measurementId: "G-LLT6F9WRKH"
-  };
-
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-  const db = getDatabase(app);
-  const auth = getAuth();
-
-  // UI Elements
-  const tabHomeBtn = document.getElementById('tab-home');
-  const tabCommunityBtn = document.getElementById('tab-community');
-  const tabFollowingBtn = document.getElementById('tab-following');
-
-  const homePage = document.getElementById('home');
-  const communityPage = document.getElementById('community');
-  const followingPage = document.getElementById('following');
-
-  // Current user uid (set after auth)
-  let currentUserUid = null;
-
-  // Sanitizer to prevent injection
-  function sanitize(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-  }
-
-  // Tab switching handler
-  function setActiveTab(tab) {
-    // Buttons active states
-    tabHomeBtn.classList.toggle('active', tab === 'home');
-    tabCommunityBtn.classList.toggle('active', tab === 'community');
-    tabFollowingBtn.classList.toggle('active', tab === 'following');
-    // Sections visible states
-    homePage.classList.toggle('active', tab === 'home');
-    communityPage.classList.toggle('active', tab === 'community');
-    followingPage.classList.toggle('active', tab === 'following');
-
-    // Load content as needed
-    if(tab === 'home') loadHomePosts();
-    else if(tab === 'community') loadCommunityItems();
-    else if(tab === 'following') loadFollowing();
-  }
-
-  // Load Home posts - Instagram style
-  async function loadHomePosts() {
-    homePage.innerHTML = '<p class="loading">Loading posts...</p>';
-    try {
-      const snapshot = await get(ref(db, 'post'));
-      if (!snapshot.exists()) {
-        homePage.innerHTML = '<p class="loading">No posts yet.</p>';
-        return;
-      }
-      const posts = snapshot.val();
-      let html = '';
-      for (const id in posts) {
-        const post = posts[id];
-        const title = sanitize(post.title || '');
-        const imageUrl = post.imageUrl || '';
-        const views = post.views || 0;
-        html += `
-          <div class="insta-post">
-            ${imageUrl ? `<img src="${imageUrl}" alt="${title}">` : ''}
-            <div class="insta-caption">${title}</div>
-            <div class="insta-views">${views} views</div>
-          </div>`;
-      }
-      homePage.innerHTML = html;
-    } catch (e) {
-      console.error(e);
-      homePage.innerHTML = '<p class="loading">Error loading posts.</p>';
+<script>
+  // Dummy data for demo; replace with your actual data fetch from Firebase
+  const posts = [
+    {
+      username: "frank",
+      avatar: "https://i.imgur.com/6VBx3io.png",
+      title: "Check this out!",
+      description: "This is a sample post description that's definitely longer than thirty characters to trigger the read-more toggle. See how it works?",
+      image: "https://i.imgur.com/8Km9tLL.jpg"
+    },
+    {
+      username: "zoe",
+      avatar: "https://i.imgur.com/abcd1234.png",
+      title: "Short Description",
+      description: "Short desc.",
+      image: "https://i.imgur.com/xYz7890.jpg"
     }
-  }
+  ];
 
-  // Load Community polls + quizzes combined
-  async function loadCommunityItems() {
-    communityPage.innerHTML = '<p class="loading">Loading community content...</p>';
-    try {
-      const [pollsSnap, quizSnap] = await Promise.all([
-        get(ref(db, 'polls')),
-        get(ref(db, 'quiz'))
-      ]);
-      let html = '';
-      if (pollsSnap.exists()) {
-        const polls = pollsSnap.val();
-        for (const id in polls) {
-          const poll = polls[id];
-          html += `
-            <div class="community-item">
-              <h3>Poll: ${sanitize(poll.question || 'Untitled')}</h3>
-              <p>${sanitize(poll.description || '')}</p>
-            </div>`;
-        }
-      }
-      if (quizSnap.exists()) {
-        const quizzes = quizSnap.val();
-        for (const id in quizzes) {
-          const quiz = quizzes[id];
-          html += `
-            <div class="community-item">
-              <h3>Quiz: ${sanitize(quiz.title || 'Untitled')}</h3>
-              <p>${sanitize(quiz.description || '')}</p>
-            </div>`;
-        }
-      }
-      communityPage.innerHTML = html || '<p class="loading">No community content found.</p>';
-    } catch (e) {
-      console.error(e);
-      communityPage.innerHTML = '<p class="loading">Error loading community content.</p>';
-    }
-  }
+  function createPostHTML(post) {
+    const { username, avatar, title, description, image } = post;
 
-  // Load Following users list
-  async function loadFollowing() {
-    followingPage.innerHTML = '<p class="loading">Loading following list...</p>';
-    if (!currentUserUid) {
-      followingPage.innerHTML = '<p class="loading">Please log in to see your following list.</p>';
-      return;
-    }
-    try {
-      // Get the list of following UIDs
-      const followingsSnap = await get(ref(db, `following/${currentUserUid}`));
-      if (!followingsSnap.exists()) {
-        followingPage.innerHTML = '<p class="loading">You are not following anyone.</p>';
-        return;
-      }
-      const followings = followingsSnap.val();
-      let html = '<div class="follow-list">';
-      // For each UID in following, get their profile
-      const userPromises = Object.keys(followings).map(async (uid) => {
-        const userSnap = await get(ref(db, `users/${uid}`));
-        if (!userSnap.exists()) return '';
-        const user = userSnap.val();
-        const profilePic = user.profilePic || 'https://via.placeholder.com/48?text=User';
-        const username = sanitize(user.username || 'Unknown');
-        const handle = sanitize(user.handle || '@unknown');
-        // Return a follow item block with unfollow button
-        return `
-          <div class="follow-item" data-uid="${uid}">
-            <img src="${profilePic}" alt="${username}">
-            <div class="follow-info">
-              <div class="username">${username}</div>
-              <div class="handle">${handle}</div>
-            </div>
-            <button class="unfollow-btn">Unfollow</button>
-          </div>`;
-      });
-      const userHtmlArr = await Promise.all(userPromises);
-      html += userHtmlArr.join('');
-      html += '</div>';
-      followingPage.innerHTML = html;
-
-      // Add click handlers to unfollow buttons
-      const unfollowButtons = followingPage.querySelectorAll('.unfollow-btn');
-      unfollowButtons.forEach(btn => {
-        btn.addEventListener('click', async () => {
-          const parent = btn.closest('.follow-item');
-          const uidToUnfollow = parent.getAttribute('data-uid');
-          if (!uidToUnfollow) return;
-          // Remove from following list in DB
-          try {
-            await update(ref(db, `following/${currentUserUid}/${uidToUnfollow}`), null);
-            // Optimistically remove from UI
-            parent.remove();
-          } catch (e) {
-            alert('Failed to unfollow user. Try again.');
-            console.error(e);
-          }
-        });
-      });
-
-    } catch (e) {
-      console.error(e);
-      followingPage.innerHTML = '<p class="loading">Error loading following list.</p>';
-    }
-  }
-
-  // Listen for auth state changes
-  onAuthStateChanged(auth, user => {
-    if (user) {
-      currentUserUid = user.uid;
+    // Description logic: truncate >30 chars with read more
+    let descHTML;
+    if (description.length > 30) {
+      const shortText = description.slice(0, 30);
+      descHTML = `
+        <div class="description">
+          <span class="short-text">${shortText}...</span>
+          <span class="full-text" style="display:none;">${description}</span>
+          <span class="read-more">Read more</span>
+        </div>`;
     } else {
-      currentUserUid = null;
+      descHTML = `<div class="description">${description}</div>`;
     }
-    // Reload current tab content
-    const activeTab = document.querySelector('.tab-bar button.active').id.replace('tab-', '');
-    setActiveTab(activeTab);
+
+    return `
+      <div class="post">
+        <div class="post-header">
+          <img src="${avatar}" alt="${username}'s avatar" class="avatar" />
+          <div class="username">${username}</div>
+        </div>
+        <div class="post-title">${title}</div>
+        <img src="${image}" alt="Post image" class="post-image" />
+        ${descHTML}
+        <div class="actions">
+          <span class="action" title="Like">
+            <svg width="22" height="22" fill="#fff">
+              <use xlink:href="#icon-like"></use>
+            </svg>
+          </span>
+          <span class="action" title="Dislike">
+            <svg width="22" height="22" fill="#fff">
+              <use xlink:href="#icon-dislike"></use>
+            </svg>
+          </span>
+          <span class="action" title="Share">
+            <svg width="22" height="22" fill="#fff">
+              <use xlink:href="#icon-share"></use>
+            </svg>
+          </span>
+          <span class="action" title="Save">
+            <svg width="22" height="22" fill="#fff">
+              <use xlink:href="#icon-save"></use>
+            </svg>
+          </span>
+        </div>
+      </div>
+    `;
+  }
+
+  const container = document.getElementById("posts-container");
+  container.innerHTML = posts.map(createPostHTML).join("");
+
+  // Add read-more toggle logic
+  container.addEventListener("click", (e) => {
+    if (e.target.classList.contains("read-more")) {
+      const descDiv = e.target.closest(".description");
+      const shortText = descDiv.querySelector(".short-text");
+      const fullText = descDiv.querySelector(".full-text");
+
+      if (fullText.style.display === "none") {
+        fullText.style.display = "inline";
+        shortText.style.display = "none";
+        e.target.textContent = "Show less";
+      } else {
+        fullText.style.display = "none";
+        shortText.style.display = "inline";
+        e.target.textContent = "Read more";
+      }
+    }
   });
-
-  // Tab buttons click handlers
-  tabHomeBtn.addEventListener('click', () => setActiveTab('home'));
-  tabCommunityBtn.addEventListener('click', () => setActiveTab('community'));
-  tabFollowingBtn.addEventListener('click', () => setActiveTab('following'));
-
-  // Initial load
-  setActiveTab('home');
 </script>
-
 </body>
 </html>
