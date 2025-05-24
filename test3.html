@@ -258,7 +258,6 @@
     measurementId: "G-LLT6F9WRKH"
   };
 
-  // Initialize Firebase
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
   const auth = getAuth(app);
@@ -270,26 +269,57 @@
   const viewsCountEl = document.getElementById('views-count');
   const monetizeStatus = document.getElementById('monetize-status');
   const usernameEl = document.getElementById('username');
+  const monetizeBtn = document.getElementById('monetize-btn');
+  const profilePicEl = document.getElementById('profile-pic');
 
-  // Sample thresholds
+  // Thresholds
   const FOLLOWERS_TARGET = 100;
   const VIEWS_TARGET = 1000;
 
-  // Mock data fetch function (replace with real Firebase calls)
-  async function fetchUserStats(uid) {
-    // Example: fetch from Firebase DB at `/users/${uid}/stats`
-    // For demo, return dummy data that changes randomly
-    return {
-      followers: Math.floor(Math.random() * 120), // sometimes over target
-      views: Math.floor(Math.random() * 1500),
-      monetizeStatus: 'eligible', // 'pending', 'not eligible', etc.
-      username: 'frank_legend'
-    };
+  // Load user profile (username + profile pic) from Firebase DB or Auth
+  async function loadUserProfile(uid) {
+    // Try your /users/{uid} node for username & profile pic
+    const userRef = ref(db, `users/${uid}`);
+    try {
+      const snapshot = await get(userRef);
+      if (snapshot.exists()) {
+        const userData = snapshot.val();
+        usernameEl.textContent = userData.username || 'User';
+        if (userData.profilePic) {
+          profilePicEl.src = userData.profilePic;
+        } else {
+          profilePicEl.src = 'https://i.pravatar.cc/150?img=13'; // fallback avatar
+        }
+        return userData;
+      }
+    } catch(e) {
+      console.error('Error loading user profile:', e);
+    }
+
+    // Fallback to Firebase Auth displayName if set
+    const currentUser = auth.currentUser;
+    if (currentUser) {
+      usernameEl.textContent = currentUser.displayName || 'User';
+      profilePicEl.src = currentUser.photoURL || 'https://i.pravatar.cc/150?img=13';
+    }
   }
 
-  // Update progress bars & UI
+  // Load monetization stats from Firebase and update progress bars
+  async function loadUserStats(uid) {
+    const statsRef = ref(db, `users/${uid}/stats`);
+    try {
+      const snapshot = await get(statsRef);
+      if (snapshot.exists()) {
+        return snapshot.val();
+      }
+    } catch(e) {
+      console.error('Error loading user stats:', e);
+    }
+    // fallback dummy if no data
+    return { followers: 0, views: 0, monetizeStatus: 'not eligible' };
+  }
+
   function updateProgressBars(stats) {
-    // Clamp values to max target for progress bar width
     const followersPercent = Math.min(stats.followers / FOLLOWERS_TARGET, 1) * 100;
     const viewsPercent = Math.min(stats.views / VIEWS_TARGET, 1) * 100;
 
@@ -300,147 +330,52 @@
     viewsCountEl.textContent = stats.views;
 
     let statusText = '';
-    switch (stats.monetizeStatus) {
-      case 'eligible':
-        statusText = 'You are eligible for monetization! Keep it up!';
-        break;
-      case 'pending':
-        statusText = 'Monetization application pending...';
-        break;
-      default:
-        statusText = 'Keep growing to unlock monetization.';
+    const canMonetize = stats.followers >= FOLLOWERS_TARGET && stats.views >= VIEWS_TARGET;
+
+    if (canMonetize) {
+      statusText = 'You are eligible for monetization! Hit that button.';
+      monetizeBtn.disabled = false;
+      monetizeBtn.textContent = 'Monetize Now';
+      monetizeBtn.classList.remove('disabled');
+    } else {
+      monetizeBtn.disabled = true;
+      monetizeBtn.textContent = 'Monetize Now';
+      monetizeBtn.classList.add('disabled');
+
+      const followersPct = Math.floor((stats.followers / FOLLOWERS_TARGET) * 100);
+      const viewsPct = Math.floor((stats.views / VIEWS_TARGET) * 100);
+
+      statusText = `Keep going! Followers: ${followersPct}%, Views: ${viewsPct}% towards monetization.`;
     }
+
     monetizeStatus.textContent = statusText;
   }
 
-  // Chart.js setup for analytics
-  const ctx = document.getElementById('performanceChart').getContext('2d');
-  const performanceChart = new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels: [], // dynamic dates
-      datasets: [
-        {
-          label: 'Views',
-          data: [],
-          borderColor: '#00ffcc',
-          backgroundColor: 'rgba(0,255,204,0.3)',
-          tension: 0.3,
-          fill: true,
-          pointRadius: 3,
-          pointHoverRadius: 6,
-          yAxisID: 'y',
-        },
-        {
-          label: 'Earnings ($)',
-          data: [],
-          borderColor: '#006655',
-          backgroundColor: 'rgba(0,102,85,0.3)',
-          tension: 0.3,
-          fill: true,
-          pointRadius: 3,
-          pointHoverRadius: 6,
-          yAxisID: 'y1',
-        }
-      ]
-    },
-    options: {
-      responsive: true,
-      interaction: {
-        mode: 'index',
-        intersect: false,
-      },
-      stacked: false,
-      scales: {
-        y: {
-          type: 'linear',
-          position: 'left',
-          ticks: { color: '#00ffcc' },
-          title: {
-            display: true,
-            text: 'Views',
-            color: '#00ffcc',
-            font: { weight: 'bold' }
-          }
-        },
-        y1: {
-          type: 'linear',
-          position: 'right',
-          ticks: { color: '#006655' },
-          grid: { drawOnChartArea: false },
-          title: {
-            display: true,
-            text: 'Earnings ($)',
-            color: '#006655',
-            font: { weight: 'bold' }
-          }
-        },
-        x: {
-          ticks: { color: '#eee' },
-          grid: { color: '#00ffcc22' }
-        }
-      },
-      plugins: {
-        legend: {
-          labels: { color: '#00ffcc' }
-        },
-        tooltip: {
-          mode: 'nearest',
-          intersect: false,
-          backgroundColor: '#00ffccdd',
-          titleColor: '#002222',
-          bodyColor: '#002222'
-        }
-      }
-    }
+  // Handle monetize button click
+  monetizeBtn.addEventListener('click', () => {
+    alert('Monetization process started! (Implement your flow here)');
+    // Here you’d call your backend or Firebase function to apply
   });
 
-  // Generate dummy analytics data for the last 14 days
-  function generateAnalyticsData() {
-    const labels = [];
-    const views = [];
-    const earnings = [];
-    const now = new Date();
-
-    for (let i = 13; i >= 0; i--) {
-      const d = new Date(now);
-      d.setDate(now.getDate() - i);
-      labels.push(d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }));
-
-      // Dummy views: 500 to 1200 random range
-      views.push(Math.floor(500 + Math.random() * 700));
-
-      // Dummy earnings: based on views with fake CPM, $0.5 to $1.5 per 1000 views
-      const cpm = 0.5 + Math.random();
-      earnings.push(parseFloat(((views[views.length - 1] / 1000) * cpm).toFixed(2)));
-    }
-
-    return { labels, views, earnings };
-  }
-
-  // Load user stats & update UI on auth state
+  // Initialize on auth state
   onAuthStateChanged(auth, async user => {
     if (user) {
-      // fetch user stats from Firebase (mocked here)
-      const stats = await fetchUserStats(user.uid);
-
+      await loadUserProfile(user.uid);
+      const stats = await loadUserStats(user.uid);
       updateProgressBars(stats);
-      usernameEl.textContent = stats.username || 'User';
-
-      // Setup analytics graph data
-      const analyticsData = generateAnalyticsData();
-      performanceChart.data.labels = analyticsData.labels;
-      performanceChart.data.datasets[0].data = analyticsData.views;
-      performanceChart.data.datasets[1].data = analyticsData.earnings;
-      performanceChart.update();
-
+      // You can call your graph update function here if needed
     } else {
-      // Not logged in
-      monetizeStatus.textContent = 'Please log in to see your stats.';
       usernameEl.textContent = 'Guest';
+      profilePicEl.src = 'https://i.pravatar.cc/150?img=13';
+      followersCountEl.textContent = '0';
+      viewsCountEl.textContent = '0';
+      followersProgress.style.width = '0%';
+      viewsProgress.style.width = '0%';
+      monetizeStatus.textContent = 'Please log in to see your stats.';
+      monetizeBtn.disabled = true;
+      monetizeBtn.classList.add('disabled');
     }
   });
-
 </script>
 
 </body>
