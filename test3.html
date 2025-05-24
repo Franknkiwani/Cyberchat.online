@@ -245,7 +245,8 @@
     child,
     query,
     orderByChild,
-    limitToLast
+    limitToLast,
+    update
   } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
   import {
     getAuth,
@@ -253,169 +254,151 @@
     signOut
   } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
 
-  // Your Firebase config
+  // Firebase config
   const firebaseConfig = {
     apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
     authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
     databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
     projectId: "itzhoyoo-f9f7e",
-    storageBucket: "itzhoyoo-f9f7e.firebasestorage.app",
+    storageBucket: "itzhoyoo-f9f7e.appspot.com",
     messagingSenderId: "1094792075584",
     appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
     measurementId: "G-LLT6F9WRKH"
   };
 
+  // Initialize Firebase
   const app = initializeApp(firebaseConfig);
   const db = getDatabase(app);
-  const auth = getAuth(app);
+  const auth = getAuth();
 
-  // UI elements
-  const hamburger = document.getElementById("hamburger");
-  const sidebar = document.getElementById("sidebar");
-  const logoutBtn = document.getElementById("logout-btn");
+  // DOM elements
+  const hamburger = document.getElementById('hamburger');
+  const sidebar = document.getElementById('sidebar');
+  const logoutBtn = document.getElementById('logout-btn');
 
-  const userPhoto = document.getElementById("user-photo");
-  const usernameEl = document.getElementById("username");
-  const userhandleEl = document.getElementById("userhandle");
-  const followersCountEl = document.getElementById("followers-count");
+  const userPhoto = document.getElementById('user-photo');
+  const usernameEl = document.getElementById('username');
+  const userHandleEl = document.getElementById('userhandle');
+  const followersCountEl = document.getElementById('followers-count');
 
-  const totalViewsEl = document.getElementById("total-views");
-  const earningsChangeEl = document.getElementById("earnings-change");
-  const viewsChangeEl = document.getElementById("views-change");
-  const postsChangeEl = document.getElementById("posts-change");
-  const monetizeStatusEl = document.getElementById("monetize-status");
-  const monetizeBtn = document.getElementById("monetize-btn");
-  const viewsProgressEl = document.getElementById("views-progress");
-  const earningsProgressEl = document.getElementById("earnings-progress");
+  const totalViewsEl = document.getElementById('total-views');
+  const viewsChangeEl = document.getElementById('views-change');
+  const viewsProgress = document.getElementById('views-progress');
 
-  // Check if user is logged in
-  onAuthStateChanged(auth, (user) => {
-    if (user) {
-      // User is logged in
-      fetchUserData(user.uid);
-    } else {
-      // User is not logged in, redirect to login page
-      window.location.href = 'login.html';
-    }
-  });
+  const totalEarningsEl = document.getElementById('total-earnings');
+  const earningsChangeEl = document.getElementById('earnings-change');
+  const earningsProgress = document.getElementById('earnings-progress');
 
-  function fetchUserData(uid) {
-    const userRef = ref(db, 'users/' + uid);
-    const postsRef = ref(db, 'posts/');
-    const followersRef = ref(db, 'followers/' + uid);
+  const totalPostsEl = document.getElementById('total-posts');
+  const postsChangeEl = document.getElementById('posts-change');
 
-    onValue(userRef, (snapshot) => {
-      const userData = snapshot.val();
-      updateUserInfo(userData);
-    });
+  const monetizeStatusEl = document.getElementById('monetize-status');
+  const monetizeBtn = document.getElementById('monetize-btn');
 
-    // Get user's total posts
-    onValue(postsRef, (snapshot) => {
-      const posts = snapshot.val() || {};
-      const userPosts = Object.values(posts).filter(post => post.userId === uid);
-      const totalPosts = userPosts.length;
-      updatePostsStats(totalPosts);
-    });
-
-    // Get user's total followers and views
-    onValue(followersRef, (snapshot) => {
-      const followers = snapshot.val() || {};
-      const totalFollowers = Object.keys(followers).length;
-      updateFollowersStats(totalFollowers);
-    });
-  }
-
-  function updateUserInfo(data) {
-    usernameEl.innerText = data.username || 'No username';
-    userhandleEl.innerText = `@${data.handle}`;
-    userPhoto.src = data.photoURL || 'https://via.placeholder.com/64';
-    monetizeStatusEl.innerText = data.monitizeStatus === 'on' ? 'Eligible' : 'Not Eligible';
-
-    // Update monetization button
-    if (data.monitizeStatus === 'on') {
-      monetizeBtn.disabled = true;
-      monetizeBtn.innerText = 'Already Monetized';
-    } else {
-      monetizeBtn.disabled = false;
-      monetizeBtn.innerText = 'Monetize Now';
-    }
-
-    // Update stats from data
-    updateFollowersStats(data.followers || 0);
-    updateViewsStats(data.views || 0);
-    updateEarningsStats(data.earnings || 0);
-  }
-
-  function updateFollowersStats(totalFollowers) {
-    followersCountEl.innerText = totalFollowers;
-    updateProgressBar(totalFollowers, 100, followersProgressEl);
-  }
-
-  function updateViewsStats(totalViews) {
-    totalViewsEl.innerText = totalViews;
-    updateProgressBar(totalViews, 1000, viewsProgressEl);
-  }
-
-  function updateEarningsStats(totalEarnings) {
-    const earningsFormatted = `$${totalEarnings.toFixed(2)}`;
-    totalEarningsEl.innerText = earningsFormatted;
-    updateProgressBar(totalEarnings, 100, earningsProgressEl);
-  }
-
-  function updateProgressBar(current, goal, progressBarEl) {
-    const progressPercentage = Math.min((current / goal) * 100, 100);
-    progressBarEl.style.width = progressPercentage + '%';
-  }
-
-  // Real-time change in earnings, views, and posts
-  function updateStatsChange(statsType, currentStat, previousStat) {
-    const delta = currentStat - previousStat;
-    let sign = '';
-    let color = '';
-
-    if (delta > 0) {
-      sign = `+${delta}`;
-      color = 'positive';
-    } else if (delta < 0) {
-      sign = `${delta}`;
-      color = 'negative';
-    } else {
-      sign = '+0';
-      color = 'positive';
-    }
-
-    if (statsType === 'views') {
-      viewsChangeEl.innerText = `${sign} today`;
-      viewsChangeEl.classList.add(color);
-    } else if (statsType === 'earnings') {
-      earningsChangeEl.innerText = `${sign} today`;
-      earningsChangeEl.classList.add(color);
-    } else if (statsType === 'posts') {
-      postsChangeEl.innerText = `${sign} today`;
-      postsChangeEl.classList.add(color);
-    }
-  }
-
-  // Sidebar toggle
+  // Toggle sidebar
   hamburger.addEventListener('click', () => {
     sidebar.classList.toggle('open');
   });
 
-  // Logout functionality
-  logoutBtn.addEventListener('click', () => {
-    signOut(auth).then(() => {
-      window.location.href = 'login.html';
-    }).catch((error) => {
-      console.error("Logout error:", error);
-    });
+  // Logout handler
+  logoutBtn.addEventListener('click', async (e) => {
+    e.preventDefault();
+    try {
+      await signOut(auth);
+      window.location.href = '/login.html'; // or wherever your login page is
+    } catch (err) {
+      alert('Error logging out: ' + err.message);
+    }
   });
 
-  // Handle Monetize Now button
-  monetizeBtn.addEventListener('click', () => {
-    if (monetizeBtn.disabled) return;
+  // Utility: format numbers with commas
+  function formatNumber(num) {
+    return num.toLocaleString();
+  }
 
-    // Redirect to monetize page
-    window.location.href = 'monetize.html';
+  // Utility: format currency
+  function formatCurrency(num) {
+    return '$' + num.toFixed(2);
+  }
+
+  // Calculate and update progress bar width (0-100%)
+  function updateProgressBar(element, value, max) {
+    let percent = max ? Math.min((value / max) * 100, 100) : 0;
+    element.style.width = percent + '%';
+  }
+
+  // Load user data and stats from Firebase
+  onAuthStateChanged(auth, user => {
+    if (!user) {
+      // Not logged in? Redirect or show message
+      window.location.href = '/login.html';
+      return;
+    }
+
+    const uid = user.uid;
+    const userRef = ref(db, 'users/' + uid);
+    const postsRef = ref(db, 'post');
+    const monetizeRef = ref(db, 'monetize/' + uid);
+
+    // Load user profile info
+    onValue(userRef, snapshot => {
+      const data = snapshot.val() || {};
+      userPhoto.src = data.photoURL || 'https://via.placeholder.com/64';
+      usernameEl.textContent = data.username || 'No Username';
+      userHandleEl.textContent = data.username ? '@' + data.username.toLowerCase().replace(/\s/g, '') : '@user';
+      followersCountEl.textContent = formatNumber(data.followersCount || 0);
+    });
+
+    // Load user posts and aggregate stats
+    onValue(postsRef, snapshot => {
+      const posts = snapshot.val() || {};
+      let totalViews = 0;
+      let totalEarnings = 0;
+      let totalPosts = 0;
+
+      for (const postId in posts) {
+        const post = posts[postId];
+        if (post.authorId === uid) {
+          totalPosts++;
+          totalViews += post.views || 0;
+          totalEarnings += post.earnings || 0;
+        }
+      }
+
+      // Update UI values
+      totalViewsEl.textContent = formatNumber(totalViews);
+      totalEarningsEl.textContent = formatCurrency(totalEarnings);
+      totalPostsEl.textContent = totalPosts;
+
+      // For demo: show progress bars relative to some arbitrary max
+      updateProgressBar(viewsProgress, totalViews, 10000);       // max views 10k
+      updateProgressBar(earningsProgress, totalEarnings, 500);   // max earnings $500
+    });
+
+    // Monetization status & button
+    onValue(monetizeRef, snapshot => {
+      const status = snapshot.val() || 'not eligible';
+      monetizeStatusEl.textContent = status.charAt(0).toUpperCase() + status.slice(1);
+
+      if (status === 'eligible') {
+        monetizeBtn.disabled = false;
+      } else {
+        monetizeBtn.disabled = true;
+      }
+    });
+
+    monetizeBtn.addEventListener('click', async () => {
+      monetizeBtn.disabled = true;
+      monetizeStatusEl.textContent = 'Pending approval...';
+
+      try {
+        await update(ref(db, 'monetize/' + uid), { status: 'pending' });
+      } catch (err) {
+        alert('Failed to apply for monetization: ' + err.message);
+        monetizeBtn.disabled = false;
+        monetizeStatusEl.textContent = 'Eligible';
+      }
+    });
   });
 </script>
 
