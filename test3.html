@@ -59,6 +59,7 @@
       border-radius: 10px;
       padding: 20px;
     }
+    
   </style>
 </head>
 <body>
@@ -77,7 +78,10 @@
       <canvas id="adsChart"></canvas>
     </div>
   </main>
-
+<section id="adsList" style="margin-top: 30px;">
+  <h2 style="margin-bottom: 10px; font-size: 1.2rem;">Your Ads</h2>
+  <div id="adsContainer" style="display: grid; gap: 15px;"></div>
+</section>
   <script>
     const firebaseConfig = {
       apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
@@ -187,6 +191,48 @@
     function toggleMenu() {
       alert('Sidebar toggle coming soon!');
     }
+function renderUserAds(adsData) {
+  const container = document.getElementById('adsContainer');
+  container.innerHTML = '';
+
+  if (!adsData || Object.keys(adsData).length === 0) {
+    container.innerHTML = '<p>No ads created yet.</p>';
+    return;
+  }
+
+  Object.entries(adsData).forEach(([key, ad]) => {
+    const card = document.createElement('div');
+    card.style.background = '#111';
+    card.style.border = '1px solid #333';
+    card.style.borderRadius = '10px';
+    card.style.padding = '15px';
+    card.style.color = '#fff';
+
+    card.innerHTML = `
+      <h3 style="font-size: 1.1rem;">${ad.title || 'Untitled Ad'}</h3>
+      <p>${ad.description || ''}</p>
+      ${ad.image ? `<img src="${ad.image}" alt="Ad Image" style="width:100%; max-height:200px; object-fit:cover; margin-top:10px; border-radius:8px;">` : ''}
+      <p style="margin-top:10px;">Views: ${ad.views || 0} | Clicks: ${ad.clicks || 0}</p>
+    `;
+
+    container.appendChild(card);
+  });
+}
+
+function loadUserAds() {
+  const userId = firebase.auth().currentUser?.uid || 'anonymous';
+  db.ref(`user/${userId}/adscampaign`).once('value').then((snapshot) => {
+    const ads = snapshot.val();
+    renderUserAds(ads);
+  });
+}
+
+firebase.auth().onAuthStateChanged((user) => {
+  if (user) {
+    updateChartWithFirebaseData();
+    loadUserAds();
+  }
+});
   </script>
 </body>
 </html>
