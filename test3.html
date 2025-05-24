@@ -3,218 +3,189 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>CyberChat Stats (Dark Mode + Firebase)</title>
+  <title>CyberChat Pro Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" rel="stylesheet" />
   <style>
-    /* Reset and base */
+    /* Reset & base */
     * {
       box-sizing: border-box;
     }
     body {
-      margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
-        Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
-      background-color: #121212;
-      color: #eee;
-      padding-top: 80px;
+      margin: 0; padding: 0;
+      background: #121212;
+      color: #ddd;
+      font-family: 'Inter', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
-
     /* Header */
     header {
-      position: fixed;
-      top: 0;
-      left: 0;
       width: 100%;
-      height: 60px;
-      background-color: #1e1e1e;
+      max-width: 900px;
+      padding: 12px 20px;
+      background: #181818;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 1rem;
       border-radius: 0 0 20px 20px;
-      box-shadow: 0 2px 12px rgba(0,0,0,0.8);
-      z-index: 1000;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.8);
+      user-select: none;
     }
-
-    /* Hamburger menu */
-    .menu-btn {
+    /* Hamburger button */
+    .hamburger {
       width: 28px;
-      height: 22px;
+      height: 20px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
       cursor: pointer;
     }
-    .menu-btn span {
-      display: block;
-      height: 3.5px;
-      background-color: #eee;
+    .hamburger div {
+      height: 3px;
+      background: #eee;
       border-radius: 2px;
-      transition: background-color 0.3s ease;
+      transition: background 0.3s;
     }
-
-    /* Center logo text */
-    .center-logo {
-      font-weight: 900;
-      font-size: 1.5rem;
+    /* Logo text */
+    .logo {
+      font-weight: 700;
+      font-size: 1.8rem;
       user-select: none;
-      display: flex;
-      gap: 6px;
-      justify-content: center;
-      flex: 1;
-      color: #eee;
-      font-family: "Segoe UI Black", "Arial Black", sans-serif;
-      text-shadow: 0 0 6px #000;
+      text-align: center;
+      flex-grow: 1;
+      letter-spacing: 0.02em;
     }
-    .center-logo .cyber {
-      color: #ff3cac; /* cyber pink */
-      text-shadow: 0 0 12px #ff3caccc;
+    .logo .cyber {
+      color: #ff2aa8; /* Cyber pink */
     }
-    .center-logo .chat {
-      color: #00d2ff; /* chat cyan */
-      text-shadow: 0 0 12px #00d2ffcc;
+    .logo .chat {
+      color: #00d7ff; /* Chat cyan */
     }
-
-    /* Profile container */
-    .profile-container {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      overflow: hidden;
-      box-shadow: 0 0 8px rgba(255,255,255,0.2);
-      cursor: pointer;
-      flex-shrink: 0;
-      border: 1.5px solid #444;
-      background-color: #222;
-    }
+    /* Profile picture */
     .profile-pic {
-      width: 100%;
-      height: 100%;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
       object-fit: cover;
-      display: block;
-      filter: brightness(0.9);
+      border: 2px solid #333;
+      cursor: pointer;
+      user-select: none;
     }
 
     /* Stats container */
     .stats-container {
+      width: 100%;
       max-width: 900px;
-      margin: 1.5rem auto;
+      margin: 24px 0;
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 16px;
-      padding: 0 1rem;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 18px;
+      padding: 0 10px;
     }
-
-    /* Each stat card */
-    .stat-box {
+    /* Stat card */
+    .stat-card {
       background: #1f1f1f;
-      border-radius: 18px;
-      padding: 20px;
-      font-weight: 700;
-      font-size: 1.1rem;
-      text-align: center;
+      border-radius: 16px;
+      padding: 18px 24px;
       box-shadow:
-        0 4px 10px rgba(0,0,0,0.9),
-        inset 0 0 15px rgba(255,255,255,0.05);
-      border: 3px solid transparent;
+        0 2px 6px rgba(0,0,0,0.7),
+        inset 0 0 8px #111;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      cursor: default;
+      transition: box-shadow 0.25s ease;
       user-select: none;
-      transform-style: preserve-3d;
-      perspective: 600px;
-      transition: box-shadow 0.3s ease, border-color 0.3s ease;
-      color: #ddd;
     }
-    .stat-box:hover {
+    .stat-card:hover {
       box-shadow:
-        0 12px 22px rgba(0,0,0,0.95),
-        inset 0 0 22px rgba(255,255,255,0.1);
-      transform: translateZ(10px);
+        0 6px 15px rgba(0, 0, 0, 0.85),
+        inset 0 0 12px #222;
     }
-
-    /* Positive = green edges, Negative = red edges */
-    .stat-box.positive {
-      border-color: #0f0;
-      box-shadow:
-        0 4px 14px #0f0a,
-        inset 0 0 18px #0f0a;
-      color: #b5f5b3;
+    /* Stat title */
+    .stat-title {
+      font-size: 1.1rem;
+      color: #999;
+      font-weight: 600;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
     }
-    .stat-box.negative {
-      border-color: #f00;
-      box-shadow:
-        0 4px 14px #f00a,
-        inset 0 0 18px #f00a;
-      color: #f5b3b3;
-    }
-
-    /* Number styling */
+    /* Stat main number */
     .stat-number {
-      margin-top: 10px;
-      font-size: 2.8rem;
-      letter-spacing: 1px;
-      color: inherit;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-size: 2.6rem;
+      font-weight: 700;
+      color: #eee;
+      line-height: 1;
     }
-
-    /* Responsive tweaks for mobile */
+    /* Sub stat change */
+    .stat-change {
+      font-size: 0.85rem;
+      margin-top: 6px;
+      display: flex;
+      align-items: center;
+      font-weight: 600;
+      color: #aaa;
+    }
+    .stat-change.positive {
+      color: #4caf50;
+    }
+    .stat-change.negative {
+      color: #f44336;
+    }
+    .stat-change svg {
+      width: 14px;
+      height: 14px;
+      margin-right: 4px;
+      fill: currentColor;
+    }
+    /* Responsive tweaks */
     @media (max-width: 480px) {
-      header {
-        height: 55px;
-        padding: 0 0.8rem;
-      }
-      .center-logo {
-        font-size: 1.3rem;
-        gap: 4px;
-      }
-      .stats-container {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 12px;
-      }
       .stat-number {
-        font-size: 2.2rem;
+        font-size: 2rem;
+      }
+      .stat-title {
+        font-size: 0.95rem;
       }
     }
   </style>
 </head>
 <body>
   <header>
-    <div class="menu-btn" aria-label="Open menu" role="button" tabindex="0">
-      <span></span>
-      <span></span>
-      <span></span>
+    <div class="hamburger" aria-label="Menu" role="button" tabindex="0" title="Menu">
+      <div></div>
+      <div></div>
+      <div></div>
     </div>
-
-    <div class="center-logo">
-      <span class="cyber">Cyber</span><span class="chat">Chat</span>
-    </div>
-
-    <div class="profile-container" title="Profile">
-      <img
-        class="profile-pic"
-        src="https://i.pravatar.cc/36?u=darkmode"
-        alt="Profile Picture"
-        loading="lazy"
-      />
-    </div>
+    <div class="logo"><span class="cyber">Cyber</span><span class="chat">Chat</span></div>
+    <img src="https://i.pravatar.cc/40" alt="Profile picture" class="profile-pic" />
   </header>
 
-  <main>
-    <section class="stats-container" aria-live="polite" aria-label="User statistics">
-      <div id="followers" class="stat-box">
-        Followers
-        <div class="stat-number">–</div>
-      </div>
-      <div id="earnings" class="stat-box">
-        Earnings
-        <div class="stat-number">–</div>
-      </div>
-      <div id="posts" class="stat-box">
-        Posts
-        <div class="stat-number">–</div>
-      </div>
-      <div id="views" class="stat-box">
-        Views
-        <div class="stat-number">–</div>
-      </div>
-    </section>
+  <main class="stats-container">
+    <div class="stat-card" id="followersCard">
+      <div class="stat-title">Followers</div>
+      <div class="stat-number" id="followersCount">–</div>
+      <div class="stat-change" id="followersChange"></div>
+    </div>
+    <div class="stat-card" id="earningsCard">
+      <div class="stat-title">Earnings ($)</div>
+      <div class="stat-number" id="earningsCount">–</div>
+      <div class="stat-change" id="earningsChange"></div>
+    </div>
+    <div class="stat-card" id="postsCard">
+      <div class="stat-title">Posts</div>
+      <div class="stat-number" id="postsCount">–</div>
+      <div class="stat-change" id="postsChange"></div>
+    </div>
+    <div class="stat-card" id="viewsCard">
+      <div class="stat-title">Views</div>
+      <div class="stat-number" id="viewsCount">–</div>
+      <div class="stat-change" id="viewsChange"></div>
+    </div>
   </main>
 
   <script type="module">
@@ -234,48 +205,79 @@
       measurementId: "G-LLT6F9WRKH"
     };
 
-    // Initialize Firebase
     const app = initializeApp(firebaseConfig);
     const analytics = getAnalytics(app);
     const auth = getAuth(app);
     const db = getDatabase(app);
 
-    const followersBox = document.getElementById('followers');
-    const earningsBox = document.getElementById('earnings');
-    const postsBox = document.getElementById('posts');
-    const viewsBox = document.getElementById('views');
+    const followersCountEl = document.getElementById('followersCount');
+    const earningsCountEl = document.getElementById('earningsCount');
+    const postsCountEl = document.getElementById('postsCount');
+    const viewsCountEl = document.getElementById('viewsCount');
 
-    function updateStat(box, value) {
-      const numberDiv = box.querySelector('.stat-number');
-      numberDiv.textContent = value !== null && value !== undefined ? value : '–';
-      if (box.id === 'earnings') {
-        if (typeof value === 'number') {
-          box.classList.toggle('positive', value >= 0);
-          box.classList.toggle('negative', value < 0);
+    const followersChangeEl = document.getElementById('followersChange');
+    const earningsChangeEl = document.getElementById('earningsChange');
+    const postsChangeEl = document.getElementById('postsChange');
+    const viewsChangeEl = document.getElementById('viewsChange');
+
+    // Helper to format numbers with commas
+    function formatNumber(num) {
+      if (typeof num !== 'number') return num;
+      return num.toLocaleString();
+    }
+
+    // Helper to format money
+    function formatMoney(num) {
+      if (typeof num !== 'number') return num;
+      return num.toFixed(2);
+    }
+
+    // Helper to update a stat field with change indicator
+    function updateStat(countEl, changeEl, value, change, isMoney = false) {
+      countEl.textContent = isMoney ? formatMoney(value) : formatNumber(value);
+      if (typeof change === 'number') {
+        if (change === 0) {
+          changeEl.textContent = 'No change in last 24h';
+          changeEl.className = 'stat-change';
         } else {
-          box.classList.remove('positive', 'negative');
+          changeEl.textContent = `${change > 0 ? '+' : ''}${isMoney ? formatMoney(change) : formatNumber(change)} in last 24h`;
+          changeEl.className = 'stat-change ' + (change > 0 ? 'positive' : 'negative');
         }
       } else {
-        box.classList.add('positive');
-        box.classList.remove('negative');
+        changeEl.textContent = '';
       }
     }
 
     onAuthStateChanged(auth, user => {
       if (user) {
-        const statsRef = ref(db, `users/${user.uid}/stats`);
-        onValue(statsRef, snapshot => {
-          const data = snapshot.val() || {};
-          updateStat(followersBox, data.followers ?? '–');
-          updateStat(earningsBox, data.earnings ?? '–');
-          updateStat(postsBox, data.posts ?? '–');
-          updateStat(viewsBox, data.views ?? '–');
+        const uid = user.uid;
+        const statsRef = ref(db, `users/${uid}/stats`);
+        const stats24hRef = ref(db, `users/${uid}/stats_last24h`);
+
+        onValue(statsRef, (snapshot) => {
+          const stats = snapshot.val() || {};
+          followersCountEl.textContent = formatNumber(stats.followers ?? '–');
+          earningsCountEl.textContent = formatMoney(stats.earnings ?? '–');
+          postsCountEl.textContent = formatNumber(stats.posts ?? '–');
+          viewsCountEl.textContent = formatNumber(stats.views ?? '–');
+        });
+
+        onValue(stats24hRef, (snapshot) => {
+          const changes = snapshot.val() || {};
+          updateStat(followersCountEl, followersChangeEl, parseInt(followersCountEl.textContent) || 0, changes.followers_change ?? null);
+          updateStat(earningsCountEl, earningsChangeEl, parseFloat(earningsCountEl.textContent) || 0, changes.earnings_change ?? null, true);
+          updateStat(postsCountEl, postsChangeEl, parseInt(postsCountEl.textContent) || 0, changes.posts_change ?? null);
+          updateStat(viewsCountEl, viewsChangeEl, parseInt(viewsCountEl.textContent) || 0, changes.views_change ?? null);
         });
       } else {
-        updateStat(followersBox, '–');
-        updateStat(earningsBox, '–');
-        updateStat(postsBox, '–');
-        updateStat(viewsBox, '–');
+        // Not logged in — show placeholders
+        ['followers', 'earnings', 'posts', 'views'].forEach(stat => {
+          const countEl = document.getElementById(stat + 'Count');
+          const changeEl = document.getElementById(stat + 'Change');
+          countEl.textContent = '–';
+          changeEl.textContent = 'Log in to see stats';
+          changeEl.className = 'stat-change';
+        });
       }
     });
   </script>
