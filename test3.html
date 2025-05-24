@@ -1,193 +1,112 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>CyberChat Dashboard</title>
-<style>
-  :root {
-    --bg-dark: #121212;
-    --header-bg: #1f1f1f;
-    --text-light: #eee;
-    --cyber-pink: #ff007f;
-    --cyber-cyan: #00fff7;
-    --green: #0f0;
-    --red: #f33;
-    --card-bg: #222;
-    --card-shadow: rgba(0,255,0,0.2);
-  }
+  <meta charset="UTF-8">
+  <title>Creator Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background-color: #121212;
+      color: #f0f0f0;
+      font-family: 'Segoe UI', sans-serif;
+      padding: 1rem;
+    }
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: #1e1e1e;
+      padding: 1rem;
+      text-align: center;
+      font-size: 1.2rem;
+      font-weight: bold;
+      border-bottom: 1px solid #333;
+    }
 
-  body {
-    margin: 0; 
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
-      Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
-    background: var(--bg-dark);
-    color: var(--text-light);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    min-height: 100vh;
-  }
+    .dashboard {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(48%, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+    }
 
-  header {
-    position: sticky;
-    top: 0;
-    z-index: 1000;
-    background-color: var(--header-bg);
-    padding: 12px 20px;
-    border-radius: 0 0 20px 20px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.25);
-  }
+    .stat-card {
+      background: #1e1e1e;
+      border: 2px solid #2c2c2c;
+      border-radius: 12px;
+      padding: 1rem;
+      transition: border-color 0.3s ease, transform 0.3s ease;
+      box-shadow: 0 0 10px rgba(0,0,0,0.5);
+    }
 
-  .menu-btn {
-    cursor: pointer;
-    width: 28px;
-    height: 22px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-  }
-  .menu-btn span {
-    display: block;
-    height: 3.5px;
-    background: var(--text-light);
-    border-radius: 2px;
-  }
+    .stat-card.positive {
+      border-color: limegreen;
+    }
 
-  .profile {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-  .profile img {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    border: 2px solid var(--cyber-pink);
-    object-fit: cover;
-  }
+    .stat-card.negative {
+      border-color: crimson;
+    }
 
-  .title {
-    font-weight: 900;
-    font-size: 1.5rem;
-    user-select: none;
-  }
-  .title .cyber {
-    color: var(--cyber-pink);
-  }
-  .title .chat {
-    color: var(--cyber-cyan);
-  }
+    .stat-label {
+      font-size: 1rem;
+      color: #999;
+    }
 
-  main {
-    margin-top: 24px;
-    width: 100%;
-    max-width: 900px;
-    padding: 0 12px 40px;
-  }
+    .stat-value {
+      font-size: 1.8rem;
+      font-weight: bold;
+      margin-top: 0.5rem;
+    }
 
-  .stats-container {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 18px;
-  }
+    .stat-change {
+      font-size: 0.9rem;
+      margin-top: 0.25rem;
+    }
 
-  .stat-card {
-    background: var(--card-bg);
-    border-radius: 16px;
-    padding: 20px;
-    box-shadow:
-      0 0 15px 1px rgba(0,255,0,0.15),
-      inset 0 0 8px rgba(0,255,0,0.25);
-    border: 2px solid var(--green);
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    user-select: none;
-  }
+    .stat-change.positive {
+      color: limegreen;
+    }
 
-  .stat-card.negative {
-    border-color: var(--red);
-    box-shadow:
-      0 0 15px 1px rgba(255,0,0,0.15),
-      inset 0 0 8px rgba(255,0,0,0.25);
-  }
+    .stat-change.negative {
+      color: crimson;
+    }
 
-  .stat-name {
-    font-size: 1rem;
-    font-weight: 600;
-    margin-bottom: 10px;
-    color: var(--text-light);
-    letter-spacing: 0.04em;
-  }
-
-  .stat-count {
-    font-size: 2.8rem;
-    font-weight: 900;
-    line-height: 1;
-  }
-
-  .stat-change {
-    font-weight: 700;
-    font-size: 1.1rem;
-    margin-top: 6px;
-  }
-
-  .stat-change.positive {
-    color: var(--green);
-  }
-  .stat-change.negative {
-    color: var(--red);
-  }
-
-</style>
+    @media (max-width: 600px) {
+      .dashboard {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+  </style>
 </head>
 <body>
 
-<header>
-  <div class="menu-btn" aria-label="Menu Button" role="button" tabindex="0">
-    <span></span>
-    <span></span>
-    <span></span>
-  </div>
+<header>CyberChat Creator Dashboard</header>
 
-  <div class="title">
-    <span class="cyber">Cyber</span><span class="chat">Chat</span>
+<div class="dashboard">
+  <div class="stat-card" id="followers-card">
+    <div class="stat-label">Followers</div>
+    <div class="stat-value" id="followers-count">0</div>
+    <div class="stat-change" id="followers-change">+0 last hour</div>
   </div>
-
-  <div class="profile">
-    <img src="https://i.pravatar.cc/36" alt="Profile Picture" />
+  <div class="stat-card" id="earnings-card">
+    <div class="stat-label">Earnings</div>
+    <div class="stat-value" id="earnings-count">$0.00</div>
+    <div class="stat-change" id="earnings-change">+0 last hour</div>
   </div>
-</header>
-
-<main>
-  <div class="stats-container">
-    <div class="stat-card" id="followers-card">
-      <div class="stat-name">Followers</div>
-      <div class="stat-count" id="followers-count">0</div>
-      <div class="stat-change" id="followers-change"></div>
-    </div>
-    <div class="stat-card" id="earnings-card">
-      <div class="stat-name">Earnings</div>
-      <div class="stat-count" id="earnings-count">$0</div>
-      <div class="stat-change" id="earnings-change"></div>
-    </div>
-    <div class="stat-card" id="posts-card">
-      <div class="stat-name">Posts</div>
-      <div class="stat-count" id="posts-count">0</div>
-      <div class="stat-change" id="posts-change"></div>
-    </div>
-    <div class="stat-card" id="views-card">
-      <div class="stat-name">Views</div>
-      <div class="stat-count" id="views-count">0</div>
-      <div class="stat-change" id="views-change"></div>
-    </div>
+  <div class="stat-card" id="posts-card">
+    <div class="stat-label">Posts</div>
+    <div class="stat-value" id="posts-count">0</div>
+    <div class="stat-change" id="posts-change">+0 last hour</div>
   </div>
-</main>
+  <div class="stat-card" id="views-card">
+    <div class="stat-label">Views</div>
+    <div class="stat-value" id="views-count">0</div>
+    <div class="stat-change" id="views-change">+0 last hour</div>
+  </div>
+</div>
 
+<!-- Firebase Stats Script -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
   import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-analytics.js";
@@ -210,108 +129,39 @@
   const auth = getAuth(app);
   const db = getDatabase(app);
 
-  // Helpers
-  function formatNumber(num) {
-    if (num >= 1e9) return (num / 1e9).toFixed(1) + "B";
-    if (num >= 1e6) return (num / 1e6).toFixed(1) + "M";
-    if (num >= 1e3) return (num / 1e3).toFixed(1) + "K";
-    return num.toString();
-  }
-  function formatMoney(num) {
-    return "$" + num.toFixed(2);
+  function formatNumber(n) {
+    return n >= 1e6 ? (n / 1e6).toFixed(1) + 'M' :
+           n >= 1e3 ? (n / 1e3).toFixed(1) + 'K' : n;
   }
 
-  function updateStat(countEl, changeEl, value, change, isMoney = false) {
+  function formatMoney(n) {
+    return '$' + n.toFixed(2);
+  }
+
+  function updateCard(cardId, value, change, isMoney = false) {
+    const countEl = document.getElementById(`${cardId}-count`);
+    const changeEl = document.getElementById(`${cardId}-change`);
+    const card = document.getElementById(`${cardId}-card`);
+
     countEl.textContent = isMoney ? formatMoney(value) : formatNumber(value);
-
-    if (typeof change === "number") {
-      let colorClass = "positive";
-      if (change < 0) colorClass = "negative";
-      // Zero counts as positive (green)
-      const sign = change >= 0 ? "+" : "";
-
-      changeEl.textContent = `${sign}${isMoney ? formatMoney(change) : formatNumber(change)} last hour`;
-      changeEl.className = `stat-change ${colorClass}`;
-      // Also set card border color
-      const card = countEl.closest(".stat-card");
-      if (card) {
-        card.classList.toggle("negative", change < 0);
-        card.classList.toggle("positive", change >= 0);
-      }
-    } else {
-      changeEl.textContent = "";
-      changeEl.className = "stat-change";
-    }
+    const sign = change >= 0 ? '+' : '';
+    changeEl.textContent = `${sign}${isMoney ? formatMoney(change) : formatNumber(change)} last hour`;
+    changeEl.className = `stat-change ${change >= 0 ? 'positive' : 'negative'}`;
+    card.classList.toggle('positive', change >= 0);
+    card.classList.toggle('negative', change < 0);
   }
 
-  function listenToUserStats(uid) {
-    const userRef = ref(db, `users/${uid}/stats`);
-    onValue(userRef, (snapshot) => {
-      const data = snapshot.val() || {};
-      // Expect data like:
-      // { followers: 1234, followersChange: 10, earnings: 45.67, earningsChange: 2.5, posts: 78, postsChange: 0, views: 45678, viewsChange: -120 }
-
-      updateStat(
-        document.getElementById("followers-count"),
-        document.getElementById("followers-change"),
-        data.followers || 0,
-        data.followersChange || 0,
-        false
-      );
-      updateStat(
-        document.getElementById("earnings-count"),
-        document.getElementById("earnings-change"),
-        data.earnings || 0,
-        data.earningsChange || 0,
-        true
-      );
-      updateStat(
-        document.getElementById("posts-count"),
-        document.getElementById("posts-change"),
-        data.posts || 0,
-        data.postsChange || 0,
-        false
-      );
-      updateStat(
-        document.getElementById("views-count"),
-        document.getElementById("views-change"),
-        data.views || 0,
-        data.viewsChange || 0,
-        false
-      );
-    });
-  }
-
-  onAuthStateChanged(auth, (user) => {
+  onAuthStateChanged(auth, user => {
     if (user) {
-      listenToUserStats(user.uid);
-    } else {
-      // Not logged in: show zeros and maybe prompt to log in
-      updateStat(
-        document.getElementById("followers-count"),
-        document.getElementById("followers-change"),
-        0,
-        0
-      );
-      updateStat(
-        document.getElementById("earnings-count"),
-        document.getElementById("earnings-change"),
-        0,
-        0,
-        true
-      );
-      updateStat(
-        document.getElementById("posts-count"),
-        document.getElementById("posts-change"),
-        0,
-        0
-      );
-      updateStat(
-        document.getElementById("views-count"),
-        document.getElementById("views-change"),
-        0,
-        0
-      );
+      const uid = user.uid;
+      const statsRef = ref(db, `users/${uid}/stats`);
+      onValue(statsRef, snap => {
+        const data = snap.val() || {};
+        updateCard('followers', data.followers || 0, data.followersChange || 0);
+        updateCard('earnings', data.earnings || 0, data.earningsChange || 0, true);
+        updateCard('posts', data.posts || 0, data.postsChange || 0);
+        updateCard('views', data.views || 0, data.viewsChange || 0);
+      });
     }
   });
 </script>
