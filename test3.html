@@ -1,79 +1,58 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Search | CyberChat</title>
   <style>
     body {
-      font-family: 'Segoe UI', sans-serif;
       margin: 0;
       padding: 2rem;
-      background: #0d1117;
-      color: #fff;
+      font-family: sans-serif;
+      background: #0f0f0f;
+      color: white;
     }
-    h1 {
-      font-size: 2rem;
-      text-align: center;
-      margin-bottom: 1.5rem;
-    }
+
     #searchInput {
       width: 100%;
       max-width: 600px;
-      margin: 0 auto 2rem;
-      display: block;
-      padding: 1rem;
+      padding: 0.75rem 1rem;
       font-size: 1.1rem;
-      border-radius: 12px;
       border: none;
-      background: #161b22;
-      color: #fff;
-      box-shadow: 0 0 0 2px #30363d;
+      border-radius: 8px;
+      background: #222;
+      color: white;
+      outline: none;
     }
-    .search-results {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-      max-width: 700px;
-      margin: 0 auto;
+
+    #suggestions {
+      margin-top: 1rem;
+      max-width: 600px;
+      background: #181818;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 0 0 2px #333;
     }
-    .result-item {
-      background: #1f2937;
-      border-radius: 12px;
-      padding: 1rem;
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      transition: background 0.3s ease;
+
+    .suggestion {
+      padding: 0.8rem 1rem;
+      border-bottom: 1px solid #2c2c2c;
       cursor: pointer;
     }
-    .result-item:hover {
-      background: #374151;
+
+    .suggestion:last-child {
+      border-bottom: none;
     }
-    .result-avatar {
-      width: 50px;
-      height: 50px;
-      border-radius: 9999px;
-      object-fit: cover;
-    }
-    .result-info {
-      display: flex;
-      flex-direction: column;
-    }
-    .result-info strong {
-      font-size: 1rem;
-    }
-    .result-info span {
-      font-size: 0.85rem;
-      color: #9ca3af;
+
+    .suggestion:hover {
+      background: #292929;
     }
   </style>
 </head>
 <body>
 
-  <h1>Search CyberChat</h1>
-  <input type="text" id="searchInput" placeholder="Search posts or users..." autocomplete="off">
-  <div class="search-results"></div>
+  <input type="text" id="searchInput" placeholder="Search CyberChat...">
+  <div id="suggestions"></div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
@@ -93,58 +72,46 @@
     const db = getDatabase(app);
 
     const searchInput = document.getElementById('searchInput');
-    const resultsContainer = document.querySelector('.search-results');
+    const suggestionsDiv = document.getElementById('suggestions');
 
     let debounceTimer;
-
     searchInput.addEventListener('input', () => {
       clearTimeout(debounceTimer);
-      debounceTimer = setTimeout(handleSearch, 300);
+      debounceTimer = setTimeout(fetchSuggestions, 200);
     });
 
-    function handleSearch() {
-      const query = searchInput.value.trim().toLowerCase();
-      resultsContainer.innerHTML = '';
+    function fetchSuggestions() {
+      const query = searchInput.value.toLowerCase().trim();
+      suggestionsDiv.innerHTML = '';
 
       if (!query) return;
 
       const postsRef = ref(db, '/post');
-      const usersRef = ref(db, '/users');
-
       onValue(postsRef, (snapshot) => {
         const posts = snapshot.val();
-        resultsContainer.innerHTML = ''; // Clear before updating
-        Object.entries(posts || {}).forEach(([id, post]) => {
-          if (post.title?.toLowerCase().includes(query)) {
-            resultsContainer.innerHTML += `
-              <div class="result-item">
-                <img src="${post.thumbnail || 'https://i.imgur.com/3GvwNBf.png'}" class="result-avatar" />
-                <div class="result-info">
-                  <strong>${post.title}</strong>
-                  <span>@${post.username || 'anonymous'}</span>
-                </div>
-              </div>
-            `;
-          }
-        });
-      });
+        const matches = [];
 
-      onValue(usersRef, (snapshot) => {
-        const users = snapshot.val();
-        Object.entries(users || {}).forEach(([id, user]) => {
-          if (user.username?.toLowerCase().includes(query)) {
-            resultsContainer.innerHTML += `
-              <div class="result-item">
-                <img src="${user.profilePic || 'https://i.imgur.com/avatar.png'}" class="result-avatar" />
-                <div class="result-info">
-                  <strong>${user.username}</strong>
-                  <span>User Profile</span>
-                </div>
-              </div>
-            `;
+        for (const id in posts) {
+          const title = posts[id].title?.toLowerCase();
+          if (title && title.includes(query)) {
+            matches.push(posts[id].title);
           }
+        }
+
+        const uniqueMatches = [...new Set(matches)].slice(0, 8); // Top 8 suggestions
+
+        uniqueMatches.forEach(title => {
+          const div = document.createElement('div');
+          div.className = 'suggestion';
+          div.textContent = title;
+          div.onclick = () => {
+            searchInput.value = title;
+            suggestionsDiv.innerHTML = '';
+            // Optionally: trigger actual search here
+          };
+          suggestionsDiv.appendChild(div);
         });
-      });
+      }, { onlyOnce: true });
     }
   </script>
 
