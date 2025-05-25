@@ -4,6 +4,265 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Futuristic Post Feed</title>
+<script type="module">
+  // Firebase imports (using modular SDK)
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+  import { getDatabase, ref, onValue, get, set, update, remove } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+
+  // Firebase config
+  const firebaseConfig = {
+    apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
+    authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
+    databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
+    projectId: "itzhoyoo-f9f7e",
+    storageBucket: "itzhoyoo-f9f7e.appspot.com",
+    messagingSenderId: "1094792075584",
+    appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
+    measurementId: "G-LLT6F9WRKH"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  const auth = getAuth(app);
+
+  const postsContainer = document.getElementById('posts');
+  let currentUser = null;
+  let userLikes = {};
+  let userFollows = {};
+
+  onAuthStateChanged(auth, user => {
+    currentUser = user;
+    if (user) {
+      loadUserEngagement(user.uid);
+    } else {
+      userLikes = {};
+      userFollows = {};
+      loadPosts();
+    }
+  });
+
+  function loadUserEngagement(uid) {
+    const likesRef = ref(db, `userLikes/${uid}`);
+    onValue(likesRef, snapshot => {
+      userLikes = snapshot.val() || {};
+      loadPosts();
+    });
+
+    const followsRef = ref(db, `userFollows/${uid}`);
+    onValue(followsRef, snapshot => {
+      userFollows = snapshot.val() || {};
+      loadPosts();
+    });
+  }
+
+  function createSvgIcon(type) {
+    switch(type) {
+      case 'eye':
+        return `<svg viewBox="0 0 24 24"><path d="M12 5c-7 0-11 7-11 7s4 7 11 7 11-7 11-7-4-7-11-7zm0 12a5 5 0 110-10 5 5 0 010 10z"/><circle cx="12" cy="12" r="2.5"/></svg>`;
+      case 'heart':
+        return `<svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41 0.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>`;
+      case 'comment':
+        return `<svg viewBox="0 0 24 24"><path d="M21 6h-18c-1.104 0-2 .896-2 2v8c0 1.104.896 2 2 2h4v4l5-4h9c1.104 0 2-.896 2-2v-8c0-1.104-.896-2-2-2z"/></svg>`;
+      default:
+        return '';
+    }
+  }
+
+  function timeAgo(ts) {
+    const now = Date.now();
+    const diff = now - ts;
+    const sec = Math.floor(diff / 1000);
+    if (sec < 60) return 'Just now';
+    const min = Math.floor(sec / 60);
+    if (min < 60) return `${min}m ago`;
+    const hrs = Math.floor(min / 60);
+    if (hrs < 24) return `${hrs}h ago`;
+    const days = Math.floor(hrs / 24);
+    if (days < 7) return `${days}d ago`;
+    const weeks = Math.floor(days / 7);
+    if (weeks < 4) return `${weeks}w ago`;
+    const months = Math.floor(days / 30);
+    if (months < 12) return `${months}mo ago`;
+    return `${Math.floor(days / 365)}y ago`;
+  }
+
+  function createPostElement(postId, post) {
+    const {
+      username = 'Unknown',
+      handle = 'unknown',
+      avatar = 'https://i.pravatar.cc/60',
+      followers = 0,
+      title = '',
+      description = '',
+      tags = [],
+      timestamp = Date.now(),
+      imageUrl = '',
+      likes = 0,
+      views = 0,
+      commentsCount = 0
+    } = post;
+
+    const postEl = document.createElement('div');
+    postEl.className = 'post';
+
+    const header = document.createElement('div');
+    header.className = 'post-header';
+
+    const avatarImg = document.createElement('img');
+    avatarImg.className = 'avatar';
+    avatarImg.src = avatar;
+
+    const userInfo = document.createElement('div');
+    userInfo.className = 'user-info';
+    userInfo.innerHTML = `<div class="username">${username}</div><div class="handle">@${handle}</div><div class="followers">${followers.toLocaleString()} followers</div>`;
+
+    const followBtn = document.createElement('button');
+    followBtn.className = 'follow-btn';
+    followBtn.textContent = userFollows[handle] ? 'Following' : 'Follow';
+    if (userFollows[handle]) followBtn.classList.add('following');
+    followBtn.onclick = () => {
+      if (!currentUser) return alert('Please log in to follow.');
+      toggleFollow(handle, followBtn);
+    };
+
+    header.appendChild(avatarImg);
+    header.appendChild(userInfo);
+    header.appendChild(followBtn);
+
+    const imgWrapper = document.createElement('div');
+    imgWrapper.className = 'image-wrapper';
+    const postImage = document.createElement('img');
+    postImage.className = 'post-image';
+    postImage.src = imageUrl;
+    postImage.onload = () => {
+      if (postImage.naturalHeight / postImage.naturalWidth > 1.6) {
+        postImage.classList.add('tall');
+      }
+    };
+    imgWrapper.appendChild(postImage);
+
+    const timeAgoEl = document.createElement('div');
+    timeAgoEl.className = 'time-ago';
+    timeAgoEl.textContent = timeAgo(timestamp);
+
+    const titleEl = document.createElement('div');
+    titleEl.className = 'post-title';
+    titleEl.textContent = title;
+
+    const descEl = document.createElement('div');
+    descEl.className = 'post-desc';
+    descEl.textContent = description;
+
+    const tagsContainer = document.createElement('div');
+    tagsContainer.className = 'tags-container';
+    tags.forEach(tag => {
+      const tagEl = document.createElement('div');
+      tagEl.className = 'tag';
+      tagEl.textContent = '#' + tag;
+      tagEl.onclick = () => filterByTag(tag);
+      tagsContainer.appendChild(tagEl);
+    });
+
+    const engagementBar = document.createElement('div');
+    engagementBar.className = 'engagement';
+
+    const viewsEl = document.createElement('div');
+    viewsEl.innerHTML = createSvgIcon('eye') + ` ${views.toLocaleString()}`;
+    engagementBar.appendChild(viewsEl);
+
+    const likesEl = document.createElement('div');
+    likesEl.innerHTML = createSvgIcon('heart') + ` ${likes.toLocaleString()}`;
+    likesEl.classList.add('like-btn');
+    if (userLikes[postId]) likesEl.classList.add('liked');
+    likesEl.onclick = () => toggleLike(postId, likesEl);
+    engagementBar.appendChild(likesEl);
+
+    const commentsEl = document.createElement('div');
+    commentsEl.innerHTML = createSvgIcon('comment') + ` ${commentsCount.toLocaleString()}`;
+    engagementBar.appendChild(commentsEl);
+
+    postEl.appendChild(header);
+    postEl.appendChild(imgWrapper);
+    postEl.appendChild(timeAgoEl);
+    postEl.appendChild(titleEl);
+    postEl.appendChild(descEl);
+    postEl.appendChild(tagsContainer);
+    postEl.appendChild(engagementBar);
+
+    return postEl;
+  }
+
+  function loadPosts(filterTag = null) {
+    const postsRef = ref(db, 'post');
+    get(postsRef).then(snapshot => {
+      postsContainer.innerHTML = '';
+      const data = snapshot.val();
+      if (!data) {
+        postsContainer.textContent = 'No posts yet.';
+        return;
+      }
+
+      const postsArray = Object.entries(data)
+        .filter(([_, post]) => !filterTag || (post.tags && post.tags.includes(filterTag)))
+        .sort((a, b) => b[1].timestamp - a[1].timestamp);
+
+      postsArray.forEach(([id, post]) => {
+        const el = createPostElement(id, post);
+        postsContainer.appendChild(el);
+      });
+    }).catch(err => {
+      console.error(err);
+      postsContainer.textContent = 'Failed to load posts.';
+    });
+  }
+
+  function toggleLike(postId, el) {
+    if (!currentUser) return alert('Login to like posts.');
+    const uid = currentUser.uid;
+    const likeRef = ref(db, `userLikes/${uid}/${postId}`);
+    const postLikesRef = ref(db, `post/${postId}/likes`);
+    const liked = userLikes[postId];
+
+    get(postLikesRef).then(snap => {
+      let count = snap.val() || 0;
+      if (liked) {
+        remove(likeRef);
+        count--;
+        el.classList.remove('liked');
+      } else {
+        set(likeRef, true);
+        count++;
+        el.classList.add('liked');
+      }
+      userLikes[postId] = !liked;
+      set(postLikesRef, count);
+      el.innerHTML = createSvgIcon('heart') + ` ${count.toLocaleString()}`;
+    });
+  }
+
+  function toggleFollow(handle, el) {
+    if (!currentUser) return;
+    const uid = currentUser.uid;
+    const followRef = ref(db, `userFollows/${uid}/${handle}`);
+    const isFollowing = userFollows[handle];
+
+    if (isFollowing) {
+      remove(followRef);
+      el.classList.remove('following');
+      el.textContent = 'Follow';
+    } else {
+      set(followRef, true);
+      el.classList.add('following');
+      el.textContent = 'Following';
+    }
+    userFollows[handle] = !isFollowing;
+  }
+
+  function filterByTag(tag) {
+    loadPosts(tag);
+  }
+</script>
 <style>
   /* Reset & base */
   * {
