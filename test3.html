@@ -80,102 +80,152 @@
     <canvas id="graph" width="900" height="300"></canvas>
   </div>
 
-  <!-- Firebase SDK -->
+  <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js"></script>
-<script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js"></script>
 
-<script>
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.database();
-  const auth = firebase.auth();
+  <script>
+    // Your Firebase config — no excuses, get this right!
+    const firebaseConfig = {
+      apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
+      authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
+      databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
+      projectId: "itzhoyoo-f9f7e",
+      storageBucket: "itzhoyoo-f9f7e.filestorage.app",
+      messagingSenderId: "1094792075584",
+      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
+      measurementId: "G-LLT6F9WRKH"
+    };
 
-  const dashboardItems = {
-    posts: document.querySelector('.dashboard-item:nth-child(1) .value'),
-    views: document.querySelector('.dashboard-item:nth-child(2) .value'),
-    earnings: document.querySelector('.dashboard-item:nth-child(3) .value'),
-    followers: document.querySelector('.dashboard-item:nth-child(4) .value'),
-    monetized: document.querySelector('.dashboard-item:nth-child(5) .value'),
-    likes: document.querySelector('.dashboard-item:nth-child(6) .value')
-  };
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const auth = firebase.auth();
 
-  function formatNumber(num) {
-    if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
-    if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
-    return num.toString();
-  }
+    // Dashboard UI references
+    const dashboardItems = {
+      posts: document.querySelector('.dashboard-item:nth-child(1) .value'),
+      views: document.querySelector('.dashboard-item:nth-child(2) .value'),
+      earnings: document.querySelector('.dashboard-item:nth-child(3) .value'),
+      followers: document.querySelector('.dashboard-item:nth-child(4) .value'),
+      monetized: document.querySelector('.dashboard-item:nth-child(5) .value'),
+      likes: document.querySelector('.dashboard-item:nth-child(6) .value')
+    };
 
-  auth.onAuthStateChanged(user => {
-    if (user) {
-      const uid = user.uid;
-      const userStatsRef = db.ref(`/users/${uid}/stats`);
-      const userGraphRef = db.ref(`/users/${uid}/graphData`);
-
-      userStatsRef.on('value', snapshot => {
-        const data = snapshot.val() || {};
-        dashboardItems.posts.textContent = data.posts || 0;
-        dashboardItems.views.textContent = formatNumber(data.views || 0);
-        dashboardItems.earnings.textContent = `$${data.earnings || 0}`;
-        dashboardItems.followers.textContent = data.followers || 0;
-        dashboardItems.monetized.textContent = data.monetized || 'Off';
-        dashboardItems.likes.textContent = formatNumber(data.likes || 0);
-      });
-
-      userGraphRef.on('value', snapshot => {
-        const data = snapshot.val() || {};
-        const views = data.views || [];
-        const followers = data.followers || [];
-        const earnings = data.earnings || [];
-        updateGraph(views, followers, earnings);
-      });
-
-    } else {
-      alert("You're not logged in. Log in to see your stats.");
+    // Format big numbers to K, M, etc.
+    function formatNumber(num) {
+      if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+      if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+      return num.toString();
     }
-  });
 
-  // Draw Graph
-  const canvas = document.getElementById("graph");
-  const ctx = canvas.getContext("2d");
-  const width = canvas.width;
-  const height = canvas.height;
+    // Listen for auth state changes
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        const uid = user.uid;
 
-  function drawLine(data, color, scale) {
-    ctx.beginPath();
-    ctx.strokeStyle = color;
-    data.forEach((val, i) => {
-      const x = (i / (data.length - 1)) * width;
-      const y = height - val * scale;
-      if (i === 0) ctx.moveTo(x, y);
-      else ctx.lineTo(x, y);
+        const userStatsRef = db.ref(`/users/${uid}/stats`);
+        const userGraphRef = db.ref(`/users/${uid}/graphData`);
+
+        // Stats listener with error handling
+        userStatsRef.on('value', snapshot => {
+          try {
+            const data = snapshot.val() || {};
+            dashboardItems.posts.textContent = data.posts || 0;
+            dashboardItems.views.textContent = formatNumber(data.views || 0);
+            dashboardItems.earnings.textContent = `$${data.earnings?.toFixed(2) || "0.00"}`;
+            dashboardItems.followers.textContent = data.followers || 0;
+            dashboardItems.monetized.textContent = data.monetized || 'Off';
+            dashboardItems.likes.textContent = formatNumber(data.likes || 0);
+          } catch (e) {
+            alert("Error processing user stats: " + e.message);
+            console.error(e);
+          }
+        }, error => {
+          alert("Failed to load user stats: " + error.message);
+          console.error(error);
+        });
+
+        // Graph data listener with error handling
+        userGraphRef.on('value', snapshot => {
+          try {
+            const data = snapshot.val() || {};
+            const views = data.views || [];
+            const followers = data.followers || [];
+            const earnings = data.earnings || [];
+            updateGraph(views, followers, earnings);
+          } catch (e) {
+            alert("Error processing graph data: " + e.message);
+            console.error(e);
+          }
+        }, error => {
+          alert("Failed to load graph data: " + error.message);
+          console.error(error);
+        });
+
+      } else {
+        alert("You're not logged in. Log in to see your stats.");
+        // Optional: Clear dashboard or redirect user
+      }
+    }, error => {
+      alert("Authentication error: " + error.message);
+      console.error(error);
     });
-    ctx.stroke();
-  }
 
-  function drawGrid(maxY) {
-    ctx.clearRect(0, 0, width, height);
-    ctx.strokeStyle = "#2f363d";
-    ctx.lineWidth = 1;
-    for (let i = 0; i <= 5; i++) {
-      const y = (i / 5) * height;
-      ctx.beginPath();
-      ctx.moveTo(0, y);
-      ctx.lineTo(width, y);
-      ctx.stroke();
-      const label = Math.round(maxY * (1 - i / 5));
+    // Graph drawing context & size
+    const canvas = document.getElementById("graph");
+    const ctx = canvas.getContext("2d");
+    const width = canvas.width;
+    const height = canvas.height;
+
+    // Draw grid lines and Y axis labels
+    function drawGrid(maxY) {
+      ctx.clearRect(0, 0, width, height);
+      ctx.strokeStyle = "#2f363d";
+      ctx.lineWidth = 1;
+      ctx.font = "12px 'Segoe UI'";
       ctx.fillStyle = "#8b949e";
-      ctx.fillText(label, 5, y - 5);
-    }
-  }
 
-  function updateGraph(views, followers, earnings) {
-    const maxVal = Math.max(...views, ...followers.map(f => f * 20), ...earnings.map(e => e * 25)) || 100;
-    drawGrid(maxVal);
-    drawLine(views, "rgba(0, 255, 255, 0.8)", 1);
-    drawLine(followers, "rgba(255, 140, 0, 0.8)", 20);
-    drawLine(earnings, "rgba(0, 255, 0, 0.8)", 25);
-  }
-</script>
+      for (let i = 0; i <= 5; i++) {
+        const y = (i / 5) * height;
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(width, y);
+        ctx.stroke();
+
+        const label = Math.round(maxY * (1 - i / 5));
+        ctx.fillText(label, 5, y - 5);
+      }
+    }
+
+    // Draw a line for a dataset
+    function drawLine(data, color, scale) {
+      if (!data.length) return;
+      ctx.beginPath();
+      ctx.strokeStyle = color;
+      data.forEach((val, i) => {
+        const x = (i / (data.length - 1)) * width;
+        const y = height - val * scale;
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      });
+      ctx.stroke();
+    }
+
+    // Update the graph with new data arrays
+    function updateGraph(views, followers, earnings) {
+      // Use multipliers for visual clarity
+      const scaledFollowers = followers.map(f => f * 20);
+      const scaledEarnings = earnings.map(e => e * 25);
+
+      const maxVal = Math.max(...views, ...scaledFollowers, ...scaledEarnings, 100);
+      drawGrid(maxVal);
+      drawLine(views, "rgba(0, 255, 255, 0.8)", 1);
+      drawLine(followers, "rgba(255, 140, 0, 0.8)", 20);
+      drawLine(earnings, "rgba(0, 255, 0, 0.8)", 25);
+    }
+  </script>
 
 </body>
 </html>
