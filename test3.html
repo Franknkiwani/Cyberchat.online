@@ -445,44 +445,40 @@
 
   // Form validation
   function validateForm() {
-    if (!selectedImage) {
-      alert('Please upload 1 image.');
-      return false;
-    }
-
-    const titleVal = title.value.trim();
-    const descVal = description.value.trim();
-
-    if (!titleVal) {
-      alert('Title is required.');
-      return false;
-    }
-    if (titleVal.length > 100) {
-      alert('Title is too long. Keep it under 100 characters.');
-      return false;
-    }
-
-    if (!descVal) {
-      alert('Description is required.');
-      return false;
-    }
-    if (descVal.length > 1000) {
-      alert('Description is too long. Max 1000 characters allowed.');
-      return false;
-    }
-
-    // Validate comments toggle and visibility selection if needed
-    if (!commentsToggle) {
-      alert('Comments toggle element missing.');
-      return false;
-    }
-    if (!visibilitySelect || !visibilitySelect.value) {
-      alert('Please select visibility.');
-      return false;
-    }
-
-    return true;
+  if (!selectedImage) {
+    alert('Please upload 1 image.');
+    return false;
   }
+
+  const titleVal = title.value.trim();
+  const descVal = description.value.trim();
+
+  if (!titleVal) {
+    alert('Title is required.');
+    return false;
+  }
+  if (titleVal.length > 100) {
+    alert('Title is too long. Keep it under 100 characters.');
+    return false;
+  }
+
+  if (!descVal) {
+    alert('Description is required.');
+    return false;
+  }
+  if (descVal.length > 1000) {
+    alert('Description is too long. Max 1000 characters allowed.');
+    return false;
+  }
+
+  // Only validate visibilitySelect because commentsToggle might not exist
+  if (!visibilitySelect || !visibilitySelect.value) {
+    alert('Please select visibility.');
+    return false;
+  }
+
+  return true;
+}
 
   // Upload image to Imgur and return the image link
   async function uploadToImgur(file) {
