@@ -270,7 +270,7 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
   import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
-  import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+  import { getDatabase, ref, set, get, child } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
@@ -287,7 +287,7 @@
   const auth = getAuth(app);
   const db = getDatabase(app);
 
-  // DOM elements
+  // Elements
   const profileImg = document.getElementById('profileImg');
   const dropZone = document.getElementById('dropZone');
   const postDetails = document.getElementById('postDetails');
@@ -302,32 +302,34 @@
   const uploadBtn = document.getElementById('uploadBtn');
   const progressOverlay = document.getElementById('progressOverlay');
   const progressMessage = document.getElementById('progressMessage');
+  const commentToggle = document.getElementById('commentToggle'); // your comments on/off dropdown element
+  const visibilitySelect = document.getElementById('visibilitySelect'); // your visibility dropdown element
+  const linkInput = document.getElementById('linkInput'); // input for optional link
 
   const fallbackImageUrl = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ4Cz4QyUZAetgiOhayGT846gGiS3gO-tH4Iu0EOaOnBahRhPqOmgaKy7c&s=10";
 
-  // Load profile image and monetization status on auth change
+  // Profile logic: load user photo & monetize status
   onAuthStateChanged(auth, async (user) => {
     if (user) {
       profileImg.src = user.photoURL || fallbackImageUrl;
-      try {
-        const userRef = ref(db, `users/${user.uid}`);
-        const snapshot = await get(userRef);
-        const data = snapshot.val();
-        const isMonetized = data?.monetize === 'on';
 
-        monetizeCheckbox.disabled = !isMonetized;
-        monetizeCheckbox.checked = isMonetized;
-        monetizeCheckbox.title = isMonetized ? '' : 'You are not monetized yet';
-      } catch {
-        monetizeCheckbox.disabled = true;
-        monetizeCheckbox.checked = false;
+      const userRef = ref(db, `users/${user.uid}`);
+      const snapshot = await get(userRef);
+      const data = snapshot.val();
+
+      const isMonetized = data?.monetize === 'on';
+
+      monetizeCheckbox.disabled = !isMonetized;
+      monetizeCheckbox.checked = isMonetized;
+      if (!isMonetized) {
         monetizeCheckbox.title = 'You are not monetized yet';
+      } else {
+        monetizeCheckbox.title = '';
       }
     } else {
       profileImg.src = fallbackImageUrl;
       monetizeCheckbox.disabled = true;
       monetizeCheckbox.checked = false;
-      monetizeCheckbox.title = 'You are not monetized yet';
     }
   });
 
@@ -335,26 +337,23 @@
     profileImg.src = fallbackImageUrl;
   };
 
-  // Image selection logic - max 2 images
-  let selectedImages = [];
+  // Image handling - SINGLE image allowed only
+  let selectedImage = null;
   dropZone.addEventListener('click', () => {
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = 'image/*';
-    input.multiple = true;
+    input.multiple = false; // single image only
     input.onchange = () => handleFiles(input.files);
     input.click();
   });
-
   dropZone.addEventListener('dragover', e => {
     e.preventDefault();
     dropZone.style.borderColor = '#00c67c';
   });
-
   dropZone.addEventListener('dragleave', () => {
     dropZone.style.borderColor = '#444';
   });
-
   dropZone.addEventListener('drop', e => {
     e.preventDefault();
     dropZone.style.borderColor = '#444';
@@ -362,18 +361,22 @@
   });
 
   function handleFiles(files) {
-    const imgs = Array.from(files).filter(f => f.type.startsWith('image/'));
-    if (imgs.length > 2) {
-      alert('Only 2 images allowed');
+    if (files.length > 1) {
+      alert('Only 1 image allowed. Please select a single image.');
       return;
     }
-    selectedImages = imgs;
+    const file = files[0];
+    if (!file.type.startsWith('image/')) {
+      alert('File must be an image.');
+      return;
+    }
+    selectedImage = file;
     postDetails.style.display = 'block';
-    dropZone.innerHTML = imgs.map(f => `<div>${f.name}</div>`).join('');
+    dropZone.innerHTML = `<div>${file.name}</div>`;
     calcCPM();
   }
 
-  // Tag handling - add tags on space or enter
+  // Tagging logic
   let tags = [];
   tagField.addEventListener('keydown', e => {
     if (e.key === ' ' || e.key === 'Enter') {
@@ -391,7 +394,7 @@
     }
   });
 
-  // CPM calculation based on simple weighted score
+  // CPM logic based on title, description, tags, and presence of image
   const getPostTier = (titleText, descText, tagList) => {
     const highEngagementTags = ['gta6', 'ai', 'fortnite', 'tech', 'money', 'bitcoin', 'crypto', 'stock'];
     const text = (titleText + ' ' + descText).toLowerCase();
@@ -401,7 +404,7 @@
     if (tagList.length >= 3) score += 20;
     if (descText.length > 100) score += 20;
     if (titleText.length > 20) score += 10;
-    if (selectedImages.length === 2) score += 20;
+    if (selectedImage) score += 20;
 
     let tier = 'Low';
     if (score >= 70) tier = 'High';
@@ -431,17 +434,16 @@
   infoIcon.addEventListener('click', () => {
     cpmPopup.style.display = cpmPopup.style.display === 'block' ? 'none' : 'block';
   });
-
   document.addEventListener('click', e => {
     if (!infoIcon.contains(e.target) && !cpmPopup.contains(e.target)) {
       cpmPopup.style.display = 'none';
     }
   });
 
-  // Form validation
+  // Validate all required fields before upload
   function validateForm() {
-    if (selectedImages.length === 0 || selectedImages.length > 2) {
-      alert('Please upload 1 or 2 images.');
+    if (!selectedImage) {
+      alert('Please upload 1 image.');
       return false;
     }
 
@@ -466,10 +468,20 @@
       return false;
     }
 
+    if (!visibilitySelect.value) {
+      alert('Please select post visibility.');
+      return false;
+    }
+
+    if (!commentToggle.value) {
+      alert('Please select comment settings.');
+      return false;
+    }
+
     return true;
   }
 
-  // Upload image to Imgur and return link
+  // Upload image to Imgur and get URL
   async function uploadToImgur(file) {
     const formData = new FormData();
     formData.append('image', file);
@@ -490,52 +502,69 @@
 
   // Upload button handler
   uploadBtn.addEventListener('click', async () => {
-    if (!validateForm()) return;
+  if (!validateForm()) return;
 
-    const user = auth.currentUser;
-    if (!user) {
-      alert('You must be logged in to upload.');
-      return;
-    }
-
+  try {
     progressOverlay.style.display = 'flex';
-    progressMessage.textContent = 'Uploading...';
+    progressMessage.textContent = 'Uploading image...';
 
-    try {
-      const imageLinks = [];
-      for (const file of selectedImages) {
-        const link = await uploadToImgur(file);
-        imageLinks.push(link);
-      }
+    // Upload the image to Imgur and get the link
+    const imageUrl = await uploadToImgur(selectedImage);
 
-      const titleVal = title.value.trim();
-      const descVal = description.value.trim();
-      const { tier, score } = getPostTier(titleVal, descVal, tags);
-      const cpm = calculateCPM(tier, score);
-      const isMonetized = monetizeCheckbox.checked;
+    progressMessage.textContent = 'Saving post data...';
 
-      const postRef = ref(db, `post/${Date.now()}`);
-      await set(postRef, {
-        title: titleVal,
-        description: descVal,
-        tags,
-        images: imageLinks,
-        uid: user.uid,
-        username: user.displayName || 'Anonymous',
-        timestamp: Date.now(),
-        monetize: isMonetized,
-        cpm,
-        tier
-      });
+    // Get current user
+    const user = auth.currentUser;
+    if (!user) throw new Error('User not authenticated.');
 
-      progressMessage.textContent = 'Uploaded successfully!';
-      setTimeout(() => location.reload(), 1000);
-    } catch (err) {
-      console.error(err);
-      alert('Upload failed: ' + err.message);
+    // Prepare post data
+    const postId = Date.now().toString(); // Simple unique ID based on timestamp
+    const postData = {
+      uid: user.uid,
+      imageUrl,
+      title: title.value.trim(),
+      description: description.value.trim(),
+      tags,
+      monetize: monetizeCheckbox.checked ? 'on' : 'off',
+      cpmEstimate: cpmEstimate.textContent,
+      visibility: visibilitySelect.value,
+      commentsEnabled: commentToggle.value === 'enabled',
+      link: linkInput.value.trim() || null,
+      timestamp: postId,
+    };
+
+    // Save post data to Firebase Realtime Database under /post/{postId}
+    await set(ref(db, `post/${postId}`), postData);
+
+    progressMessage.textContent = 'Post uploaded successfully!';
+    
+    // Optionally reset form here:
+    resetForm();
+
+  } catch (error) {
+    alert('Upload failed: ' + error.message);
+  } finally {
+    setTimeout(() => {
       progressOverlay.style.display = 'none';
-    }
-  });
+    }, 2000);
+  }
+});
+
+function resetForm() {
+  selectedImage = null;
+  dropZone.innerHTML = 'Click or drag image here';
+  postDetails.style.display = 'none';
+  title.value = '';
+  description.value = '';
+  tags = [];
+  tagInput.querySelectorAll('.tag').forEach(el => el.remove());
+  monetizeCheckbox.checked = false;
+  monetizeCheckbox.disabled = !monetizeCheckbox.title === '';
+  cpmEstimate.textContent = 'Estimated CPM: $0.00';
+  visibilitySelect.value = '';
+  commentToggle.value = '';
+  linkInput.value = '';
+}
 </script>
 
 </body>
