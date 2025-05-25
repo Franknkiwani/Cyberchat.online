@@ -567,5 +567,47 @@
     }
   });
 </script>
+<script>
+  async function uploadPost() {
+  if (!validateForm()) return;
+
+  // Show progress overlay or spinner here
+  progressOverlay.style.display = 'flex';
+  progressMessage.textContent = 'Uploading...';
+
+  try {
+    // Upload image to Imgur first
+    const imageUrl = await uploadToImgur(selectedImage);
+
+    const user = auth.currentUser;
+    if (!user) throw new Error('User not logged in.');
+
+    // Prepare post data — include optional fields only if they exist, else null
+    const postData = {
+      imageUrl,
+      title: title.value.trim(),
+      description: description.value.trim(),
+      tags,
+      monetize: monetizeCheckbox.checked,
+      commentsEnabled: commentsToggle ? commentsToggle.checked : null,
+      visibility: visibilitySelect ? visibilitySelect.value : null,
+      createdAt: Date.now(),
+      userId: user.uid
+    };
+
+    // Write to Firebase under /post with a unique key
+    const postRef = ref(db, 'post/' + Date.now() + '_' + user.uid);
+    await set(postRef, postData);
+
+    alert('Post uploaded successfully!');
+    // Reset form or navigate as needed
+
+  } catch (error) {
+    alert('Upload failed: ' + error.message);
+  } finally {
+    progressOverlay.style.display = 'none';
+  }
+}
+</script>
 </body>
 </html>
