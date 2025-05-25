@@ -1,293 +1,281 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" >
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CyberChat Post</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CyberChat Studio Dashboard</title>
   <style>
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    /* iOS 30 style small, neat, glass */
+    body {3
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
+        Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
       margin: 0;
-      padding: 0;
-      background: #111;
-      color: #fff;
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh;
-    }
-    header, footer {
-      background: #222;
-      padding: 1em;
-      text-align: center;
-      position: sticky;
-      z-index: 99;
+      background: #0a0a0a;
+      color: #eee;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
     }
     header {
-      top: 0;
-      border-bottom: 1px solid #333;
-    }
-    footer {
-      bottom: 0;
-      border-top: 1px solid #333;
-    }
-    .profile-pic {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      position: absolute;
-      top: 1em;
-      right: 1em;
+      backdrop-filter: blur(12px);
+      background: rgba(255 255 255 / 0.05);
+      height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 18px;
+      letter-spacing: 1.2px;
+      border-bottom: 1px solid rgba(255 255 255 / 0.1);
+      user-select: none;
     }
     main {
+      padding: 10px 15px;
+      max-width: 400px;
+      margin: auto;
+    }
+    .stats {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      font-size: 14px;
+    }
+    .stat {
       flex: 1;
-      padding: 2em 1em 6em;
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
-    }
-    form {
-      display: flex;
-      flex-direction: column;
-      gap: 1em;
-      width: 100%;
-      max-width: 500px;
-      margin: 0 auto;
-    }
-    input, textarea, select, .file-dropdown, button {
-      padding: 0.8em;
-      border: none;
-      border-radius: 0.5em;
-      font-size: 1em;
-      background: #222;
-      color: #fff;
-    }
-    .file-dropdown {
-      background: #444;
-      color: #ccc;
       text-align: center;
-      cursor: pointer;
+      padding: 6px 0;
+      border-radius: 8px;
+      margin: 0 5px;
+      background: rgba(255 255 255 / 0.06);
+      user-select: none;
     }
-    .preview-container img {
-      width: 80px;
-      height: 80px;
-      object-fit: cover;
-      border-radius: 0.5em;
-      margin: 0.5em;
+    .stat strong {
+      display: block;
+      font-size: 22px;
+      margin-bottom: 2px;
+      font-weight: 700;
     }
-    .monetization-bar {
-      background: #1a1a1a;
-      padding: 1em;
-      border: 1px solid #333;
-      border-radius: 1em;
+    #details {
+      margin-top: 12px;
+      background: rgba(255 255 255 / 0.07);
+      border-radius: 8px;
+      padding: 8px;
+      font-size: 13px;
+      max-height: 150px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      line-height: 1.4;
+      user-select: text;
     }
-    .warning {
-      color: #f55;
-      font-weight: bold;
-    }
-    button {
-      background: #007aff;
-      color: white;
-      font-weight: bold;
-      cursor: pointer;
+    canvas {
+      user-select: none;
     }
   </style>
 </head>
 <body>
-
-  <header>
-    <h2>CyberChat</h2>
-    <img src="https://i.imgur.com/YourProfilePic.png" alt="Profile" class="profile-pic" />
-  </header>
-
+  <header>CYBERCHAT STUDIO</header>
   <main>
-    <form id="postForm" onsubmit="return false;">
-      <input type="text" id="title" placeholder="What's on your mind, Boss?" required maxlength="100">
-      <textarea id="description" rows="4" placeholder="Tell us more..." maxlength="1000"></textarea>
-      <input type="text" id="tags" placeholder="e.g. tech AI GTA6">
-      <div class="file-dropdown" id="fileDropdown">Choose Images (up to 2)</div>
-      <input type="file" accept="image/*" id="fileInput" multiple style="display:none;">
-      <div class="preview-container" id="previewContainer"></div>
-      <select id="visibility">
-        <option value="public">Public</option>
-        <option value="followers">Followers Only</option>
-      </select>
-      <select id="comments">
-        <option value="true">Allow Comments</option>
-        <option value="false">Disable Comments</option>
-      </select>
-
-      <div class="monetization-bar" id="monetizationBox">
-        <h3>Monetization</h3>
-        <p>Estimated CPM: <strong id="cpmValue">$0.00</strong></p>
-        <label>
-          <input type="checkbox" id="monetizeToggle" disabled>
-          Enable Monetization
-        </label>
-        <p id="monetizeNote" class="warning"></p>
-      </div>
-
-      <button id="uploadNow">Upload Now</button>
-    </form>
+    <div class="stats">
+      <div class="stat" id="viewsStat"><strong>0</strong>Views</div>
+      <div class="stat" id="followersStat"><strong>0</strong>Followers</div>
+      <div class="stat" id="earningsStat"><strong>$0.00</strong>Earnings</div>
+    </div>
+    <canvas id="statsChart" width="400" height="200"></canvas>
+    <div id="details"></div>
   </main>
-
-  <footer>
-    <small>CyberChat &copy; 2025</small>
-  </footer>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-    import { getDatabase, ref, set, get, child } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+    import {
+      getDatabase,
+      ref,
+      onValue,
+      get,
+      child,
+      update,
+      increment
+    } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
 
+    import Chart from 'https://cdn.jsdelivr.net/npm/chart.js@4.3.0/dist/chart.esm.min.js';
+
+    // Your Firebase config
     const firebaseConfig = {
       apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
       authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
       databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
       projectId: "itzhoyoo-f9f7e",
-      storageBucket: "itzhoyoo-f9f7e.filestorage.app",
+      storageBucket: "itzhoyoo-f9f7e.firebasestorage.app",
       messagingSenderId: "1094792075584",
-      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5"
+      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
+      measurementId: "G-LLT6F9WRKH"
     };
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
-    const auth = getAuth(app);
 
-    const fileDropdown = document.getElementById('fileDropdown');
-    const fileInput = document.getElementById('fileInput');
-    const previewContainer = document.getElementById('previewContainer');
-    const cpmValue = document.getElementById('cpmValue');
-    const monetizeToggle = document.getElementById('monetizeToggle');
-    const monetizeNote = document.getElementById('monetizeNote');
+    // DOM refs
+    const viewsStat = document.getElementById('viewsStat').querySelector('strong');
+    const followersStat = document.getElementById('followersStat').querySelector('strong');
+    const earningsStat = document.getElementById('earningsStat').querySelector('strong');
+    const detailsDiv = document.getElementById('details');
 
-    fileDropdown.addEventListener('click', () => fileInput.click());
+    // Data holders
+    let postsData = {};
+    let chart;
 
-    fileInput.addEventListener('change', () => {
-      previewContainer.innerHTML = '';
-      const files = Array.from(fileInput.files).slice(0, 2);
-      if (fileInput.files.length > 2) {
-        alert('Max 2 images.');
-      }
-      files.forEach(file => {
-        const reader = new FileReader();
-        reader.onload = e => {
-          const img = document.createElement('img');
-          img.src = e.target.result;
-          previewContainer.appendChild(img);
-        };
-        reader.readAsDataURL(file);
-      });
-    });
-
-    function calculateCPM(title, description, imagesCount, rating = 1.0) {
-      const base = 0.1 * imagesCount + 0.01 * title.length + 0.01 * Math.floor(description.length / 10);
-      const capped = Math.min(5.0, base * rating);
-      return capped.toFixed(2);
-    }
-
-    function uploadImages(files) {
-      return Promise.all(files.map(file => {
-        return new Promise((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = () => {
-            fetch("https://api.imgur.com/3/image", {
-              method: "POST",
-              headers: {
-                Authorization: "Client-ID 891e5bb4aa94282",
-                "Content-Type": "application/json"
-              },
-              body: JSON.stringify({
-                image: reader.result.split(',')[1],
-                type: "base64"
-              })
-            })
-              .then(res => res.json())
-              .then(data => resolve(data.data.link))
-              .catch(reject);
-          };
-          reader.readAsDataURL(file);
-        });
-      }));
-    }
-
-    function handleMonetizationStatus(user) {
-      const userRef = ref(db, `users/${user.uid}/monetize`);
-      get(userRef).then(snapshot => {
-        const status = snapshot.val();
-        const title = document.getElementById('title').value.trim();
-        const desc = document.getElementById('description').value.trim();
-        const imageCount = fileInput.files.length;
-
-        const cpm = calculateCPM(title, desc, imageCount);
-        cpmValue.textContent = `$${cpm}`;
-
-        if (status === 'on') {
-          monetizeToggle.disabled = false;
-          monetizeNote.textContent = '';
-        } else {
-          monetizeToggle.disabled = true;
-          monetizeNote.textContent = 'You are not monetized yet.';
+    // Setup chart with empty data first
+    function createChart() {
+      const ctx = document.getElementById('statsChart').getContext('2d');
+      chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: [],
+          datasets: [
+            {
+              label: 'Views',
+              data: [],
+              borderColor: '#00ffff',
+              backgroundColor: 'rgba(0,255,255,0.2)',
+              tension: 0.3,
+              fill: true,
+              pointRadius: 6,
+              pointHoverRadius: 8,
+              pointHoverBorderWidth: 2
+            },
+            {
+              label: 'Followers',
+              data: [],
+              borderColor: '#ff7f00',
+              backgroundColor: 'rgba(255,127,0,0.2)',
+              tension: 0.3,
+              fill: true,
+              pointRadius: 6,
+              pointHoverRadius: 8,
+              pointHoverBorderWidth: 2
+            },
+            {
+              label: 'Earnings',
+              data: [],
+              borderColor: '#00ff00',
+              backgroundColor: 'rgba(0,255,0,0.2)',
+              tension: 0.3,
+              fill: true,
+              pointRadius: 6,
+              pointHoverRadius: 8,
+              pointHoverBorderWidth: 2
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: {
+            mode: 'nearest',
+            intersect: true,
+          },
+          plugins: {
+            legend: { labels: { color: '#eee', font: { size: 14 } } },
+            tooltip: {
+              enabled: true,
+              callbacks: {
+                label: ctx => {
+                  let label = ctx.dataset.label || '';
+                  if (label) label += ': ';
+                  label += ctx.parsed.y;
+                  if (label.includes('Earnings')) label = label.replace(/(\d+)/, (v) => `$${parseFloat(v).toFixed(2)}`);
+                  return label;
+                }
+              }
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: { color: '#aaa' }
+            },
+            x: {
+              ticks: { color: '#aaa' }
+            }
+          },
+          onClick: (evt, elements) => {
+            if (!elements.length) return;
+            const index = elements[0].index;
+            const datasetIndex = elements[0].datasetIndex;
+            const label = chart.data.labels[index];
+            if (datasetIndex === 0) { // Views clicked
+              showViewDetails(label);
+            } else {
+              detailsDiv.textContent = '';
+            }
+          }
         }
       });
     }
 
-    document.getElementById('uploadNow').addEventListener('click', () => {
-      const title = document.getElementById('title').value.trim();
-      const description = document.getElementById('description').value.trim();
-      const tags = document.getElementById('tags').value.trim().split(' ').map(t => '#' + t);
-      const visibility = document.getElementById('visibility').value;
-      const comments = document.getElementById('comments').value === 'true';
-      const files = Array.from(fileInput.files).slice(0, 2);
-      const monetize = monetizeToggle.checked;
-
-      if (!title) {
-        alert("Title is required.");
+    // Show details for views for the given label (postId here)
+    async function showViewDetails(postId) {
+      const viewDetailsRef = ref(db, `posts/${postId}/viewDetails`);
+      const snapshot = await get(viewDetailsRef);
+      const viewDetails = snapshot.val();
+      if (!viewDetails) {
+        detailsDiv.textContent = 'No detailed view data available.';
         return;
       }
+      let text = `View Details for Post "${postId}":\n\n`;
+      for (const userId in viewDetails) {
+        const ts = new Date(viewDetails[userId].timestamp).toLocaleString();
+        text += `User: ${userId}, Viewed At: ${ts}\n`;
+      }
+      detailsDiv.textContent = text;
+    }
 
-      onAuthStateChanged(auth, user => {
-        if (!user) {
-          alert("You must be logged in to post.");
-          return;
+    // Load posts and update dashboard & chart live
+    function loadPostsLive() {
+      const postsRef = ref(db, 'posts');
+      onValue(postsRef, (snapshot) => {
+        postsData = snapshot.val() || {};
+
+        // Aggregate totals
+        let totalViews = 0, totalFollowers = 0, totalEarnings = 0;
+        const labels = [];
+        const viewsData = [];
+        const followersData = [];
+        const earningsData = [];
+
+        for (const postId in postsData) {
+          const post = postsData[postId];
+          labels.push(postId);
+          const views = post.views || 0;
+          const followers = post.followers || 0;
+          const earnings = post.earnings || 0;
+          totalViews += views;
+          totalFollowers += followers;
+          totalEarnings += earnings;
+
+          viewsData.push(views);
+          followersData.push(followers);
+          earningsData.push(earnings);
         }
 
-        handleMonetizationStatus(user);
+        // Update stats UI
+        viewsStat.textContent = totalViews;
+        followersStat.textContent = totalFollowers;
+        earningsStat.textContent = `$${totalEarnings.toFixed(2)}`;
 
-        uploadImages(files).then(imageUrls => {
-          const postData = {
-            uid: user.uid,
-            title,
-            description,
-            tags,
-            images: imageUrls,
-            visibility,
-            commentsEnabled: comments,
-            createdAt: Date.now(),
-            monetize,
-            cpm: parseFloat(cpmValue.textContent.replace('$', ''))
-          };
+        // Update chart
+        chart.data.labels = labels;
+        chart.data.datasets[0].data = viewsData;
+        chart.data.datasets[1].data = followersData;
+        chart.data.datasets[2].data = earningsData;
+        chart.update();
 
-          const newPostRef = ref(db, `post/${Date.now()}`);
-          set(newPostRef, postData).then(() => {
-            alert("Post uploaded successfully!");
-            document.getElementById('postForm').reset();
-            previewContainer.innerHTML = '';
-            cpmValue.textContent = '$0.00';
-            monetizeToggle.checked = false;
-          });
-        });
+        // Clear details on update
+        detailsDiv.textContent = '';
       });
-    });
+    }
 
-    document.getElementById('title').addEventListener('input', () => {
-      const desc = document.getElementById('description').value;
-      cpmValue.textContent = `$${calculateCPM(document.getElementById('title').value, desc, fileInput.files.length)}`;
-    });
-    document.getElementById('description').addEventListener('input', () => {
-      const title = document.getElementById('title').value;
-      cpmValue.textContent = `$${calculateCPM(title, document.getElementById('description').value, fileInput.files.length)}`;
-    });
+    // Init
+    createChart();
+    loadPostsLive();
   </script>
-
 </body>
 </html>
