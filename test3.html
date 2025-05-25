@@ -1,231 +1,534 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>CyberChat Creator Dashboard</title>
-  <style>
-    body {
-      background: #0d1117;
-      color: #c9d1d9;
-      font-family: 'Segoe UI', sans-serif;
-      margin: 0;
-      padding: 2rem;
-    }
-
-    h1 {
-      color: #58a6ff;
-      text-align: center;
-      font-size: 2rem;
-      margin-bottom: 2rem;
-    }
-
-    .dashboard {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 1.5rem;
-      margin-bottom: 3rem;
-    }
-
-    .dashboard-item {
-      background: rgba(255, 255, 255, 0.05);
-      backdrop-filter: blur(10px);
-      border: 1px solid #30363d;
-      border-radius: 1rem;
-      padding: 1rem;
-      text-align: center;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
-    }
-
-    .dashboard-item h3 {
-      margin: 0;
-      font-size: 1rem;
-      color: #8b949e;
-    }
-
-    .dashboard-item .value {
-      font-size: 1.5rem;
-      font-weight: bold;
-      color: #58a6ff;
-      margin-top: 0.25rem;
-    }
-
-    .graph-container {
-      width: 100%;
-      overflow-x: auto;
-    }
-
-    canvas {
-      background: #161b22;
-      border-radius: 1rem;
-      box-shadow: 0 0 15px rgba(0, 255, 255, 0.1);
-      padding: 1rem;
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>CyberChat Upload</title>
+<style>
+  /* Minimal styling for progress UI */
+  #progressOverlay {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.7);
+    display: flex; justify-content: center; align-items: center;
+    z-index: 10000; color: #0f0; font-family: monospace;
+    font-size: 1.4rem; display: none;
+  }
+  #progressOverlay.visible {
+    display: flex;
+  }
+  #progressMessage {
+    background: #222; padding: 2rem 3rem; border-radius: 12px;
+  }
+  .tag {
+    display: inline-block; background: #444; padding: 0 8px; margin: 0 5px 5px 0; border-radius: 12px; color: #0f0;
+  }
+</style>
+  <style>  
+    * {  
+      margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif;  
+    }  
+    body {  
+      background: #121212; color: #eee; padding-bottom: 80px;  
+    }  
+    header {  
+      background: #1f1f1f;  
+      padding: 15px 20px;  
+      display: flex;  
+      justify-content: space-between;  
+      align-items: center;  
+      border-bottom: 1px solid #333;  
+      position: sticky;  
+      top: 0;  
+      z-index: 100;  
+    }  
+    header h1 {  
+      font-size: 20px;  
+      font-weight: bold;  
+    }  
+    header img {  
+      width: 32px; height: 32px; border-radius: 50%;  
+    }  
+  
+    .container {  
+      max-width: 600px;  
+      margin: 20px auto;  
+      padding: 0 15px;  
+    }  
+  
+    .drop-zone {  
+      border: 2px dashed #444;  
+      padding: 40px;  
+      text-align: center;  
+      border-radius: 10px;  
+      background: #1e1e1e;  
+      cursor: pointer;  
+    }  
+  
+    .hidden { display: none; }  
+  
+    .section {  
+      margin-top: 30px;  
+    }  
+  
+    label {  
+      display: block;  
+      margin: 12px 0 6px;  
+    }  
+  
+    input[type="text"], textarea, select {  
+      width: 100%;  
+      padding: 10px;  
+      background: #2a2a2a;  
+      border: 1px solid #333;  
+      color: white;  
+      border-radius: 6px;  
+    }  
+  
+    .tag-input {  
+      display: flex;  
+      flex-wrap: wrap;  
+      background: #2a2a2a;  
+      padding: 8px;  
+      border-radius: 6px;  
+      border: 1px solid #333;  
+    }  
+  
+    .tag {  
+      background: #333;  
+      color: #ccc;  
+      padding: 5px 10px;  
+      margin: 3px;  
+      border-radius: 5px;  
+      font-size: 14px;  
+    }  
+  
+    .toggle {  
+      display: flex;  
+      align-items: center;  
+      margin-top: 10px;  
+    }  
+  
+    .toggle input {  
+      margin-right: 10px;  
+      width: 18px;  
+      height: 18px;  
+    }  
+  
+    .footer {  
+      position: fixed;  
+      bottom: 0;  
+      left: 0;  
+      width: 100%;  
+      background: #1f1f1f;  
+      padding: 15px;  
+      border-top: 1px solid #333;  
+    }  
+  
+    .footer button {  
+      width: 100%;  
+      padding: 14px;  
+      background: #00c67c;  
+      border: none;  
+      border-radius: 8px;  
+      font-size: 16px;  
+      color: white;  
+      font-weight: bold;  
+      cursor: pointer;  
+    }  
+  
+    .meta-box {  
+      border: 1px solid #333;  
+      padding: 15px;  
+      border-radius: 8px;  
+      background: #1a1a1a;  
+      margin-top: 20px;  
+    }  
+  
+    .meta-box h3 {  
+      font-size: 16px;  
+      margin-bottom: 10px;  
+      color: #aaa;  
+    }  
+  
+    .cpm-display {  
+      margin-top: 10px;  
+      color: #ccc;  
+      font-style: italic;  
+      display: inline-block;  
+    }  
+  
+    .cpm-info-container {  
+      position: relative;  
+      display: inline-block;  
+    }  
+  
+    #infoIcon {  
+      cursor: pointer;   
+      color: #00c67c;   
+      margin-left: 8px;   
+      font-weight: bold;  
+      user-select: none;  
+      border: 1px solid #00c67c;  
+      border-radius: 50%;  
+      width: 20px;  
+      height: 20px;  
+      text-align: center;  
+      line-height: 18px;  
+      font-size: 14px;  
+      display: inline-block;  
+    }  
+  
+    #cpmPopup {  
+      position: absolute;   
+      top: 24px;   
+      left: 0;   
+      background: #222;   
+      color: #ccc;   
+      padding: 10px;   
+      border: 1px solid #333;   
+      border-radius: 6px;   
+      width: 280px;   
+      z-index: 999;  
+      font-size: 14px;  
+      line-height: 1.3;  
+    }  
+  </style>  
 </head>
 <body>
+<header>
+  <h1>CyberChat</h1>
+  <img id="profileImg" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ4Cz4QyUZAetgiOhayGT846gGiS3gO-tH4Iu0EOaOnBahRhPqOmgaKy7c&s=10" alt="Profile" width="32" height="32" />
+</header>
 
-  <h1>CyberChat Creator Dashboard</h1>
-
-  <div class="dashboard">
-    <div class="dashboard-item"><h3>Posts</h3><div class="value">0</div></div>
-    <div class="dashboard-item"><h3>Views</h3><div class="value">0</div></div>
-    <div class="dashboard-item"><h3>Earnings</h3><div class="value">$0</div></div>
-    <div class="dashboard-item"><h3>Followers</h3><div class="value">0</div></div>
-    <div class="dashboard-item"><h3>Monetized</h3><div class="value">Off</div></div>
-    <div class="dashboard-item"><h3>Likes</h3><div class="value">0</div></div>
+<div class="container">
+  <div class="drop-zone" id="dropZone" style="border: 2px dashed #444; padding: 20px; cursor:pointer; margin-bottom:1rem;">
+    Drop up to 2 images here or click to upload
   </div>
 
-  <div class="graph-container">
-    <canvas id="graph" width="900" height="300"></canvas>
+  <div id="postDetails" class="section hidden" style="display:none;">
+    <h2>Post Details</h2>
+
+    <label>Title * (max 50 chars)</label><br />
+    <input type="text" required id="title" maxlength="50" style="width: 100%;" /><br /><br />
+
+    <label>Description *</label><br />
+    <textarea rows="4" required id="description" style="width: 100%;"></textarea><br /><br />
+
+    <label>Tags * (space or enter to add)</label><br />
+    <div class="tag-input" id="tagInput" style="background: #222; padding: 5px; color: white; display: flex; flex-wrap: wrap; gap: 5px; border-radius: 5px;">
+      <input type="text" id="tagField" style="background: transparent; border: none; color: white; outline: none; flex: 1 0 100px;" />
+    </div><br />
+
+    <div class="meta-box" style="background: #111; padding: 10px; border-radius: 8px;">
+      <h3>Monetization & Links</h3>
+
+      <label>Visibility</label><br />
+      <select id="visibility">
+        <option value="public">Public</option>
+        <option value="followers">Followers Only</option>
+      </select><br /><br />
+
+      <label>Allow Comments</label><br />
+      <select id="comments">
+        <option value="yes">Yes</option>
+        <option value="no">No</option>
+      </select><br /><br />
+
+      <label>External Link</label><br />
+      <input type="text" placeholder="https://example.com" id="externalLink" style="width: 100%;" /><br /><br />
+
+      <div class="toggle">
+        <input type="checkbox" id="monetize" />
+        <label for="monetize">Monetize this post to earn money</label>
+      </div><br />
+
+      <div class="cpm-info-container" style="position: relative; display: inline-block;">
+        <span id="cpmEstimate">Estimated CPM: Low CPM</span>
+        <span id="infoIcon" style="cursor:pointer; background:#666; color:#fff; border-radius:50%; width:18px; height:18px; text-align:center; line-height:18px; display:inline-block; margin-left: 6px;">?</span>
+        <div id="cpmPopup" style="display:none; position: absolute; top: 22px; left: 0; background:#222; padding: 10px; border-radius: 8px; width: 250px; font-size: 0.9rem; z-index: 10; color: #ccc;">
+          <strong>CPM info:</strong><br><br>
+          CPM is based on your post’s engagement and content. <br>
+          <ul style="padding-left: 1.2em;">
+            <li><strong>Low</strong>: Max $1 CPM</li>
+            <li><strong>Moderate</strong>: Max $2.50 CPM</li>
+            <li><strong>High</strong>: Max $4 CPM</li>
+          </ul>
+          Keep your title & description engaging with trending topics and multiple images for better CPM.
+        </div>
+      </div>
+    </div>
   </div>
+</div>
 
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js"></script>
+<div class="footer" style="margin-top: 1rem;">
+  <button id="uploadBtn" style="padding: 10px 20px; font-size: 1rem;">Upload Now</button>
+</div>
 
-  <script>
-    // Your Firebase config — no excuses, get this right!
-    const firebaseConfig = {
-      apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
-      authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
-      databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
-      projectId: "itzhoyoo-f9f7e",
-      storageBucket: "itzhoyoo-f9f7e.filestorage.app",
-      messagingSenderId: "1094792075584",
-      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
-      measurementId: "G-LLT6F9WRKH"
-    };
+<div id="progressOverlay">
+  <div id="progressMessage">Uploading...</div>
+</div>
 
-    // Initialize Firebase
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-    const auth = firebase.auth();
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+  import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
 
-    // Dashboard UI references
-    const dashboardItems = {
-      posts: document.querySelector('.dashboard-item:nth-child(1) .value'),
-      views: document.querySelector('.dashboard-item:nth-child(2) .value'),
-      earnings: document.querySelector('.dashboard-item:nth-child(3) .value'),
-      followers: document.querySelector('.dashboard-item:nth-child(4) .value'),
-      monetized: document.querySelector('.dashboard-item:nth-child(5) .value'),
-      likes: document.querySelector('.dashboard-item:nth-child(6) .value')
-    };
+  const firebaseConfig = {
+    apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
+    authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
+    databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
+    projectId: "itzhoyoo-f9f7e",
+    storageBucket: "itzhoyoo-f9f7e.firebasestorage.app",
+    messagingSenderId: "1094792075584",
+    appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
+    measurementId: "G-LLT6F9WRKH"
+  };
 
-    // Format big numbers to K, M, etc.
-    function formatNumber(num) {
-      if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
-      if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
-      return num.toString();
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  // Elements
+  const profileImg = document.getElementById('profileImg');
+  const dropZone = document.getElementById('dropZone');
+  const postDetails = document.getElementById('postDetails');
+  const title = document.getElementById('title');
+  const description = document.getElementById('description');
+  const tagField = document.getElementById('tagField');
+  const tagInput = document.getElementById('tagInput');
+  const monetizeCheckbox = document.getElementById('monetize');
+  const cpmEstimate = document.getElementById('cpmEstimate');
+  const infoIcon = document.getElementById('infoIcon');
+  const cpmPopup = document.getElementById('cpmPopup');
+  const uploadBtn = document.getElementById('uploadBtn');
+  const progressOverlay = document.getElementById('progressOverlay');
+  const progressMessage = document.getElementById('progressMessage');
+
+  const fallbackImageUrl = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ4Cz4QyUZAetgiOhayGT846gGiS3gO-tH4Iu0EOaOnBahRhPqOmgaKy7c&s=10";
+
+  // Load profile or fallback image
+  onAuthStateChanged(auth, user => {
+    profileImg.src = user?.photoURL || fallbackImageUrl;
+  });
+  profileImg.onerror = () => { profileImg.src = fallbackImageUrl; };
+
+  // Image selection, max 2
+  let selectedImages = [];
+  dropZone.addEventListener('click', () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.multiple = true;
+    input.onchange = () => handleFiles(input.files);
+    input.click();
+  });
+  dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.style.borderColor = '#00c67c'; });
+  dropZone.addEventListener('dragleave', () => { dropZone.style.borderColor = '#444'; });
+  dropZone.addEventListener('drop', e => {
+    e.preventDefault();
+    dropZone.style.borderColor = '#444';
+    handleFiles(e.dataTransfer.files);
+  });
+
+  function handleFiles(files) {
+    const imgs = Array.from(files).filter(f => f.type.startsWith('image/'));
+    if (imgs.length > 2) {
+      alert('Only 2 images allowed');
+      return;
     }
+    selectedImages = imgs;
+    postDetails.style.display = 'block';
+    dropZone.innerHTML = imgs.map(f => `<div>${f.name}</div>`).join('');
+    calcCPM();
+  }
 
-    // Listen for auth state changes
-    auth.onAuthStateChanged(user => {
-      if (user) {
-        const uid = user.uid;
-
-        const userStatsRef = db.ref(`/users/${uid}/stats`);
-        const userGraphRef = db.ref(`/users/${uid}/graphData`);
-
-        // Stats listener with error handling
-        userStatsRef.on('value', snapshot => {
-          try {
-            const data = snapshot.val() || {};
-            dashboardItems.posts.textContent = data.posts || 0;
-            dashboardItems.views.textContent = formatNumber(data.views || 0);
-            dashboardItems.earnings.textContent = `$${data.earnings?.toFixed(2) || "0.00"}`;
-            dashboardItems.followers.textContent = data.followers || 0;
-            dashboardItems.monetized.textContent = data.monetized || 'Off';
-            dashboardItems.likes.textContent = formatNumber(data.likes || 0);
-          } catch (e) {
-            alert("Error processing user stats: " + e.message);
-            console.error(e);
-          }
-        }, error => {
-          alert("Failed to load user stats: " + error.message);
-          console.error(error);
-        });
-
-        // Graph data listener with error handling
-        userGraphRef.on('value', snapshot => {
-          try {
-            const data = snapshot.val() || {};
-            const views = data.views || [];
-            const followers = data.followers || [];
-            const earnings = data.earnings || [];
-            updateGraph(views, followers, earnings);
-          } catch (e) {
-            alert("Error processing graph data: " + e.message);
-            console.error(e);
-          }
-        }, error => {
-          alert("Failed to load graph data: " + error.message);
-          console.error(error);
-        });
-
-      } else {
-        alert("You're not logged in. Log in to see your stats.");
-        // Optional: Clear dashboard or redirect user
+  // Clean tags array (unique, trimmed, no empty)
+  let tags = [];
+  tagField.addEventListener('keydown', e => {
+    if (e.key === ' ' || e.key === 'Enter') {
+      e.preventDefault();
+      const val = tagField.value.trim().toLowerCase();
+      if (val && !tags.includes(val)) {
+        tags.push(val);
+        const span = document.createElement('span');
+        span.className = 'tag';
+        span.textContent = '#' + val;
+        tagInput.insertBefore(span, tagField);
+        tagField.value = '';
+        calcCPM();
       }
-    }, error => {
-      alert("Authentication error: " + error.message);
-      console.error(error);
+    }
+  });
+
+  // CPM calc (same logic, neat)
+  const getPostTier = (titleText, descText, tagList) => {
+    const highEngagementTags = ['gta6', 'ai', 'fortnite', 'tech', 'money', 'bitcoin', 'crypto', 'stock'];
+    const text = (titleText + ' ' + descText).toLowerCase();
+    let score = 0;
+
+    if (highEngagementTags.some(t => text.includes(t))) score += 30;
+    if (tagList.length >= 3) score += 20;
+    if (descText.length > 100) score += 20;
+    if (titleText.length > 20) score += 10;
+    if (selectedImages.length === 2) score += 20;
+
+    let tier = 'Low';
+    if (score >= 70) tier = 'High';
+    else if (score >= 40) tier = 'Moderate';
+
+    return { tier, score: Math.min(score, 100) };
+  };
+
+  const calculateCPM = (tier, score) => {
+    const tierCaps = { Low: 1.0, Moderate: 2.5, High: 4.0 };
+    const maxCPM = tierCaps[tier];
+    const cpm = ((score / 100) * maxCPM).toFixed(2);
+    return parseFloat(cpm);
+  };
+
+  function calcCPM() {
+    const titleVal = title.value || '';
+    const descVal = description.value || '';
+    const { tier, score } = getPostTier(titleVal, descVal, tags);
+    const estimated = calculateCPM(tier, score);
+    cpmEstimate.textContent = `Estimated CPM: $${estimated} (${tier})`;
+  }
+
+  title.addEventListener('input', calcCPM);
+  description.addEventListener('input', calcCPM);
+
+  infoIcon.addEventListener('click', () => {
+    cpmPopup.style.display = cpmPopup.style.display === 'block' ? 'none' : 'block';
+  });
+  document.addEventListener('click', e => {
+    if (!infoIcon.contains(e.target) && !cpmPopup.contains(e.target)) {
+      cpmPopup.style.display = 'none';
+    }
+  });
+
+  function validateForm() {
+  if (selectedImages.length === 0 || selectedImages.length > 2) {
+    alert('Please upload 1 or 2 images.');
+    return false;
+  }
+
+  const titleVal = title.value.trim();
+  const descVal = description.value.trim();
+
+  if (!titleVal) {
+    alert('Title is required.');
+    return false;
+  }
+  if (titleVal.length > 100) {
+    alert('Title is too long. Keep it under 100 characters.');
+    return false;
+  }
+
+  if (!descVal) {
+    alert('Description is required.');
+    return false;
+  }
+  if (descVal.length > 1000) {
+    alert('Description is too long. Max 1000 characters allowed.');
+    return false;
+  }
+
+  // tags check removed since they're optional now
+
+  return true;
+}
+
+  async function uploadToImgur(file) {
+    const formData = new FormData();
+    formData.append('image', file);
+
+    const res = await fetch('https://api.imgur.com/3/image', {
+      method: 'POST',
+      headers: { Authorization: 'Client-ID 891e5bb4aa94282' },
+      body: formData,
     });
 
-    // Graph drawing context & size
-    const canvas = document.getElementById("graph");
-    const ctx = canvas.getContext("2d");
-    const width = canvas.width;
-    const height = canvas.height;
+    const data = await res.json();
+    if (data.success) {
+      return data.data.link;
+    } else {
+      throw new Error('Imgur upload failed: ' + (data.data?.error || 'unknown error'));
+    }
+  }
 
-    // Draw grid lines and Y axis labels
-    function drawGrid(maxY) {
-      ctx.clearRect(0, 0, width, height);
-      ctx.strokeStyle = "#2f363d";
-      ctx.lineWidth = 1;
-      ctx.font = "12px 'Segoe UI'";
-      ctx.fillStyle = "#8b949e";
+  uploadBtn.addEventListener('click', async () => {
+    if (!validateForm()) return;
+    if (!auth.currentUser) {
+      alert('You must be logged in to upload.');
+      return;
+    }
 
-      for (let i = 0; i <= 5; i++) {
-        const y = (i / 5) * height;
-        ctx.beginPath();
-        ctx.moveTo(0, y);
-        ctx.lineTo(width, y);
-        ctx.stroke();
+    try {
+      progressOverlay.classList.add('visible');
+      progressMessage.textContent = 'Uploading images... 0%';
 
-        const label = Math.round(maxY * (1 - i / 5));
-        ctx.fillText(label, 5, y - 5);
+      const uploadedUrls = [];
+      for (let i = 0; i < selectedImages.length; i++) {
+        const img = selectedImages[i];
+        progressMessage.textContent = `Uploading images... ${Math.round(((i + 1) / selectedImages.length) * 100)}%`;
+        const url = await uploadToImgur(img);
+        uploadedUrls.push(url);
       }
+
+      progressMessage.textContent = 'Saving post data...';
+
+      const postObj = {
+        uid: auth.currentUser.uid,
+        authorName: auth.currentUser.displayName || 'Anonymous',
+        authorPhoto: auth.currentUser.photoURL || fallbackImageUrl,
+        title: title.value.trim(),
+        description: description.value.trim(),
+        tags, // cleaned tags array
+        images: uploadedUrls,
+        monetize: monetizeCheckbox.checked && auth.currentUser.monetize === 'on', // will fix below
+        cpmEstimate: cpmEstimate.textContent,
+        createdAt: serverTimestamp(),
+      };
+
+      // Fix monetize check: need to fetch user's monetize status from Firestore or Realtime DB before trusting this
+      // For now, let's assume we have a function getUserMonetizeStatus()
+      const monetizeStatus = await getUserMonetizeStatus(auth.currentUser.uid);
+      postObj.monetize = monetizeCheckbox.checked && monetizeStatus === 'on';
+
+      // Save post
+      const postsCollection = collection(db, 'post');
+      await addDoc(postsCollection, postObj);
+
+      progressMessage.textContent = 'Post uploaded successfully!';
+      // Reset form/UI
+      selectedImages = [];
+      dropZone.innerHTML = 'Click or drag images here (max 2)';
+      postDetails.style.display = 'none';
+      title.value = '';
+      description.value = '';
+      tagInput.querySelectorAll('.tag').forEach(tag => tag.remove());
+      tags = [];
+      monetizeCheckbox.checked = false;
+      cpmEstimate.textContent = '';
+
+      setTimeout(() => {
+        progressOverlay.classList.remove('visible');
+        progressMessage.textContent = '';
+      }, 2000);
+
+    } catch (error) {
+      progressOverlay.classList.remove('visible');
+      alert('Error uploading post: ' + error.message);
     }
+  });
 
-    // Draw a line for a dataset
-    function drawLine(data, color, scale) {
-      if (!data.length) return;
-      ctx.beginPath();
-      ctx.strokeStyle = color;
-      data.forEach((val, i) => {
-        const x = (i / (data.length - 1)) * width;
-        const y = height - val * scale;
-        if (i === 0) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
-      });
-      ctx.stroke();
-    }
-
-    // Update the graph with new data arrays
-    function updateGraph(views, followers, earnings) {
-      // Use multipliers for visual clarity
-      const scaledFollowers = followers.map(f => f * 20);
-      const scaledEarnings = earnings.map(e => e * 25);
-
-      const maxVal = Math.max(...views, ...scaledFollowers, ...scaledEarnings, 100);
-      drawGrid(maxVal);
-      drawLine(views, "rgba(0, 255, 255, 0.8)", 1);
-      drawLine(followers, "rgba(255, 140, 0, 0.8)", 20);
-      drawLine(earnings, "rgba(0, 255, 0, 0.8)", 25);
-    }
-  </script>
-
+  // Dummy function, replace with actual DB fetch
+  async function getUserMonetizeStatus(uid) {
+    // This needs actual implementation:
+    // e.g. fetch from Firestore or Realtime DB user profile path
+    // For now, return 'off' to disable monetize toggle (safer default)
+    return 'off';
+  }
+</script>
 </body>
 </html>
