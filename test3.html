@@ -438,106 +438,104 @@
   return true;
 }
 
+  async function uploadToImgur(file) {
+    const formData = new FormData();
+    formData.append('image', file);
 
+    const res = await fetch('https://api.imgur.com/3/image', {
+      method: 'POST',
+      headers: { Authorization: 'Client-ID 891e5bb4aa94282' },
+      body: formData,
+    });
 
-async function uploadToImgur(file) {
-  const formData = new FormData();
-  formData.append('image', file);
-
-  const res = await fetch('https://api.imgur.com/3/image', {
-    method: 'POST',
-    headers: { Authorization: 'Client-ID 891e5bb4aa94282' },
-    body: formData,
-  });
-
-  const data = await res.json();
-  if (data.success) {
-    return data.data.link;
-  } else {
-    throw new Error('Imgur upload failed: ' + (data.data?.error || 'unknown error'));
-  }
-}
-
-uploadBtn.addEventListener('click', async () => {
-  if (!validateForm()) return;
-  if (!auth.currentUser) {
-    alert('You must be logged in to upload.');
-    return;
+    const data = await res.json();
+    if (data.success) {
+      return data.data.link;
+    } else {
+      throw new Error('Imgur upload failed: ' + (data.data?.error || 'unknown error'));
+    }
   }
 
-  try {
-    progressOverlay.classList.add('visible');
-    progressMessage.textContent = 'Uploading images... 0%';
-
-    const uploadedUrls = [];
-    for (let i = 0; i < selectedImages.length; i++) {
-      const img = selectedImages[i];
-      progressMessage.textContent = `Uploading images... ${Math.round(((i + 1) / selectedImages.length) * 100)}%`;
-      const url = await uploadToImgur(img);
-      uploadedUrls.push(url);
+  uploadBtn.addEventListener('click', async () => {
+    if (!validateForm()) return;
+    if (!auth.currentUser) {
+      alert('You must be logged in to upload.');
+      return;
     }
 
-    progressMessage.textContent = 'Fetching monetize status...';
+    try {
+      progressOverlay.classList.add('visible');
+      progressMessage.textContent = 'Uploading images... 0%';
 
-    const monetizeStatus = await getUserMonetizeStatus(auth.currentUser.uid);
+      const uploadedUrls = [];
+      for (let i = 0; i < selectedImages.length; i++) {
+        const img = selectedImages[i];
+        progressMessage.textContent = `Uploading images... ${Math.round(((i + 1) / selectedImages.length) * 100)}%`;
+        const url = await uploadToImgur(img);
+        uploadedUrls.push(url);
+      }
 
-    progressMessage.textContent = 'Saving post data...';
+      progressMessage.textContent = 'Saving post data...';
 
-    const postObj = {
-      uid: auth.currentUser.uid,
-      authorName: auth.currentUser.displayName || 'Anonymous',
-      authorPhoto: auth.currentUser.photoURL || fallbackImageUrl,
-      title: title.value.trim(),
-      description: description.value.trim(),
-      tags, // cleaned tags array
-      images: uploadedUrls,
-      monetize: monetizeCheckbox.checked && monetizeStatus === 'on',
-      cpmEstimate: cpmEstimate.textContent,
-      createdAt: serverTimestamp(),
-    };
+      const postObj = {
+        uid: auth.currentUser.uid,
+        authorName: auth.currentUser.displayName || 'Anonymous',
+        authorPhoto: auth.currentUser.photoURL || fallbackImageUrl,
+        title: title.value.trim(),
+        description: description.value.trim(),
+        tags, // cleaned tags array
+        images: uploadedUrls,
+        monetize: monetizeCheckbox.checked && auth.currentUser.monetize === 'on', // will fix below
+        cpmEstimate: cpmEstimate.textContent,
+        createdAt: serverTimestamp(),
+      };
 
-    // Save post
-    const postsCollection = collection(db, 'post');
-    await addDoc(postsCollection, postObj);
+      // Fix monetize check: need to fetch user's monetize status from Firestore or Realtime DB before trusting this
+      // For now, let's assume we have a function getUserMonetizeStatus()
+      const monetizeStatus = await getUserMonetizeStatus(auth.currentUser.uid);
+      postObj.monetize = monetizeCheckbox.checked && monetizeStatus === 'on';
 
-    progressMessage.textContent = 'Post uploaded successfully!';
+      // Save post
+      const postsCollection = collection(db, 'post');
+      await addDoc(postsCollection, postObj);
 
-    // Reset form/UI
-    selectedImages = [];
-    dropZone.innerHTML = 'Click or drag images here (max 2)';
-    postDetails.style.display = 'none';
-    title.value = '';
-    description.value = '';
-    tagInput.querySelectorAll('.tag').forEach(tag => tag.remove());
-    tags = [];
-    monetizeCheckbox.checked = false;
-    cpmEstimate.textContent = '';
+      progressMessage.textContent = 'Post uploaded successfully!';
+      // Reset form/UI
+      selectedImages = [];
+      dropZone.innerHTML = 'Click or drag images here (max 2)';
+      postDetails.style.display = 'none';
+      title.value = '';
+      description.value = '';
+      tagInput.querySelectorAll('.tag').forEach(tag => tag.remove());
+      tags = [];
+      monetizeCheckbox.checked = false;
+      cpmEstimate.textContent = '';
 
-    setTimeout(() => {
+      setTimeout(() => {
+        progressOverlay.classList.remove('visible');
+        progressMessage.textContent = '';
+      }, 2000);
+
+    } catch (error) {
       progressOverlay.classList.remove('visible');
-      progressMessage.textContent = '';
-    }, 2000);
+      alert('Error uploading post: ' + error.message);
+    }
+  });
 
-  } catch (error) {
-    progressOverlay.classList.remove('visible');
-    alert('Error uploading post: ' + error.message);
-  }
-});
 
-// Real getUserMonetizeStatus function reading from Firebase Realtime Database
 async function getUserMonetizeStatus(uid) {
   try {
     const db = getDatabase();
-    const userRef = ref(db, `users/${uid}/monetize`);
-    const snapshot = await get(userRef);
+    const monetizeRef = ref(db, `users/${uid}/monetize`);
+    const snapshot = await get(monetizeRef);
     if (snapshot.exists()) {
-      return snapshot.val(); // expect 'on' or 'off'
+      return snapshot.val(); // should be 'on' or 'off'
     } else {
-      return 'off'; // default safer fallback
+      return 'off'; // safer default if nothing set
     }
   } catch (error) {
-    console.error('Error fetching monetize status:', error);
-    return 'off'; // fallback on error
+    console.error('Failed to get monetize status:', error);
+    return 'off'; // fallback on error — better safe than sorry
   }
 }
 </script>
