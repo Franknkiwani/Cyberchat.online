@@ -267,11 +267,10 @@
 <div id="progressOverlay">
   <div id="progressMessage">Uploading...</div>
 </div>
-
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
   import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
-  import { getDatabase, ref, set, get, child } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+  import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
@@ -288,7 +287,7 @@
   const auth = getAuth(app);
   const db = getDatabase(app);
 
-  // Elements
+  // DOM elements
   const profileImg = document.getElementById('profileImg');
   const dropZone = document.getElementById('dropZone');
   const postDetails = document.getElementById('postDetails');
@@ -306,24 +305,29 @@
 
   const fallbackImageUrl = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ4Cz4QyUZAetgiOhayGT846gGiS3gO-tH4Iu0EOaOnBahRhPqOmgaKy7c&s=10";
 
-  // Profile logic
+  // Load profile image and monetization status on auth change
   onAuthStateChanged(auth, async (user) => {
     if (user) {
       profileImg.src = user.photoURL || fallbackImageUrl;
+      try {
+        const userRef = ref(db, `users/${user.uid}`);
+        const snapshot = await get(userRef);
+        const data = snapshot.val();
+        const isMonetized = data?.monetize === 'on';
 
-      const userRef = ref(db, `users/${user.uid}`);
-      const snapshot = await get(userRef);
-      const data = snapshot.val();
-
-      const isMonetized = data?.monetize === 'on';
-
-      monetizeCheckbox.disabled = !isMonetized;
-      monetizeCheckbox.checked = isMonetized;
-      if (!isMonetized) {
+        monetizeCheckbox.disabled = !isMonetized;
+        monetizeCheckbox.checked = isMonetized;
+        monetizeCheckbox.title = isMonetized ? '' : 'You are not monetized yet';
+      } catch {
+        monetizeCheckbox.disabled = true;
+        monetizeCheckbox.checked = false;
         monetizeCheckbox.title = 'You are not monetized yet';
       }
     } else {
       profileImg.src = fallbackImageUrl;
+      monetizeCheckbox.disabled = true;
+      monetizeCheckbox.checked = false;
+      monetizeCheckbox.title = 'You are not monetized yet';
     }
   });
 
@@ -331,7 +335,7 @@
     profileImg.src = fallbackImageUrl;
   };
 
-  // Image handling
+  // Image selection logic - max 2 images
   let selectedImages = [];
   dropZone.addEventListener('click', () => {
     const input = document.createElement('input');
@@ -341,13 +345,16 @@
     input.onchange = () => handleFiles(input.files);
     input.click();
   });
+
   dropZone.addEventListener('dragover', e => {
     e.preventDefault();
     dropZone.style.borderColor = '#00c67c';
   });
+
   dropZone.addEventListener('dragleave', () => {
     dropZone.style.borderColor = '#444';
   });
+
   dropZone.addEventListener('drop', e => {
     e.preventDefault();
     dropZone.style.borderColor = '#444';
@@ -366,7 +373,7 @@
     calcCPM();
   }
 
-  // Tagging
+  // Tag handling - add tags on space or enter
   let tags = [];
   tagField.addEventListener('keydown', e => {
     if (e.key === ' ' || e.key === 'Enter') {
@@ -384,7 +391,7 @@
     }
   });
 
-  // CPM logic
+  // CPM calculation based on simple weighted score
   const getPostTier = (titleText, descText, tagList) => {
     const highEngagementTags = ['gta6', 'ai', 'fortnite', 'tech', 'money', 'bitcoin', 'crypto', 'stock'];
     const text = (titleText + ' ' + descText).toLowerCase();
@@ -424,12 +431,14 @@
   infoIcon.addEventListener('click', () => {
     cpmPopup.style.display = cpmPopup.style.display === 'block' ? 'none' : 'block';
   });
+
   document.addEventListener('click', e => {
     if (!infoIcon.contains(e.target) && !cpmPopup.contains(e.target)) {
       cpmPopup.style.display = 'none';
     }
   });
 
+  // Form validation
   function validateForm() {
     if (selectedImages.length === 0 || selectedImages.length > 2) {
       alert('Please upload 1 or 2 images.');
@@ -460,6 +469,7 @@
     return true;
   }
 
+  // Upload image to Imgur and return link
   async function uploadToImgur(file) {
     const formData = new FormData();
     formData.append('image', file);
@@ -478,8 +488,10 @@
     }
   }
 
+  // Upload button handler
   uploadBtn.addEventListener('click', async () => {
     if (!validateForm()) return;
+
     const user = auth.currentUser;
     if (!user) {
       alert('You must be logged in to upload.');
@@ -525,5 +537,6 @@
     }
   });
 </script>
+
 </body>
 </html>
