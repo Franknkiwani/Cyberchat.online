@@ -267,10 +267,11 @@
 <div id="progressOverlay">
   <div id="progressMessage">Uploading...</div>
 </div>
+
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
   import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
-  import { getDatabase, ref, set, get, child } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+  import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
@@ -287,7 +288,7 @@
   const auth = getAuth(app);
   const db = getDatabase(app);
 
-  // Elements
+  // DOM elements
   const profileImg = document.getElementById('profileImg');
   const dropZone = document.getElementById('dropZone');
   const postDetails = document.getElementById('postDetails');
@@ -302,34 +303,36 @@
   const uploadBtn = document.getElementById('uploadBtn');
   const progressOverlay = document.getElementById('progressOverlay');
   const progressMessage = document.getElementById('progressMessage');
-  const commentToggle = document.getElementById('commentToggle'); // your comments on/off dropdown element
-  const visibilitySelect = document.getElementById('visibilitySelect'); // your visibility dropdown element
-  const linkInput = document.getElementById('linkInput'); // input for optional link
+
+  // New: comments toggle and visibility dropdown elements
+  const commentsToggle = document.getElementById('commentsToggle');  // checkbox or switch input
+  const visibilitySelect = document.getElementById('visibilitySelect'); // select input with options like "public", "followers"
 
   const fallbackImageUrl = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ4Cz4QyUZAetgiOhayGT846gGiS3gO-tH4Iu0EOaOnBahRhPqOmgaKy7c&s=10";
 
-  // Profile logic: load user photo & monetize status
+  // Load profile image and monetization status on auth change
   onAuthStateChanged(auth, async (user) => {
     if (user) {
       profileImg.src = user.photoURL || fallbackImageUrl;
+      try {
+        const userRef = ref(db, `users/${user.uid}`);
+        const snapshot = await get(userRef);
+        const data = snapshot.val();
+        const isMonetized = data?.monetize === 'on';
 
-      const userRef = ref(db, `users/${user.uid}`);
-      const snapshot = await get(userRef);
-      const data = snapshot.val();
-
-      const isMonetized = data?.monetize === 'on';
-
-      monetizeCheckbox.disabled = !isMonetized;
-      monetizeCheckbox.checked = isMonetized;
-      if (!isMonetized) {
+        monetizeCheckbox.disabled = !isMonetized;
+        monetizeCheckbox.checked = isMonetized;
+        monetizeCheckbox.title = isMonetized ? '' : 'You are not monetized yet';
+      } catch {
+        monetizeCheckbox.disabled = true;
+        monetizeCheckbox.checked = false;
         monetizeCheckbox.title = 'You are not monetized yet';
-      } else {
-        monetizeCheckbox.title = '';
       }
     } else {
       profileImg.src = fallbackImageUrl;
       monetizeCheckbox.disabled = true;
       monetizeCheckbox.checked = false;
+      monetizeCheckbox.title = 'You are not monetized yet';
     }
   });
 
@@ -337,7 +340,7 @@
     profileImg.src = fallbackImageUrl;
   };
 
-  // Image handling - SINGLE image allowed only
+  // Only 1 image allowed
   let selectedImage = null;
   dropZone.addEventListener('click', () => {
     const input = document.createElement('input');
@@ -347,13 +350,16 @@
     input.onchange = () => handleFiles(input.files);
     input.click();
   });
+
   dropZone.addEventListener('dragover', e => {
     e.preventDefault();
     dropZone.style.borderColor = '#00c67c';
   });
+
   dropZone.addEventListener('dragleave', () => {
     dropZone.style.borderColor = '#444';
   });
+
   dropZone.addEventListener('drop', e => {
     e.preventDefault();
     dropZone.style.borderColor = '#444';
@@ -361,22 +367,18 @@
   });
 
   function handleFiles(files) {
-    if (files.length > 1) {
-      alert('Only 1 image allowed. Please select a single image.');
+    const imgFile = Array.from(files).find(f => f.type.startsWith('image/'));
+    if (!imgFile) {
+      alert('Please upload a valid image.');
       return;
     }
-    const file = files[0];
-    if (!file.type.startsWith('image/')) {
-      alert('File must be an image.');
-      return;
-    }
-    selectedImage = file;
+    selectedImage = imgFile;
     postDetails.style.display = 'block';
-    dropZone.innerHTML = `<div>${file.name}</div>`;
+    dropZone.innerHTML = `<div>${imgFile.name}</div>`;
     calcCPM();
   }
 
-  // Tagging logic
+  // Tags logic same as before
   let tags = [];
   tagField.addEventListener('keydown', e => {
     if (e.key === ' ' || e.key === 'Enter') {
@@ -394,7 +396,7 @@
     }
   });
 
-  // CPM logic based on title, description, tags, and presence of image
+  // CPM logic unchanged, but adjusted for single image
   const getPostTier = (titleText, descText, tagList) => {
     const highEngagementTags = ['gta6', 'ai', 'fortnite', 'tech', 'money', 'bitcoin', 'crypto', 'stock'];
     const text = (titleText + ' ' + descText).toLowerCase();
@@ -404,7 +406,7 @@
     if (tagList.length >= 3) score += 20;
     if (descText.length > 100) score += 20;
     if (titleText.length > 20) score += 10;
-    if (selectedImage) score += 20;
+    if (selectedImage) score += 10; // less weight for 1 image vs 2 previously
 
     let tier = 'Low';
     if (score >= 70) tier = 'High';
@@ -434,13 +436,14 @@
   infoIcon.addEventListener('click', () => {
     cpmPopup.style.display = cpmPopup.style.display === 'block' ? 'none' : 'block';
   });
+
   document.addEventListener('click', e => {
     if (!infoIcon.contains(e.target) && !cpmPopup.contains(e.target)) {
       cpmPopup.style.display = 'none';
     }
   });
 
-  // Validate all required fields before upload
+  // Form validation
   function validateForm() {
     if (!selectedImage) {
       alert('Please upload 1 image.');
@@ -468,104 +471,109 @@
       return false;
     }
 
-    if (!visibilitySelect.value) {
-      alert('Please select post visibility.');
+    // Validate comments toggle and visibility selection if needed
+    if (!commentsToggle) {
+      alert('Comments toggle element missing.');
       return false;
     }
-
-    if (!commentToggle.value) {
-      alert('Please select comment settings.');
+    if (!visibilitySelect || !visibilitySelect.value) {
+      alert('Please select visibility.');
       return false;
     }
 
     return true;
   }
 
-  // Upload image to Imgur and get URL
+  // Upload image to Imgur and return the image link
   async function uploadToImgur(file) {
     const formData = new FormData();
     formData.append('image', file);
 
-    const res = await fetch('https://api.imgur.com/3/image', {
-      method: 'POST',
-      headers: { Authorization: 'Client-ID 891e5bb4aa94282' },
-      body: formData,
-    });
+    try {
+      const res = await fetch('https://api.imgur.com/3/image', {
+        method: 'POST',
+        headers: {
+          Authorization: 'Client-ID 891e5bb4aa94282'
+        },
+        body: formData
+      });
 
-    const data = await res.json();
-    if (data.success) {
-      return data.data.link;
-    } else {
-      throw new Error('Imgur upload failed: ' + (data.data?.error || 'unknown error'));
+      const data = await res.json();
+      if (data.success) {
+        return data.data.link;
+      } else {
+        throw new Error('Imgur upload failed');
+      }
+    } catch (error) {
+      alert('Image upload failed: ' + error.message);
+      throw error;
     }
   }
 
-  // Upload button handler
+  // Handle form submission and upload post
   uploadBtn.addEventListener('click', async () => {
-  if (!validateForm()) return;
+    if (!validateForm()) return;
 
-  try {
     progressOverlay.style.display = 'flex';
     progressMessage.textContent = 'Uploading image...';
 
-    // Upload the image to Imgur and get the link
-    const imageUrl = await uploadToImgur(selectedImage);
+    try {
+      // Upload image first
+      const imageUrl = await uploadToImgur(selectedImage);
 
-    progressMessage.textContent = 'Saving post data...';
+      progressMessage.textContent = 'Saving post to database...';
 
-    // Get current user
-    const user = auth.currentUser;
-    if (!user) throw new Error('User not authenticated.');
+      // Get current user
+      const user = auth.currentUser;
+      if (!user) throw new Error('User not authenticated');
 
-    // Prepare post data
-    const postId = Date.now().toString(); // Simple unique ID based on timestamp
-    const postData = {
-      uid: user.uid,
-      imageUrl,
-      title: title.value.trim(),
-      description: description.value.trim(),
-      tags,
-      monetize: monetizeCheckbox.checked ? 'on' : 'off',
-      cpmEstimate: cpmEstimate.textContent,
-      visibility: visibilitySelect.value,
-      commentsEnabled: commentToggle.value === 'enabled',
-      link: linkInput.value.trim() || null,
-      timestamp: postId,
-    };
+      // Prepare post data
+      const newPostRef = ref(db, 'post/' + Date.now()); // Using timestamp as unique key
+      const postData = {
+        userId: user.uid,
+        username: user.displayName || 'Anonymous',
+        userProfilePic: user.photoURL || fallbackImageUrl,
+        imageUrl,
+        title: title.value.trim(),
+        description: description.value.trim(),
+        tags,
+        monetize: monetizeCheckbox.checked && !monetizeCheckbox.disabled,
+        cpmEstimate: cpmEstimate.textContent.replace('Estimated CPM: ', ''),
+        commentsEnabled: commentsToggle.checked,
+        visibility: visibilitySelect.value,
+        createdAt: Date.now(),
+        views: 0,
+        likes: 0,
+        commentsCount: 0
+      };
 
-    // Save post data to Firebase Realtime Database under /post/{postId}
-    await set(ref(db, `post/${postId}`), postData);
+      await set(newPostRef, postData);
 
-    progressMessage.textContent = 'Post uploaded successfully!';
-    
-    // Optionally reset form here:
-    resetForm();
+      progressMessage.textContent = 'Post uploaded successfully!';
 
-  } catch (error) {
-    alert('Upload failed: ' + error.message);
-  } finally {
-    setTimeout(() => {
+      // Reset form/UI after successful upload
+      selectedImage = null;
+      dropZone.innerHTML = '<div>Click or drag image here</div>';
+      postDetails.style.display = 'none';
+      title.value = '';
+      description.value = '';
+      tags = [];
+      tagInput.querySelectorAll('.tag').forEach(el => el.remove());
+      monetizeCheckbox.checked = false;
+      commentsToggle.checked = true; // or false, your call
+      visibilitySelect.value = 'public';
+      calcCPM();
+
+      setTimeout(() => {
+        progressOverlay.style.display = 'none';
+        progressMessage.textContent = '';
+      }, 2000);
+
+    } catch (err) {
       progressOverlay.style.display = 'none';
-    }, 2000);
-  }
-});
-
-function resetForm() {
-  selectedImage = null;
-  dropZone.innerHTML = 'Click or drag image here';
-  postDetails.style.display = 'none';
-  title.value = '';
-  description.value = '';
-  tags = [];
-  tagInput.querySelectorAll('.tag').forEach(el => el.remove());
-  monetizeCheckbox.checked = false;
-  monetizeCheckbox.disabled = !monetizeCheckbox.title === '';
-  cpmEstimate.textContent = 'Estimated CPM: $0.00';
-  visibilitySelect.value = '';
-  commentToggle.value = '';
-  linkInput.value = '';
-}
+      alert('Failed to upload post: ' + err.message);
+    }
+  });
 </script>
-
 </body>
 </html>
