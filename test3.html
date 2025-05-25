@@ -1,281 +1,178 @@
 <!DOCTYPE html>
-<html lang="en" >
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>CyberChat Studio Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CyberChat Creator Dashboard</title>
   <style>
-    /* iOS 30 style small, neat, glass */
-    body {3
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
-        Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    body {
+      background: #0d1117;
+      color: #c9d1d9;
+      font-family: 'Segoe UI', sans-serif;
       margin: 0;
-      background: #0a0a0a;
-      color: #eee;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
+      padding: 2rem;
     }
-    header {
-      backdrop-filter: blur(12px);
-      background: rgba(255 255 255 / 0.05);
-      height: 50px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 600;
-      font-size: 18px;
-      letter-spacing: 1.2px;
-      border-bottom: 1px solid rgba(255 255 255 / 0.1);
-      user-select: none;
-    }
-    main {
-      padding: 10px 15px;
-      max-width: 400px;
-      margin: auto;
-    }
-    .stats {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 10px;
-      font-size: 14px;
-    }
-    .stat {
-      flex: 1;
+
+    h1 {
+      color: #58a6ff;
       text-align: center;
-      padding: 6px 0;
-      border-radius: 8px;
-      margin: 0 5px;
-      background: rgba(255 255 255 / 0.06);
-      user-select: none;
+      font-size: 2rem;
+      margin-bottom: 2rem;
     }
-    .stat strong {
-      display: block;
-      font-size: 22px;
-      margin-bottom: 2px;
-      font-weight: 700;
+
+    .dashboard {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 3rem;
     }
-    #details {
-      margin-top: 12px;
-      background: rgba(255 255 255 / 0.07);
-      border-radius: 8px;
-      padding: 8px;
-      font-size: 13px;
-      max-height: 150px;
-      overflow-y: auto;
-      white-space: pre-wrap;
-      line-height: 1.4;
-      user-select: text;
+
+    .dashboard-item {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      border: 1px solid #30363d;
+      border-radius: 1rem;
+      padding: 1rem;
+      text-align: center;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
     }
+
+    .dashboard-item h3 {
+      margin: 0;
+      font-size: 1rem;
+      color: #8b949e;
+    }
+
+    .dashboard-item .value {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #58a6ff;
+      margin-top: 0.25rem;
+    }
+
+    .graph-container {
+      width: 100%;
+      overflow-x: auto;
+    }
+
     canvas {
-      user-select: none;
+      background: #161b22;
+      border-radius: 1rem;
+      box-shadow: 0 0 15px rgba(0, 255, 255, 0.1);
+      padding: 1rem;
     }
   </style>
 </head>
 <body>
-  <header>CYBERCHAT STUDIO</header>
-  <main>
-    <div class="stats">
-      <div class="stat" id="viewsStat"><strong>0</strong>Views</div>
-      <div class="stat" id="followersStat"><strong>0</strong>Followers</div>
-      <div class="stat" id="earningsStat"><strong>$0.00</strong>Earnings</div>
-    </div>
-    <canvas id="statsChart" width="400" height="200"></canvas>
-    <div id="details"></div>
-  </main>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-    import {
-      getDatabase,
-      ref,
-      onValue,
-      get,
-      child,
-      update,
-      increment
-    } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+  <h1>CyberChat Creator Dashboard</h1>
 
-    import Chart from 'https://cdn.jsdelivr.net/npm/chart.js@4.3.0/dist/chart.esm.min.js';
+  <div class="dashboard">
+    <div class="dashboard-item"><h3>Posts</h3><div class="value">0</div></div>
+    <div class="dashboard-item"><h3>Views</h3><div class="value">0</div></div>
+    <div class="dashboard-item"><h3>Earnings</h3><div class="value">$0</div></div>
+    <div class="dashboard-item"><h3>Followers</h3><div class="value">0</div></div>
+    <div class="dashboard-item"><h3>Monetized</h3><div class="value">Off</div></div>
+    <div class="dashboard-item"><h3>Likes</h3><div class="value">0</div></div>
+  </div>
 
-    // Your Firebase config
+  <div class="graph-container">
+    <canvas id="graph" width="900" height="300"></canvas>
+  </div>
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js"></script>
+
+  <script>
     const firebaseConfig = {
       apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
       authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
       databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
       projectId: "itzhoyoo-f9f7e",
-      storageBucket: "itzhoyoo-f9f7e.firebasestorage.app",
+      storageBucket: "itzhoyoo-f9f7e.filestorage.app",
       messagingSenderId: "1094792075584",
-      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
-      measurementId: "G-LLT6F9WRKH"
+      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5"
     };
 
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
 
-    // DOM refs
-    const viewsStat = document.getElementById('viewsStat').querySelector('strong');
-    const followersStat = document.getElementById('followersStat').querySelector('strong');
-    const earningsStat = document.getElementById('earningsStat').querySelector('strong');
-    const detailsDiv = document.getElementById('details');
+    const dashboardItems = {
+      posts: document.querySelector('.dashboard-item:nth-child(1) .value'),
+      views: document.querySelector('.dashboard-item:nth-child(2) .value'),
+      earnings: document.querySelector('.dashboard-item:nth-child(3) .value'),
+      followers: document.querySelector('.dashboard-item:nth-child(4) .value'),
+      monetized: document.querySelector('.dashboard-item:nth-child(5) .value'),
+      likes: document.querySelector('.dashboard-item:nth-child(6) .value')
+    };
 
-    // Data holders
-    let postsData = {};
-    let chart;
+    function formatNumber(num) {
+      if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+      if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+      return num.toString();
+    }
 
-    // Setup chart with empty data first
-    function createChart() {
-      const ctx = document.getElementById('statsChart').getContext('2d');
-      chart = new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels: [],
-          datasets: [
-            {
-              label: 'Views',
-              data: [],
-              borderColor: '#00ffff',
-              backgroundColor: 'rgba(0,255,255,0.2)',
-              tension: 0.3,
-              fill: true,
-              pointRadius: 6,
-              pointHoverRadius: 8,
-              pointHoverBorderWidth: 2
-            },
-            {
-              label: 'Followers',
-              data: [],
-              borderColor: '#ff7f00',
-              backgroundColor: 'rgba(255,127,0,0.2)',
-              tension: 0.3,
-              fill: true,
-              pointRadius: 6,
-              pointHoverRadius: 8,
-              pointHoverBorderWidth: 2
-            },
-            {
-              label: 'Earnings',
-              data: [],
-              borderColor: '#00ff00',
-              backgroundColor: 'rgba(0,255,0,0.2)',
-              tension: 0.3,
-              fill: true,
-              pointRadius: 6,
-              pointHoverRadius: 8,
-              pointHoverBorderWidth: 2
-            }
-          ]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          interaction: {
-            mode: 'nearest',
-            intersect: true,
-          },
-          plugins: {
-            legend: { labels: { color: '#eee', font: { size: 14 } } },
-            tooltip: {
-              enabled: true,
-              callbacks: {
-                label: ctx => {
-                  let label = ctx.dataset.label || '';
-                  if (label) label += ': ';
-                  label += ctx.parsed.y;
-                  if (label.includes('Earnings')) label = label.replace(/(\d+)/, (v) => `$${parseFloat(v).toFixed(2)}`);
-                  return label;
-                }
-              }
-            }
-          },
-          scales: {
-            y: {
-              beginAtZero: true,
-              ticks: { color: '#aaa' }
-            },
-            x: {
-              ticks: { color: '#aaa' }
-            }
-          },
-          onClick: (evt, elements) => {
-            if (!elements.length) return;
-            const index = elements[0].index;
-            const datasetIndex = elements[0].datasetIndex;
-            const label = chart.data.labels[index];
-            if (datasetIndex === 0) { // Views clicked
-              showViewDetails(label);
-            } else {
-              detailsDiv.textContent = '';
-            }
-          }
-        }
+    db.ref('/stats').on('value', (snapshot) => {
+      const data = snapshot.val() || {};
+      dashboardItems.posts.textContent = data.posts || 0;
+      dashboardItems.views.textContent = formatNumber(data.views || 0);
+      dashboardItems.earnings.textContent = `$${data.earnings || 0}`;
+      dashboardItems.followers.textContent = data.followers || 0;
+      dashboardItems.monetized.textContent = data.monetized || 'Off';
+      dashboardItems.likes.textContent = formatNumber(data.likes || 0);
+    });
+
+    const canvas = document.getElementById("graph");
+    const ctx = canvas.getContext("2d");
+    const width = canvas.width;
+    const height = canvas.height;
+
+    function drawLine(data, color, scale) {
+      ctx.beginPath();
+      ctx.strokeStyle = color;
+      data.forEach((val, i) => {
+        const x = (i / (data.length - 1)) * width;
+        const y = height - val * scale;
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
       });
+      ctx.stroke();
     }
 
-    // Show details for views for the given label (postId here)
-    async function showViewDetails(postId) {
-      const viewDetailsRef = ref(db, `posts/${postId}/viewDetails`);
-      const snapshot = await get(viewDetailsRef);
-      const viewDetails = snapshot.val();
-      if (!viewDetails) {
-        detailsDiv.textContent = 'No detailed view data available.';
-        return;
+    function drawGrid(maxY) {
+      ctx.clearRect(0, 0, width, height);
+      ctx.strokeStyle = "#2f363d";
+      ctx.lineWidth = 1;
+      for (let i = 0; i <= 5; i++) {
+        const y = (i / 5) * height;
+        ctx.beginPath();
+        ctx.moveTo(0, y);
+        ctx.lineTo(width, y);
+        ctx.stroke();
+        const label = Math.round(maxY * (1 - i / 5));
+        ctx.fillStyle = "#8b949e";
+        ctx.fillText(label, 5, y - 5);
       }
-      let text = `View Details for Post "${postId}":\n\n`;
-      for (const userId in viewDetails) {
-        const ts = new Date(viewDetails[userId].timestamp).toLocaleString();
-        text += `User: ${userId}, Viewed At: ${ts}\n`;
-      }
-      detailsDiv.textContent = text;
     }
 
-    // Load posts and update dashboard & chart live
-    function loadPostsLive() {
-      const postsRef = ref(db, 'posts');
-      onValue(postsRef, (snapshot) => {
-        postsData = snapshot.val() || {};
+    function updateGraph(views, followers, earnings) {
+      const maxVal = Math.max(...views, ...followers.map(f => f * 20), ...earnings.map(e => e * 25)) || 100;
+      drawGrid(maxVal);
 
-        // Aggregate totals
-        let totalViews = 0, totalFollowers = 0, totalEarnings = 0;
-        const labels = [];
-        const viewsData = [];
-        const followersData = [];
-        const earningsData = [];
-
-        for (const postId in postsData) {
-          const post = postsData[postId];
-          labels.push(postId);
-          const views = post.views || 0;
-          const followers = post.followers || 0;
-          const earnings = post.earnings || 0;
-          totalViews += views;
-          totalFollowers += followers;
-          totalEarnings += earnings;
-
-          viewsData.push(views);
-          followersData.push(followers);
-          earningsData.push(earnings);
-        }
-
-        // Update stats UI
-        viewsStat.textContent = totalViews;
-        followersStat.textContent = totalFollowers;
-        earningsStat.textContent = `$${totalEarnings.toFixed(2)}`;
-
-        // Update chart
-        chart.data.labels = labels;
-        chart.data.datasets[0].data = viewsData;
-        chart.data.datasets[1].data = followersData;
-        chart.data.datasets[2].data = earningsData;
-        chart.update();
-
-        // Clear details on update
-        detailsDiv.textContent = '';
-      });
+      drawLine(views, "rgba(0, 255, 255, 0.8)", 1);
+      drawLine(followers, "rgba(255, 140, 0, 0.8)", 20);
+      drawLine(earnings, "rgba(0, 255, 0, 0.8)", 25);
     }
 
-    // Init
-    createChart();
-    loadPostsLive();
+    db.ref('/graphData').on('value', (snapshot) => {
+      const data = snapshot.val() || {};
+      const views = data.views || [];
+      const followers = data.followers || [];
+      const earnings = data.earnings || [];
+      updateGraph(views, followers, earnings);
+    });
   </script>
+
 </body>
 </html>
