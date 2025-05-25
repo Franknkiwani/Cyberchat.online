@@ -271,8 +271,7 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
   import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
-  import { getFirestore, collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore.js";
-  import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+  import { getDatabase, ref, set, get, child } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
@@ -287,8 +286,7 @@
 
   const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
-  const db = getFirestore(app);
-  const realtimeDB = getDatabase(app);
+  const db = getDatabase(app);
 
   // Elements
   const profileImg = document.getElementById('profileImg');
@@ -308,13 +306,32 @@
 
   const fallbackImageUrl = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ4Cz4QyUZAetgiOhayGT846gGiS3gO-tH4Iu0EOaOnBahRhPqOmgaKy7c&s=10";
 
-  // Profile image load or fallback
-  onAuthStateChanged(auth, user => {
-    profileImg.src = user?.photoURL || fallbackImageUrl;
-  });
-  profileImg.onerror = () => { profileImg.src = fallbackImageUrl; };
+  // Profile logic
+  onAuthStateChanged(auth, async (user) => {
+    if (user) {
+      profileImg.src = user.photoURL || fallbackImageUrl;
 
-  // Image selection max 2
+      const userRef = ref(db, `users/${user.uid}`);
+      const snapshot = await get(userRef);
+      const data = snapshot.val();
+
+      const isMonetized = data?.monetize === 'on';
+
+      monetizeCheckbox.disabled = !isMonetized;
+      monetizeCheckbox.checked = isMonetized;
+      if (!isMonetized) {
+        monetizeCheckbox.title = 'You are not monetized yet';
+      }
+    } else {
+      profileImg.src = fallbackImageUrl;
+    }
+  });
+
+  profileImg.onerror = () => {
+    profileImg.src = fallbackImageUrl;
+  };
+
+  // Image handling
   let selectedImages = [];
   dropZone.addEventListener('click', () => {
     const input = document.createElement('input');
@@ -324,8 +341,13 @@
     input.onchange = () => handleFiles(input.files);
     input.click();
   });
-  dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.style.borderColor = '#00c67c'; });
-  dropZone.addEventListener('dragleave', () => { dropZone.style.borderColor = '#444'; });
+  dropZone.addEventListener('dragover', e => {
+    e.preventDefault();
+    dropZone.style.borderColor = '#00c67c';
+  });
+  dropZone.addEventListener('dragleave', () => {
+    dropZone.style.borderColor = '#444';
+  });
   dropZone.addEventListener('drop', e => {
     e.preventDefault();
     dropZone.style.borderColor = '#444';
@@ -344,7 +366,7 @@
     calcCPM();
   }
 
-  // Tags management (unique, trimmed, lowercase)
+  // Tagging
   let tags = [];
   tagField.addEventListener('keydown', e => {
     if (e.key === ' ' || e.key === 'Enter') {
@@ -458,230 +480,50 @@
 
   uploadBtn.addEventListener('click', async () => {
     if (!validateForm()) return;
-    if (!auth.currentUser) {
+    const user = auth.currentUser;
+    if (!user) {
       alert('You must be logged in to upload.');
       return;
     }
 
-    try {
-      progressOverlay.classList.add('visible');
-      progressMessage.textContent = 'Uploading images... 0%';
+    progressOverlay.style.display = 'flex';
+    progressMessage.textContent = 'Uploading...';
 
-      const uploadedUrls = [];
-      for (let i = 0; i < selectedImages.length; i++) {
-        const img = selectedImages[i];
-        progressMessage.textContent = `Uploading images... ${Math.round(((i + 1) / selectedImages.length) * 100)}%`;
-        const url = await uploadToImgur(img);
-        uploadedUrls.push(url);
+    try {
+      const imageLinks = [];
+      for (const file of selectedImages) {
+        const link = await uploadToImgur(file);
+        imageLinks.push(link);
       }
 
-      progressMessage.textContent = 'Fetching monetize status...';
-      const monetizeStatus = await getUserMonetizeStatus(auth.currentUser.uid);
+      const titleVal = title.value.trim();
+      const descVal = description.value.trim();
+      const { tier, score } = getPostTier(titleVal, descVal, tags);
+      const cpm = calculateCPM(tier, score);
+      const isMonetized = monetizeCheckbox.checked;
 
-      progressMessage.textContent = 'Saving post data...';
-
-      const postObj = {
-        uid: auth.currentUser.uid,
-        authorName: auth.currentUser.displayName || 'Anonymous',
-        authorPhoto: auth.currentUser.photoURL || fallbackImageUrl,
-        title: title.value.trim(),
-        description: description.value.trim(),
+      const postRef = ref(db, `post/${Date.now()}`);
+      await set(postRef, {
+        title: titleVal,
+        description: descVal,
         tags,
-        images: uploadedUrls,
-        monetize: monetizeCheckbox.checked && monetizeStatus === 'on',
-        cpmEstimate: cpmEstimate.textContent,
-        createdAt: serverTimestamp(),
-      };
+        images: imageLinks,
+        uid: user.uid,
+        username: user.displayName || 'Anonymous',
+        timestamp: Date.now(),
+        monetize: isMonetized,
+        cpm,
+        tier
+      });
 
-      const postsCollection = collection(db, 'post');
-      await addDoc(postsCollection, postObj);
-
-      progressMessage.textContent = 'Post uploaded successfully!';
-
-      // Reset UI
-      selectedImages = [];
-      dropZone.innerHTML = 'Click or drag images here (max 2)';
-      postDetails.style.display = 'none';
-      title.value = '';
-      description.value = '';
-      tagInput.querySelectorAll('.tag').forEach(tag => tag.remove());
-      tags = [];
-      monetizeCheckbox.checked = false;
-      calcCPM();
-
-      setTimeout(() => {
-        progressOverlay.classList.remove('visible');
-        progressMessage.textContent = '';
-      }, 2000);
-    } catch (error) {
-      progressOverlay.classList.remove('visible');
-      alert('Error uploading post: ' + error.message);
+      progressMessage.textContent = 'Uploaded successfully!';
+      setTimeout(() => location.reload(), 1000);
+    } catch (err) {
+      console.error(err);
+      alert('Upload failed: ' + err.message);
+      progressOverlay.style.display = 'none';
     }
   });
-
-  async function getUserMonetizeStatus(uid) {
-    try {
-      const snap = await get(ref(realtimeDB, `users/${uid}/monetize`));
-      return snap.exists() ? snap.val() : 'off';
-    } catch (error) {
-      console.error('Failed to fetch monetize status:', error);
-      return 'off';
-    }
-  }
-</script>
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-import { getAuth, onAuthStateChanged, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
-import { getDatabase, ref, get, child, push, set } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
-  authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
-  databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
-  projectId: "itzhoyoo-f9f7e",
-  storageBucket: "itzhoyoo-f9f7e.appspot.com",
-  messagingSenderId: "1094792075584",
-  appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
-  measurementId: "G-LLT6F9WRKH"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const database = getDatabase(app);
-const provider = new GoogleAuthProvider();
-
-const loginModal = document.getElementById('loginModal');
-const loginBtn = document.getElementById('loginBtn');
-const profilePic = document.getElementById('profilePic');
-const userHandle = document.getElementById('userHandle');
-const userFollowers = document.getElementById('userFollowers');
-const previewImage = document.getElementById('previewImage');
-const imgurUrlContainer = document.getElementById('imgurUrlContainer');
-const postBtn = document.getElementById('postBtn');
-
-function showLogin() {
-  loginModal.classList.remove('hidden');
-  document.body.style.overflow = 'hidden';
-}
-function hideLogin() {
-  loginModal.classList.add('hidden');
-  document.body.style.overflow = 'auto';
-}
-
-loginBtn.addEventListener('click', () => {
-  signInWithPopup(auth, provider)
-    .catch((error) => alert("Login failed: " + error.message));
-});
-
-onAuthStateChanged(auth, async (user) => {
-  if (user) {
-    hideLogin();
-    const uid = user.uid;
-
-    profilePic.src = user.photoURL || 'https://via.placeholder.com/40';
-    userHandle.textContent = '@' + (user.displayName?.replace(/\s+/g, '').toLowerCase() || 'user');
-
-    try {
-      const dbRef = ref(database);
-      const snapshot = await get(child(dbRef, `users/${uid}/followers`));
-      userFollowers.textContent = snapshot.exists()
-        ? `Followers: ${snapshot.val()}`
-        : 'Followers: 0';
-    } catch (error) {
-      userFollowers.textContent = 'Followers: --';
-    }
-  } else {
-    showLogin();
-    profilePic.src = 'https://via.placeholder.com/40';
-    userHandle.textContent = '@guest';
-    userFollowers.textContent = 'Followers: --';
-  }
-});
-
-// Load image from sessionStorage and disable manual upload
-document.addEventListener('DOMContentLoaded', () => {
-  const imageData = sessionStorage.getItem('uploadedImage');
-  if (imageData && previewImage) {
-    previewImage.src = imageData;
-    previewImage.style.objectFit = 'cover';
-  } else {
-    alert("No image found. Redirecting...");
-    window.history.back();
-  }
-});
-
-postBtn.addEventListener('click', async () => {
-  const titleInput = document.getElementById('titleInput');
-  const captionInput = document.getElementById('captionInput');
-  const tagsInput = document.getElementById('tagsInput');
-  const categorySelect = document.getElementById('categorySelect');
-
-  if (!titleInput.value.trim()) return alert('Title is required');
-  if (!captionInput.value.trim()) return alert('Caption is required');
-  if (!tagsInput.value.trim()) return alert('Tags are required');
-  if (!categorySelect.value) return alert('Please select a category');
-
-  const user = auth.currentUser;
-  if (!user) return alert('You must be logged in to post.');
-
-  const imageData = previewImage.src;
-  if (!imageData || imageData.startsWith('data:image/gif;base64,R0lGODlh')) {
-    return alert('Please upload a valid image.');
-  }
-
-  try {
-    // Step 1: Push skeleton post WITHOUT imageUrl (placeholder)
-    const postsRef = ref(database, 'posts');
-    const newPostRef = push(postsRef);
-    const postData = {
-      userId: user.uid,
-      userName: user.displayName || user.email || 'Anonymous',
-      userPhoto: user.photoURL || '',
-      title: titleInput.value.trim(),
-      caption: captionInput.value.trim(),
-      tags: tagsInput.value.trim().split(',').map(t => t.trim()).filter(Boolean),
-      category: categorySelect.value,
-      imageUrl: null, // Placeholder, to be updated after upload
-      createdAt: Date.now(),
-    };
-    await set(newPostRef, postData);
-
-    // Step 2: Upload image to Imgur
-    const imgurRes = await fetch('https://api.imgur.com/3/image', {
-      method: 'POST',
-      headers: {
-        Authorization: 'Client-ID 784e530b6023501',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ image: imageData.split(',')[1], type: 'base64' }),
-    });
-
-    const imgurJson = await imgurRes.json();
-    if (!imgurJson.success) throw new Error('Imgur upload failed');
-
-    const imgurLink = imgurJson.data.link;
-
-    // Step 3: Update post with real image URL
-    await set(ref(database, `posts/${newPostRef.key}/imageUrl`), imgurLink);
-
-    // Show Imgur URL below form
-    imgurUrlContainer.innerHTML = `<p class="text-green-400 mt-2">Imgur URL: <a href="${imgurLink}" target="_blank" class="underline">${imgurLink}</a></p>`;
-
-    alert('Post published successfully!');
-
-    // Reset form and preview
-    titleInput.value = '';
-    captionInput.value = '';
-    tagsInput.value = '';
-    categorySelect.value = '';
-    previewImage.src = 'https://via.placeholder.com/1280x720.png?text=Preview+Image';
-    imgurUrlContainer.innerHTML = '';
-
-  } catch (error) {
-    console.error('Post error:', error);
-    alert('Failed to publish post: ' + error.message);
-  }
-});
 </script>
 </body>
 </html>
