@@ -3,132 +3,171 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>CyberChat - Create Post</title>
+  <title>CyberChat Upload</title>
+  <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-database-compat.js"></script>
   <style>
     body {
       margin: 0;
       font-family: 'Segoe UI', sans-serif;
       background: #121212;
-      color: #f1f1f1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+      color: white;
     }
+
+    .wrapper {
+      max-width: 80%;
+      margin: 0 auto;
+    }
+
     header, footer {
+      background: #1f1f1f;
+      padding: 1rem;
+      border-radius: 1rem;
+      position: sticky;
       width: 80%;
-      background: #1e1e1e;
-      border-radius: 20px;
-      padding: 15px 20px;
+      margin: auto;
+      z-index: 999;
+    }
+
+    header {
+      top: 0;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      position: sticky;
-      z-index: 10;
     }
-    header { top: 0; margin-top: 10px; }
-    footer { bottom: 0; margin-bottom: 10px; justify-content: center; }
-    main {
-      width: 80%;
-      margin: 80px 0 100px;
-    }
-    .profile-pic {
-      width: 35px;
-      height: 35px;
-      border-radius: 50%;
-      background: #555;
-    }
-    .upload-box {
-      border: 2px dashed #444;
-      padding: 20px;
+
+    footer {
+      bottom: 0;
       text-align: center;
-      border-radius: 15px;
-      margin-bottom: 20px;
     }
-    .upload-box input {
+
+    .drop-box {
+      border: 2px dashed #555;
+      border-radius: 1rem;
+      padding: 2rem;
+      text-align: center;
+      margin: 2rem auto;
+      background: #1e1e1e;
+      cursor: pointer;
+    }
+
+    .drop-box:hover {
+      background: #2a2a2a;
+    }
+
+    input[type="file"] {
       display: none;
     }
-    .image-preview {
+
+    .preview {
       display: flex;
       gap: 10px;
       margin-top: 10px;
     }
-    .image-preview img {
-      height: 60px;
-      border-radius: 10px;
+
+    .preview img {
+      width: 80px;
+      border-radius: 8px;
     }
+
     .form-section {
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
+      margin: 1rem 0;
     }
+
     input, textarea, select {
-      padding: 10px;
-      border-radius: 10px;
-      border: none;
-      background: #2a2a2a;
-      color: #fff;
-    }
-    .monetize-section {
-      background: #222;
-      border: 1px solid #333;
-      padding: 15px;
-      border-radius: 15px;
-      margin-top: 10px;
-    }
-    .upload-btn {
-      padding: 15px 20px;
-      background: #1abc9c;
-      border: none;
-      border-radius: 25px;
-      color: #fff;
-      font-weight: bold;
-      font-size: 16px;
       width: 100%;
-      max-width: 600px;
+      padding: 0.75rem;
+      margin-top: 0.5rem;
+      border-radius: 0.75rem;
+      border: none;
+      background: #2c2c2c;
+      color: white;
+    }
+
+    .monetize {
+      margin-top: 1rem;
+      padding: 1rem;
+      border-radius: 1rem;
+      background: #232323;
+    }
+
+    .monetize-toggle {
+      margin-top: 0.5rem;
+    }
+
+    .upload-btn {
+      width: 100%;
+      padding: 1rem;
+      background: #00b894;
+      color: white;
+      border: none;
+      border-radius: 2rem;
+      font-size: 1.2rem;
+      cursor: pointer;
+    }
+
+    .upload-btn:hover {
+      background: #00a383;
     }
   </style>
 </head>
 <body>
   <header>
-    <h2>CyberChat</h2>
-    <div class="profile-pic" id="userPic"></div>
+    <div>CyberChat</div>
+    <img id="userPic" src="" alt="Profile" width="35" style="border-radius: 50%;" />
   </header>
 
-  <main>
-    <div class="upload-box" onclick="document.getElementById('imgUpload').click();">
-      <p>Drop up to 2 images or click to upload</p>
-      <input type="file" id="imgUpload" multiple accept="image/*" onchange="handleImageUpload(event)" />
-      <div class="image-preview" id="preview"></div>
+  <div class="wrapper">
+    <label class="drop-box" id="dropBox">
+      Drop files or click to upload
+      <input type="file" id="fileInput" accept="image/*" multiple>
+      <div class="preview" id="preview"></div>
+    </label>
+
+    <div class="form-section">
+      <label>Title</label>
+      <input id="postTitle" placeholder="What's on your mind, Boss?" required>
     </div>
 
     <div class="form-section">
-      <input type="text" id="postTitle" placeholder="Post title..." oninput="updateCPM()" />
-      <textarea id="postDesc" rows="3" placeholder="Post description..." oninput="updateCPM()"></textarea>
-      <input type="text" id="postTags" placeholder="Tags (comma separated)" />
+      <label>Description</label>
+      <textarea id="postDesc" rows="3"></textarea>
+    </div>
+
+    <div class="form-section">
+      <label>Tags</label>
+      <input id="postTags" placeholder="#tags #go #here">
+    </div>
+
+    <div class="form-section">
+      <label>Visibility</label>
       <select id="visibility">
         <option value="public">Public</option>
-        <option value="private">Private</option>
+        <option value="private">Followers Only</option>
       </select>
-      <div id="monetizeSection" style="display: none;" class="monetize-section">
+    </div>
+
+    <div class="monetize">
+      <div>CPM Estimate</div>
+      <div id="cpmEstimate">$0.00</div>
+
+      <div class="monetize-toggle">
         <label>
-          <input type="checkbox" id="monetizeToggle" />
+          <input type="checkbox" id="monToggle" disabled>
           Monetize this post
         </label>
-        <p>Estimated CPM: <span id="cpmValue">$0.00</span></p>
+        <p id="monStatus" style="color: gray; font-size: 0.9rem;"></p>
       </div>
     </div>
-  </main>
+  </div>
 
   <footer>
-    <button class="upload-btn">Upload Now</button>
+    <button class="upload-btn" onclick="submitPost()">Upload Now</button>
   </footer>
 
-  <!-- Firebase -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-app.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-auth.js";
-    import { getDatabase, ref, get, child } from "https://www.gstatic.com/firebasejs/9.21.0/firebase-database.js";
-
+  <script>
+    // Firebase config
     const firebaseConfig = {
       apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
       authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
@@ -136,52 +175,92 @@
       projectId: "itzhoyoo-f9f7e",
       storageBucket: "itzhoyoo-f9f7e.filestorage.app",
       messagingSenderId: "1094792075584",
-      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
-      measurementId: "G-LLT6F9WRKH"
+      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5"
     };
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth();
-    const db = getDatabase(app);
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const auth = firebase.auth();
 
-    onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        document.getElementById("userPic").style.backgroundImage = `url('https://robohash.org/${user.uid}?set=set3')`;
-        const snap = await get(child(ref(db), `users/${user.uid}/monetize`));
-        if (snap.exists() && snap.val() === "on") {
-          document.getElementById("monetizeSection").style.display = "block";
-        }
-      }
-    });
+    let imageFiles = [];
+    const preview = document.getElementById('preview');
 
-    window.updateCPM = () => {
-      const title = document.getElementById("postTitle").value;
-      const desc = document.getElementById("postDesc").value;
-      const images = document.querySelectorAll("#preview img").length;
-
-      const titleCPM = title.length * 0.01;
-      const descCPM = Math.floor(desc.length / 10) * 0.01;
-      const imgCPM = images * 0.10;
-      const total = (titleCPM + descCPM + imgCPM).toFixed(2);
-
-      document.getElementById("cpmValue").innerText = `$${total}`;
-    };
-
-    window.handleImageUpload = (e) => {
+    document.getElementById('fileInput').addEventListener('change', e => {
       const files = Array.from(e.target.files).slice(0, 2);
-      const preview = document.getElementById("preview");
+      imageFiles = files;
       preview.innerHTML = "";
       files.forEach(file => {
         const reader = new FileReader();
-        reader.onload = () => {
-          const img = document.createElement("img");
-          img.src = reader.result;
+        reader.onload = e => {
+          const img = document.createElement('img');
+          img.src = e.target.result;
           preview.appendChild(img);
-          updateCPM();
         };
         reader.readAsDataURL(file);
       });
-    };
+      calculateCPM();
+    });
+
+    ['postTitle', 'postDesc'].forEach(id => {
+      document.getElementById(id).addEventListener('input', calculateCPM);
+    });
+
+    function calculateCPM() {
+      const title = document.getElementById('postTitle').value.trim();
+      const desc = document.getElementById('postDesc').value.trim();
+      const imgCount = imageFiles.length;
+
+      const cpm = (imgCount * 0.10) + (title.length * 0.01) + (Math.floor(desc.length / 10) * 0.01);
+      document.getElementById('cpmEstimate').innerText = `$${cpm.toFixed(2)}`;
+    }
+
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        db.ref(`/users/${user.uid}/monetize`).once('value').then(snapshot => {
+          const monetized = snapshot.val() === "on";
+          document.getElementById('monToggle').disabled = !monetized;
+          document.getElementById('monStatus').innerText = monetized ? "" : "You are not monetized yet";
+        });
+
+        db.ref(`/users/${user.uid}/profilePic`).once('value').then(snap => {
+          document.getElementById('userPic').src = snap.val() || 'https://placehold.co/35x35';
+        });
+      }
+    });
+
+    async function submitPost() {
+      const user = auth.currentUser;
+      if (!user) return alert("Login first");
+
+      const uploadedURLs = [];
+      for (let file of imageFiles) {
+        const formData = new FormData();
+        formData.append("image", file);
+        const res = await fetch("https://api.imgur.com/3/image", {
+          method: "POST",
+          headers: { Authorization: "Client-ID 891e5bb4aa94282" },
+          body: formData
+        });
+        const data = await res.json();
+        uploadedURLs.push(data.data.link);
+      }
+
+      const postData = {
+        title: document.getElementById('postTitle').value,
+        description: document.getElementById('postDesc').value,
+        tags: document.getElementById('postTags').value,
+        visibility: document.getElementById('visibility').value,
+        monetized: document.getElementById('monToggle').checked,
+        images: uploadedURLs,
+        timestamp: Date.now(),
+        uid: user.uid
+      };
+
+      db.ref(`/post`).push(postData).then(() => {
+        alert("Posted!");
+        window.location.reload();
+      });
+    }
   </script>
 </body>
 </html>
