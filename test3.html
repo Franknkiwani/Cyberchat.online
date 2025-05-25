@@ -267,297 +267,297 @@
 <div id="progressOverlay">
   <div id="progressMessage">Uploading...</div>
 </div>
-
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
-  import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
-
-  const firebaseConfig = {
-    apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
-    authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
-    databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
-    projectId: "itzhoyoo-f9f7e",
-    storageBucket: "itzhoyoo-f9f7e.firebasestorage.app",
-    messagingSenderId: "1094792075584",
-    appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
-    measurementId: "G-LLT6F9WRKH"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const db = getDatabase(app);
-
-  // DOM elements
-  const profileImg = document.getElementById('profileImg');
-  const dropZone = document.getElementById('dropZone');
-  const postDetails = document.getElementById('postDetails');
-  const title = document.getElementById('title');
-  const description = document.getElementById('description');
-  const tagField = document.getElementById('tagField');
-  const tagInput = document.getElementById('tagInput');
-  const monetizeCheckbox = document.getElementById('monetize');
-  const cpmEstimate = document.getElementById('cpmEstimate');
-  const infoIcon = document.getElementById('infoIcon');
-  const cpmPopup = document.getElementById('cpmPopup');
-  const uploadBtn = document.getElementById('uploadBtn');
-  const progressOverlay = document.getElementById('progressOverlay');
-  const progressMessage = document.getElementById('progressMessage');
-
-  // New: comments toggle and visibility dropdown elements
-  const commentsToggle = document.getElementById('commentsToggle');  // checkbox or switch input
-  const visibilitySelect = document.getElementById('visibilitySelect'); // select input with options like "public", "followers"
-
-  const fallbackImageUrl = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ4Cz4QyUZAetgiOhayGT846gGiS3gO-tH4Iu0EOaOnBahRhPqOmgaKy7c&s=10";
-
-  // Load profile image and monetization status on auth change
-  onAuthStateChanged(auth, async (user) => {
-    if (user) {
-      profileImg.src = user.photoURL || fallbackImageUrl;
-      try {
-        const userRef = ref(db, `users/${user.uid}`);
-        const snapshot = await get(userRef);
-        const data = snapshot.val();
-        const isMonetized = data?.monetize === 'on';
-
-        monetizeCheckbox.disabled = !isMonetized;
-        monetizeCheckbox.checked = isMonetized;
-        monetizeCheckbox.title = isMonetized ? '' : 'You are not monetized yet';
-      } catch {
-        monetizeCheckbox.disabled = true;
-        monetizeCheckbox.checked = false;
-        monetizeCheckbox.title = 'You are not monetized yet';
-      }
-    } else {
-      profileImg.src = fallbackImageUrl;
-      monetizeCheckbox.disabled = true;
-      monetizeCheckbox.checked = false;
-      monetizeCheckbox.title = 'You are not monetized yet';
-    }
-  });
-
-  profileImg.onerror = () => {
-    profileImg.src = fallbackImageUrl;
-  };
-
-  // Only 1 image allowed
-  let selectedImage = null;
-  dropZone.addEventListener('click', () => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*';
-    input.multiple = false; // single image only
-    input.onchange = () => handleFiles(input.files);
-    input.click();
-  });
-
-  dropZone.addEventListener('dragover', e => {
-    e.preventDefault();
-    dropZone.style.borderColor = '#00c67c';
-  });
-
-  dropZone.addEventListener('dragleave', () => {
-    dropZone.style.borderColor = '#444';
-  });
-
-  dropZone.addEventListener('drop', e => {
-    e.preventDefault();
-    dropZone.style.borderColor = '#444';
-    handleFiles(e.dataTransfer.files);
-  });
-
-  function handleFiles(files) {
-    const imgFile = Array.from(files).find(f => f.type.startsWith('image/'));
-    if (!imgFile) {
-      alert('Please upload a valid image.');
-      return;
-    }
-    selectedImage = imgFile;
-    postDetails.style.display = 'block';
-    dropZone.innerHTML = `<div>${imgFile.name}</div>`;
-    calcCPM();
-  }
-
-  // Tags logic
-  let tags = [];
-  tagField.addEventListener('keydown', e => {
-    if (e.key === ' ' || e.key === 'Enter') {
-      e.preventDefault();
-      const val = tagField.value.trim().toLowerCase();
-      if (val && !tags.includes(val)) {
-        tags.push(val);
-        const span = document.createElement('span');
-        span.className = 'tag';
-        span.textContent = '#' + val;
-        tagInput.insertBefore(span, tagField);
-        tagField.value = '';
-        calcCPM();
-      }
-    }
-  });
-
-  // CPM logic 
-  const getPostTier = (titleText, descText, tagList) => {
-    const highEngagementTags = ['gta6', 'ai', 'fortnite', 'tech', 'money', 'bitcoin', 'crypto', 'stock'];
-    const text = (titleText + ' ' + descText).toLowerCase();
-    let score = 0;
-
-    if (highEngagementTags.some(t => text.includes(t))) score += 30;
-    if (tagList.length >= 3) score += 20;
-    if (descText.length > 100) score += 20;
-    if (titleText.length > 20) score += 10;
-    if (selectedImage) score += 10; // less weight for 1 image
-
-    let tier = 'Low';
-    if (score >= 70) tier = 'High';
-    else if (score >= 40) tier = 'Moderate';
-
-    return { tier, score: Math.min(score, 100) };
-  };
-
-  const calculateCPM = (tier, score) => {
-    const tierCaps = { Low: 1.0, Moderate: 2.5, High: 4.0 };
-    const maxCPM = tierCaps[tier];
-    const cpm = ((score / 100) * maxCPM).toFixed(2);
-    return parseFloat(cpm);
-  };
-
-  function calcCPM() {
-    const titleVal = title.value || '';
-    const descVal = description.value || '';
-    const { tier, score } = getPostTier(titleVal, descVal, tags);
-    const estimated = calculateCPM(tier, score);
-    cpmEstimate.textContent = `Estimated CPM: $${estimated} (${tier})`;
-  }
-
-  title.addEventListener('input', calcCPM);
-  description.addEventListener('input', calcCPM);
-
-  infoIcon.addEventListener('click', () => {
-    cpmPopup.style.display = cpmPopup.style.display === 'block' ? 'none' : 'block';
-  });
-
-  document.addEventListener('click', e => {
-    if (!infoIcon.contains(e.target) && !cpmPopup.contains(e.target)) {
-      cpmPopup.style.display = 'none';
-    }
-  });
-
-  // Form validation
-  function validateForm() {
-    if (!selectedImage) {
-      alert('Please upload 1 image.');
+<script type="module">  
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";  
+  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";  
+  import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";  
+  
+  const firebaseConfig = {  
+    apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",  
+    authDomain: "itzhoyoo-f9f7e.firebaseapp.com",  
+    databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",  
+    projectId: "itzhoyoo-f9f7e",  
+    storageBucket: "itzhoyoo-f9f7e.firebasestorage.app",  
+    messagingSenderId: "1094792075584",  
+    appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",  
+    measurementId: "G-LLT6F9WRKH"  
+  };  
+  
+  const app = initializeApp(firebaseConfig);  
+  const auth = getAuth(app);  
+  const db = getDatabase(app);  
+  
+  // DOM elements  
+  const profileImg = document.getElementById('profileImg');  
+  const dropZone = document.getElementById('dropZone');  
+  const postDetails = document.getElementById('postDetails');  
+  const title = document.getElementById('title');  
+  const description = document.getElementById('description');  
+  const tagField = document.getElementById('tagField');  
+  const tagInput = document.getElementById('tagInput');  
+  const monetizeCheckbox = document.getElementById('monetize');  
+  const cpmEstimate = document.getElementById('cpmEstimate');  
+  const infoIcon = document.getElementById('infoIcon');  
+  const cpmPopup = document.getElementById('cpmPopup');  
+  const uploadBtn = document.getElementById('uploadBtn');  
+  const progressOverlay = document.getElementById('progressOverlay');  
+  const progressMessage = document.getElementById('progressMessage');  
+  
+  const fallbackImageUrl = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ4Cz4QyUZAetgiOhayGT846gGiS3gO-tH4Iu0EOaOnBahRhPqOmgaKy7c&s=10";  
+  
+  // Load profile image and monetization status on auth change  
+  onAuthStateChanged(auth, async (user) => {  
+    if (user) {  
+      profileImg.src = user.photoURL || fallbackImageUrl;  
+      try {  
+        const userRef = ref(db, `users/${user.uid}`);  
+        const snapshot = await get(userRef);  
+        const data = snapshot.val();  
+        const isMonetized = data?.monetize === 'on';  
+  
+        monetizeCheckbox.disabled = !isMonetized;  
+        monetizeCheckbox.checked = isMonetized;  
+        monetizeCheckbox.title = isMonetized ? '' : 'You are not monetized yet';  
+      } catch {  
+        monetizeCheckbox.disabled = true;  
+        monetizeCheckbox.checked = false;  
+        monetizeCheckbox.title = 'You are not monetized yet';  
+      }  
+    } else {  
+      profileImg.src = fallbackImageUrl;  
+      monetizeCheckbox.disabled = true;  
+      monetizeCheckbox.checked = false;  
+      monetizeCheckbox.title = 'You are not monetized yet';  
+    }  
+  });  
+  
+  profileImg.onerror = () => {  
+    profileImg.src = fallbackImageUrl;  
+  };  
+  
+  // Image selection logic - max 2 images  
+  let selectedImages = [];  
+  dropZone.addEventListener('click', () => {  
+    const input = document.createElement('input');  
+    input.type = 'file';  
+    input.accept = 'image/*';  
+    input.multiple = true;  
+    input.onchange = () => handleFiles(input.files);  
+    input.click();  
+  });  
+  
+  dropZone.addEventListener('dragover', e => {  
+    e.preventDefault();  
+    dropZone.style.borderColor = '#00c67c';  
+  });  
+  
+  dropZone.addEventListener('dragleave', () => {  
+    dropZone.style.borderColor = '#444';  
+  });  
+  
+  dropZone.addEventListener('drop', e => {  
+    e.preventDefault();  
+    dropZone.style.borderColor = '#444';  
+    handleFiles(e.dataTransfer.files);  
+  });  
+  
+  function handleFiles(files) {  
+    const imgs = Array.from(files).filter(f => f.type.startsWith('image/'));  
+    if (imgs.length > 2) {  
+      alert('Only 2 images allowed');  
+      return;  
+    }  
+    selectedImages = imgs;  
+    postDetails.style.display = 'block';  
+    dropZone.innerHTML = imgs.map(f => `<div>${f.name}</div>`).join('');  
+    calcCPM();  
+  }  
+  
+  // Tag handling - add tags on space or enter  
+  let tags = [];  
+  tagField.addEventListener('keydown', e => {  
+    if (e.key === ' ' || e.key === 'Enter') {  
+      e.preventDefault();  
+      const val = tagField.value.trim().toLowerCase();  
+      if (val && !tags.includes(val)) {  
+        tags.push(val);  
+        const span = document.createElement('span');  
+        span.className = 'tag';  
+        span.textContent = '#' + val;  
+        tagInput.insertBefore(span, tagField);  
+        tagField.value = '';  
+        calcCPM();  
+      }  
+    }  
+  });  
+  
+  // CPM calculation based on simple weighted score  
+  const getPostTier = (titleText, descText, tagList) => {  
+    const highEngagementTags = ['gta6', 'ai', 'fortnite', 'tech', 'money', 'bitcoin', 'crypto', 'stock'];  
+    const text = (titleText + ' ' + descText).toLowerCase();  
+    let score = 0;  
+  
+    if (highEngagementTags.some(t => text.includes(t))) score += 30;  
+    if (tagList.length >= 3) score += 20;  
+    if (descText.length > 100) score += 20;  
+    if (titleText.length > 20) score += 10;  
+    if (selectedImages.length === 2) score += 20;  
+  
+    let tier = 'Low';  
+    if (score >= 70) tier = 'High';  
+    else if (score >= 40) tier = 'Moderate';  
+  
+    return { tier, score: Math.min(score, 100) };  
+  };  
+  
+  const calculateCPM = (tier, score) => {  
+    const tierCaps = { Low: 1.0, Moderate: 2.5, High: 4.0 };  
+    const maxCPM = tierCaps[tier];  
+    const cpm = ((score / 100) * maxCPM).toFixed(2);  
+    return parseFloat(cpm);  
+  };  
+  
+  function calcCPM() {  
+    const titleVal = title.value || '';  
+    const descVal = description.value || '';  
+    const { tier, score } = getPostTier(titleVal, descVal, tags);  
+    const estimated = calculateCPM(tier, score);  
+    cpmEstimate.textContent = `Estimated CPM: $${estimated} (${tier})`;  
+  }  
+  
+  title.addEventListener('input', calcCPM);  
+  description.addEventListener('input', calcCPM);  
+  
+  infoIcon.addEventListener('click', () => {  
+    cpmPopup.style.display = cpmPopup.style.display === 'block' ? 'none' : 'block';  
+  });  
+  
+  document.addEventListener('click', e => {  
+    if (!infoIcon.contains(e.target) && !cpmPopup.contains(e.target)) {  
+      cpmPopup.style.display = 'none';  
+    }  
+  });  
+  
+  // Form validation  
+  function validateForm() {  
+    if (selectedImages.length === 0 || selectedImages.length > 2) {  
+      alert('Please upload 1 or 2 images.');  
+      return false;  
+    }  
+  
+    const titleVal = title.value.trim();  
+    const descVal = description.value.trim();  
+  
+    if (!titleVal) {  
+      alert('Title is required.');  
+      return false;  
+    }  
+    if (titleVal.length > 100) {  
+      alert('Title is too long. Keep it under 100 characters.');  
+      return false;  
+    }  
+  
+    if (!descVal) {  
+      alert('Description is required.');  
+      return false;  
+    }  
+    if (descVal.length > 1000) {  
+      alert('Description is too long. Keep it under 1000 characters.');
       return false;
     }
 
-    const titleVal = title.value.trim();
-    const descVal = description.value.trim();
-
-    if (!titleVal) {
-      alert('Title is required.');
-      return false;
-    }
-    if (titleVal.length > 100) {
-      alert('Title is too long. Keep it under 100 characters.');
-      return false;
-    }
-
-    if (!descVal) {
-      alert('Description is required.');
-      return false;
-    }
-    if (descVal.length > 1000) {
-      alert('Description is too long. Max 1000 characters allowed.');
-      return false;
-    }
-
-    // commentsToggle and visibilitySelect are optional, so no validation needed here.
+    // No validation needed for tags since they are optional
 
     return true;
   }
 
-  // Upload image to Imgur and return link
-  async function uploadToImgur(file) {
-    const formData = new FormData();
-    formData.append('image', file);
+  // Imgur upload helper
+  async function uploadImagesToImgur(images) {
+    const clientId = '891e5bb4aa94282';
+    const uploadedUrls = [];
 
-    try {
-      const res = await fetch('https://api.imgur.com/3/image', {
-        method: 'POST',
-        headers: {
-          Authorization: 'Client-ID 891e5bb4aa94282'
-        },
-        body: formData
-      });
+    for (const image of images) {
+      const formData = new FormData();
+      formData.append('image', image);
 
-      const data = await res.json();
-      if (data.success) {
-        return data.data.link;
-      } else {
-        throw new Error('Imgur upload failed');
+      try {
+        const response = await fetch('https://api.imgur.com/3/image', {
+          method: 'POST',
+          headers: {
+            Authorization: `Client-ID ${clientId}`
+          },
+          body: formData
+        });
+
+        const data = await response.json();
+        if (data.success) {
+          uploadedUrls.push(data.data.link);
+        } else {
+          throw new Error('Imgur upload failed');
+        }
+      } catch (error) {
+        alert(`Image upload failed: ${error.message}`);
+        return null;
       }
-    } catch (error) {
-      alert('Image upload failed: ' + error.message);
-      throw error;
     }
+
+    return uploadedUrls;
   }
 
-  // Handle form submission and upload post
+  // Upload button logic
   uploadBtn.addEventListener('click', async () => {
     if (!validateForm()) return;
 
     progressOverlay.style.display = 'flex';
-    progressMessage.textContent = 'Uploading image...';
+    progressMessage.textContent = 'Uploading images...';
+
+    const imageUrls = await uploadImagesToImgur(selectedImages);
+    if (!imageUrls) {
+      progressOverlay.style.display = 'none';
+      return;
+    }
+
+    progressMessage.textContent = 'Saving post data...';
+
+    const user = auth.currentUser;
+    if (!user) {
+      alert('You must be logged in to post.');
+      progressOverlay.style.display = 'none';
+      return;
+    }
+
+    const postId = Date.now().toString(); // Simple unique ID using timestamp
+    const postData = {
+      uid: user.uid,
+      title: title.value.trim(),
+      description: description.value.trim(),
+      images: imageUrls,
+      tags,
+      monetize: monetizeCheckbox.checked ? 'on' : 'off',
+      cpm: cpmEstimate.textContent.replace('Estimated CPM: $', '').split(' ')[0], // Extract CPM number
+      timestamp: postId
+    };
 
     try {
-      const imageUrl = await uploadToImgur(selectedImage);
-
-      progressMessage.textContent = 'Saving post data...';
-
-      const user = auth.currentUser;
-      if (!user) throw new Error('User not authenticated');
-
-      const postId = Date.now().toString(); // simple unique ID, you can improve this later
-      const postRef = ref(db, `post/${postId}`);
-
-      // Prepare post data
-      const postData = {
-        userId: user.uid,
-        imageUrl,
-        title: title.value.trim(),
-        description: description.value.trim(),
-        tags,
-        monetize: monetizeCheckbox.checked ? 'on' : 'off',
-        cpmEstimate: cpmEstimate.textContent.replace('Estimated CPM: ', ''),
-        commentsEnabled: commentsToggle.checked,
-        visibility: visibilitySelect.value,
-        createdAt: Date.now()
-      };
-
-      await set(postRef, postData);
-
-      progressMessage.textContent = 'Upload successful!';
-      setTimeout(() => {
-        progressOverlay.style.display = 'none';
-        // Reset form
-        selectedImage = null;
-        postDetails.style.display = 'none';
-        dropZone.innerHTML = 'Click or drag image here to upload';
-        title.value = '';
-        description.value = '';
-        tags = [];
-        tagInput.querySelectorAll('.tag').forEach(tag => tag.remove());
-        monetizeCheckbox.checked = false;
-        commentsToggle.checked = true;
-        visibilitySelect.value = 'public';
-        cpmEstimate.textContent = 'Estimated CPM: $0.00 (Low)';
-      }, 1500);
-
+      await set(ref(db, `post/${postId}`), postData);
+      alert('Post uploaded successfully!');
+      // Reset form
+      selectedImages = [];
+      dropZone.innerHTML = 'Click or drag images here (max 2)';
+      postDetails.style.display = 'none';
+      title.value = '';
+      description.value = '';
+      tags = [];
+      tagInput.querySelectorAll('.tag').forEach(el => el.remove());
+      monetizeCheckbox.checked = false;
+      calcCPM();
     } catch (error) {
+      alert('Failed to save post data: ' + error.message);
+    } finally {
       progressOverlay.style.display = 'none';
-      alert('Upload failed: ' + error.message);
     }
   });
 </script>
+
 </body>
 </html>
