@@ -547,7 +547,7 @@
     try {
       const imageUrl = await uploadImageToImgur(selectedImage);
       progressMessage.textContent = 'Saving post...';
-      await savePostToFirebase(imageUrl);
+      await savePostToFirebase(image);
     } catch {
       // Errors handled in uploadImageToImgur or savePostToFirebase
     } finally {
