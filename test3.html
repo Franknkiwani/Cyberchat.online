@@ -2,362 +2,143 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>CyberChat Upload</title>
-  <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-database-compat.js"></script>
- <style>
-   /* Reset box-sizing for predictable sizing */
-* {
-  box-sizing: border-box;
-}
-
-body {
-  margin: 0;
-  font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
-  background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
-  color: #e0e0e0;
-  font-size: 16px;
-  line-height: 1.5;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-}
-
-.wrapper {
-  max-width: 800px;
-  margin: 1rem auto 3rem auto;
-  padding: 1rem 2rem;
-  background: rgba(255,255,255,0.07);
-  border-radius: 1rem;
-  backdrop-filter: blur(15px);
-  box-shadow:
-    0 4px 30px rgba(0, 0, 0, 0.4),
-    inset 0 0 10px rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-header,
-footer {
-  background: rgba(255, 255, 255, 0.1);
-  padding: 1rem 2rem;
-  border-radius: 1rem;
-  position: sticky;
-  z-index: 999;
-  width: 100%;
-  backdrop-filter: blur(20px);
-  box-shadow:
-    0 2px 10px rgba(0, 0, 0, 0.7);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  color: #b1e2d8;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  user-select: none;
-}
-
-header {
-  top: 0;
-  margin-bottom: 1rem;
-}
-
-footer {
-  bottom: 0;
-  text-align: center;
-  margin-top: auto;
-}
-
-.drop-box {
-  border: 2px dashed #44c2a9;
-  border-radius: 1rem;
-  padding: 2rem;
-  text-align: center;
-  background: rgba(255, 255, 255, 0.04);
-  color: #44c2a9;
-  cursor: pointer;
-  transition:
-    background 0.3s ease,
-    border-color 0.3s ease,
-    color 0.3s ease;
-  font-weight: 500;
-  font-size: 1.1rem;
-  user-select: none;
-}
-
-.drop-box:hover {
-  background: rgba(68, 194, 169, 0.15);
-  border-color: #77e0c3;
-  color: #77e0c3;
-}
-
-input[type="file"] {
-  display: none;
-}
-
-.preview {
-  display: flex;
-  gap: 12px;
-  margin-top: 1rem;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-
-.preview img {
-  width: 90px;
-  height: 90px;
-  object-fit: cover;
-  border-radius: 12px;
-  border: 2px solid #44c2a9;
-  box-shadow:
-    0 4px 10px rgba(68, 194, 169, 0.6);
-  transition: transform 0.3s ease;
-}
-
-.preview img:hover {
-  transform: scale(1.1);
-  box-shadow:
-    0 6px 20px rgba(68, 194, 169, 0.8);
-}
-
-.form-section {
-  margin: 2rem 0;
-  display: flex;
-  flex-direction: column;
-}
-
-.form-section label {
-  font-weight: 600;
-  color: #a0f0d6;
-  margin-bottom: 0.5rem;
-  user-select: none;
-}
-
-input,
-textarea,
-select {
-  width: 100%;
-  padding: 0.7rem 1rem;
-  border-radius: 0.75rem;
-  border: none;
-  background: rgba(255, 255, 255, 0.1);
-  color: #d0fff7;
-  font-size: 1rem;
-  line-height: 1.4;
-  transition:
-    background 0.3s ease,
-    box-shadow 0.3s ease;
-  box-shadow: inset 0 0 8px rgba(0, 0, 0, 0.8);
-  font-weight: 500;
-  user-select: text;
-}
-
-input::placeholder,
-textarea::placeholder {
-  color: #7ad6c4;
-  opacity: 0.7;
-}
-
-input:focus,
-textarea:focus,
-select:focus {
-  background: rgba(68, 194, 169, 0.15);
-  outline: none;
-  box-shadow:
-    0 0 12px 3px #44c2a9;
-}
-
-textarea {
-  min-height: 140px;
-  resize: vertical;
-  font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
-}
-
-.monetize {
-  margin-top: 1.5rem;
-  padding: 1rem 1.5rem;
-  border-radius: 1rem;
-  background: rgba(68, 194, 169, 0.15);
-  box-shadow: 0 0 10px #44c2a9;
-  color: #0a3f35;
-  font-weight: 700;
-  user-select: none;
-}
-
-#cpmEstimate {
-  font-size: 1.7rem;
-  margin-top: 0.3rem;
-  color: #0f6a56;
-  text-shadow:
-    0 0 5px #44c2a9,
-    0 0 15px #44c2a9;
-}
-
-.monetize-toggle {
-  margin-top: 0.8rem;
-  color: #096d58;
-  font-weight: 600;
-  user-select: none;
-}
-
-.monetize-toggle label {
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.monetize-toggle input[type="checkbox"] {
-  width: 1.3rem;
-  height: 1.3rem;
-  cursor: pointer;
-  accent-color: #44c2a9;
-  border-radius: 0.3rem;
-  box-shadow:
-    0 0 5px #44c2a9;
-}
-
-.monetize-toggle input[type="checkbox"]:disabled {
-  cursor: not-allowed;
-  accent-color: #7ad6c4;
-  opacity: 0.6;
-}
-
-#monStatus {
-  margin-top: 0.2rem;
-  font-size: 0.9rem;
-  color: #37987b;
-  font-style: italic;
-}
-
-.upload-btn {
-  width: 100%;
-  padding: 1.1rem;
-  background: linear-gradient(45deg, #44c2a9, #00775e);
-  color: #e0fff8;
-  border: none;
-  border-radius: 2rem;
-  font-size: 1.3rem;
-  cursor: pointer;
-  transition:
-    background 0.3s ease,
-    box-shadow 0.3s ease;
-  font-weight: 700;
-  text-shadow: 0 0 5px #009975;
-  box-shadow:
-    0 6px 20px rgba(68, 194, 169, 0.8);
-  user-select: none;
-}
-
-.upload-btn:hover {
-  background: linear-gradient(45deg, #00775e, #44c2a9);
-  box-shadow:
-    0 8px 30px rgba(0, 151, 117, 0.9);
-  transform: translateY(-2px);
-}
-
-#userPic {
-  border-radius: 50%;
-  border: 2px solid #44c2a9;
-  box-shadow:
-    0 0 12px #44c2a9;
-  transition: box-shadow 0.4s ease;
-  user-select: none;
-}
-
-#userPic:hover {
-  box-shadow:
-    0 0 18px #77e0c3;
-  cursor: pointer;
-}
-
-@media (max-width: 600px) {
-  header,
-  footer {
-    padding: 1rem;
-  }
-
-  .wrapper {
-    padding: 1rem 1rem;
-    margin: 1rem 1rem 3rem 1rem;
-  }
-
-  .drop-box {
-    padding: 1.5rem;
-    font-size: 1rem;
-  }
-
-  .preview img {
-    width: 70px;
-    height: 70px;
-  }
-
-  .upload-btn {
-    font-size: 1.1rem;
-  }
-}
- </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CyberChat Post</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #111;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    header, footer {
+      background: #222;
+      padding: 1em;
+      text-align: center;
+      position: sticky;
+      z-index: 99;
+    }
+    header {
+      top: 0;
+      border-bottom: 1px solid #333;
+    }
+    footer {
+      bottom: 0;
+      border-top: 1px solid #333;
+    }
+    .profile-pic {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      position: absolute;
+      top: 1em;
+      right: 1em;
+    }
+    main {
+      flex: 1;
+      padding: 2em 1em 6em;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 1em;
+      width: 100%;
+      max-width: 500px;
+      margin: 0 auto;
+    }
+    input, textarea, select, .file-dropdown, button {
+      padding: 0.8em;
+      border: none;
+      border-radius: 0.5em;
+      font-size: 1em;
+      background: #222;
+      color: #fff;
+    }
+    .file-dropdown {
+      background: #444;
+      color: #ccc;
+      text-align: center;
+      cursor: pointer;
+    }
+    .preview-container img {
+      width: 80px;
+      height: 80px;
+      object-fit: cover;
+      border-radius: 0.5em;
+      margin: 0.5em;
+    }
+    .monetization-bar {
+      background: #1a1a1a;
+      padding: 1em;
+      border: 1px solid #333;
+      border-radius: 1em;
+    }
+    .warning {
+      color: #f55;
+      font-weight: bold;
+    }
+    button {
+      background: #007aff;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+  </style>
 </head>
 <body>
+
   <header>
-    <div>CyberChat</div>
-    <img id="userPic" src="" alt="Profile" width="35" style="border-radius: 50%;" />
+    <h2>CyberChat</h2>
+    <img src="https://i.imgur.com/YourProfilePic.png" alt="Profile" class="profile-pic" />
   </header>
 
-  <div class="wrapper">
-    <label class="drop-box" id="dropBox">
-      Drop files or click to upload
-      <input type="file" id="fileInput" accept="image/*" multiple>
-      <div class="preview" id="preview"></div>
-    </label>
-
-    <div class="form-section">
-      <label>Title</label>
-      <input id="postTitle" placeholder="What's on your mind, Boss?" required>
-    </div>
-
-    <div class="form-section">
-      <label>Description</label>
-      <textarea id="postDesc" rows="3"></textarea>
-    </div>
-
-    <div class="form-section">
-      <label>Tags</label>
-      <input id="postTags" placeholder="#tags #go #here">
-    </div>
-
-    <div class="form-section">
-      <label>Visibility</label>
+  <main>
+    <form id="postForm" onsubmit="return false;">
+      <input type="text" id="title" placeholder="What's on your mind, Boss?" required maxlength="100">
+      <textarea id="description" rows="4" placeholder="Tell us more..." maxlength="1000"></textarea>
+      <input type="text" id="tags" placeholder="e.g. tech AI GTA6">
+      <div class="file-dropdown" id="fileDropdown">Choose Images (up to 2)</div>
+      <input type="file" accept="image/*" id="fileInput" multiple style="display:none;">
+      <div class="preview-container" id="previewContainer"></div>
       <select id="visibility">
         <option value="public">Public</option>
-        <option value="private">Followers Only</option>
+        <option value="followers">Followers Only</option>
       </select>
-    </div>
+      <select id="comments">
+        <option value="true">Allow Comments</option>
+        <option value="false">Disable Comments</option>
+      </select>
 
-    <div class="monetize">
-      <div>CPM Estimate</div>
-      <div id="cpmEstimate">$0.00</div>
-
-      <div class="monetize-toggle">
+      <div class="monetization-bar" id="monetizationBox">
+        <h3>Monetization</h3>
+        <p>Estimated CPM: <strong id="cpmValue">$0.00</strong></p>
         <label>
-          <input type="checkbox" id="monToggle" disabled>
-          Monetize this post
+          <input type="checkbox" id="monetizeToggle" disabled>
+          Enable Monetization
         </label>
-        <p id="monStatus" style="color: gray; font-size: 0.9rem;"></p>
+        <p id="monetizeNote" class="warning"></p>
       </div>
-    </div>
-  </div>
+
+      <button id="uploadNow">Upload Now</button>
+    </form>
+  </main>
 
   <footer>
-    <button class="upload-btn" onclick="submitPost()">Upload Now</button>
+    <small>CyberChat &copy; 2025</small>
   </footer>
 
-  <script>
-    // Firebase config
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+    import { getDatabase, ref, set, get, child } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+
     const firebaseConfig = {
       apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
       authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
@@ -368,89 +149,145 @@ textarea {
       appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5"
     };
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-    const auth = firebase.auth();
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const auth = getAuth(app);
 
-    let imageFiles = [];
-    const preview = document.getElementById('preview');
+    const fileDropdown = document.getElementById('fileDropdown');
+    const fileInput = document.getElementById('fileInput');
+    const previewContainer = document.getElementById('previewContainer');
+    const cpmValue = document.getElementById('cpmValue');
+    const monetizeToggle = document.getElementById('monetizeToggle');
+    const monetizeNote = document.getElementById('monetizeNote');
 
-    document.getElementById('fileInput').addEventListener('change', e => {
-      const files = Array.from(e.target.files).slice(0, 2);
-      imageFiles = files;
-      preview.innerHTML = "";
+    fileDropdown.addEventListener('click', () => fileInput.click());
+
+    fileInput.addEventListener('change', () => {
+      previewContainer.innerHTML = '';
+      const files = Array.from(fileInput.files).slice(0, 2);
+      if (fileInput.files.length > 2) {
+        alert('Max 2 images.');
+      }
       files.forEach(file => {
         const reader = new FileReader();
         reader.onload = e => {
           const img = document.createElement('img');
           img.src = e.target.result;
-          preview.appendChild(img);
+          previewContainer.appendChild(img);
         };
         reader.readAsDataURL(file);
       });
-      calculateCPM();
     });
 
-    ['postTitle', 'postDesc'].forEach(id => {
-      document.getElementById(id).addEventListener('input', calculateCPM);
-    });
-
-    function calculateCPM() {
-      const title = document.getElementById('postTitle').value.trim();
-      const desc = document.getElementById('postDesc').value.trim();
-      const imgCount = imageFiles.length;
-
-      const cpm = (imgCount * 0.10) + (title.length * 0.01) + (Math.floor(desc.length / 10) * 0.01);
-      document.getElementById('cpmEstimate').innerText = `$${cpm.toFixed(2)}`;
+    function calculateCPM(title, description, imagesCount, rating = 1.0) {
+      const base = 0.1 * imagesCount + 0.01 * title.length + 0.01 * Math.floor(description.length / 10);
+      const capped = Math.min(5.0, base * rating);
+      return capped.toFixed(2);
     }
 
-    auth.onAuthStateChanged(user => {
-      if (user) {
-        db.ref(`/users/${user.uid}/monetize`).once('value').then(snapshot => {
-          const monetized = snapshot.val() === "on";
-          document.getElementById('monToggle').disabled = !monetized;
-          document.getElementById('monStatus').innerText = monetized ? "" : "You are not monetized yet";
+    function uploadImages(files) {
+      return Promise.all(files.map(file => {
+        return new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => {
+            fetch("https://api.imgur.com/3/image", {
+              method: "POST",
+              headers: {
+                Authorization: "Client-ID 891e5bb4aa94282",
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify({
+                image: reader.result.split(',')[1],
+                type: "base64"
+              })
+            })
+              .then(res => res.json())
+              .then(data => resolve(data.data.link))
+              .catch(reject);
+          };
+          reader.readAsDataURL(file);
         });
+      }));
+    }
 
-        db.ref(`/users/${user.uid}/profilePic`).once('value').then(snap => {
-          document.getElementById('userPic').src = snap.val() || 'https://placehold.co/35x35';
-        });
-      }
-    });
+    function handleMonetizationStatus(user) {
+      const userRef = ref(db, `users/${user.uid}/monetize`);
+      get(userRef).then(snapshot => {
+        const status = snapshot.val();
+        const title = document.getElementById('title').value.trim();
+        const desc = document.getElementById('description').value.trim();
+        const imageCount = fileInput.files.length;
 
-    async function submitPost() {
-      const user = auth.currentUser;
-      if (!user) return alert("Login first");
+        const cpm = calculateCPM(title, desc, imageCount);
+        cpmValue.textContent = `$${cpm}`;
 
-      const uploadedURLs = [];
-      for (let file of imageFiles) {
-        const formData = new FormData();
-        formData.append("image", file);
-        const res = await fetch("https://api.imgur.com/3/image", {
-          method: "POST",
-          headers: { Authorization: "Client-ID 891e5bb4aa94282" },
-          body: formData
-        });
-        const data = await res.json();
-        uploadedURLs.push(data.data.link);
-      }
-
-      const postData = {
-        title: document.getElementById('postTitle').value,
-        description: document.getElementById('postDesc').value,
-        tags: document.getElementById('postTags').value,
-        visibility: document.getElementById('visibility').value,
-        monetized: document.getElementById('monToggle').checked,
-        images: uploadedURLs,
-        timestamp: Date.now(),
-        uid: user.uid
-      };
-
-      db.ref(`/post`).push(postData).then(() => {
-        alert("Posted!");
-        window.location.reload();
+        if (status === 'on') {
+          monetizeToggle.disabled = false;
+          monetizeNote.textContent = '';
+        } else {
+          monetizeToggle.disabled = true;
+          monetizeNote.textContent = 'You are not monetized yet.';
+        }
       });
     }
+
+    document.getElementById('uploadNow').addEventListener('click', () => {
+      const title = document.getElementById('title').value.trim();
+      const description = document.getElementById('description').value.trim();
+      const tags = document.getElementById('tags').value.trim().split(' ').map(t => '#' + t);
+      const visibility = document.getElementById('visibility').value;
+      const comments = document.getElementById('comments').value === 'true';
+      const files = Array.from(fileInput.files).slice(0, 2);
+      const monetize = monetizeToggle.checked;
+
+      if (!title) {
+        alert("Title is required.");
+        return;
+      }
+
+      onAuthStateChanged(auth, user => {
+        if (!user) {
+          alert("You must be logged in to post.");
+          return;
+        }
+
+        handleMonetizationStatus(user);
+
+        uploadImages(files).then(imageUrls => {
+          const postData = {
+            uid: user.uid,
+            title,
+            description,
+            tags,
+            images: imageUrls,
+            visibility,
+            commentsEnabled: comments,
+            createdAt: Date.now(),
+            monetize,
+            cpm: parseFloat(cpmValue.textContent.replace('$', ''))
+          };
+
+          const newPostRef = ref(db, `post/${Date.now()}`);
+          set(newPostRef, postData).then(() => {
+            alert("Post uploaded successfully!");
+            document.getElementById('postForm').reset();
+            previewContainer.innerHTML = '';
+            cpmValue.textContent = '$0.00';
+            monetizeToggle.checked = false;
+          });
+        });
+      });
+    });
+
+    document.getElementById('title').addEventListener('input', () => {
+      const desc = document.getElementById('description').value;
+      cpmValue.textContent = `$${calculateCPM(document.getElementById('title').value, desc, fileInput.files.length)}`;
+    });
+    document.getElementById('description').addEventListener('input', () => {
+      const title = document.getElementById('title').value;
+      cpmValue.textContent = `$${calculateCPM(title, document.getElementById('description').value, fileInput.files.length)}`;
+    });
   </script>
+
 </body>
 </html>
