@@ -378,7 +378,7 @@
     calcCPM();
   }
 
-  // Tags logic same as before
+  // Tags logic
   let tags = [];
   tagField.addEventListener('keydown', e => {
     if (e.key === ' ' || e.key === 'Enter') {
@@ -396,7 +396,7 @@
     }
   });
 
-  // CPM logic unchanged, but adjusted for single image
+  // CPM logic 
   const getPostTier = (titleText, descText, tagList) => {
     const highEngagementTags = ['gta6', 'ai', 'fortnite', 'tech', 'money', 'bitcoin', 'crypto', 'stock'];
     const text = (titleText + ' ' + descText).toLowerCase();
@@ -406,7 +406,7 @@
     if (tagList.length >= 3) score += 20;
     if (descText.length > 100) score += 20;
     if (titleText.length > 20) score += 10;
-    if (selectedImage) score += 10; // less weight for 1 image vs 2 previously
+    if (selectedImage) score += 10; // less weight for 1 image
 
     let tier = 'Low';
     if (score >= 70) tier = 'High';
@@ -445,38 +445,38 @@
 
   // Form validation
   function validateForm() {
-  if (!selectedImage) {
-    alert('Please upload 1 image.');
-    return false;
+    if (!selectedImage) {
+      alert('Please upload 1 image.');
+      return false;
+    }
+
+    const titleVal = title.value.trim();
+    const descVal = description.value.trim();
+
+    if (!titleVal) {
+      alert('Title is required.');
+      return false;
+    }
+    if (titleVal.length > 100) {
+      alert('Title is too long. Keep it under 100 characters.');
+      return false;
+    }
+
+    if (!descVal) {
+      alert('Description is required.');
+      return false;
+    }
+    if (descVal.length > 1000) {
+      alert('Description is too long. Max 1000 characters allowed.');
+      return false;
+    }
+
+    // commentsToggle and visibilitySelect are optional, so no validation needed here.
+
+    return true;
   }
 
-  const titleVal = title.value.trim();
-  const descVal = description.value.trim();
-
-  if (!titleVal) {
-    alert('Title is required.');
-    return false;
-  }
-  if (titleVal.length > 100) {
-    alert('Title is too long. Keep it under 100 characters.');
-    return false;
-  }
-
-  if (!descVal) {
-    alert('Description is required.');
-    return false;
-  }
-  if (descVal.length > 1000) {
-    alert('Description is too long. Max 1000 characters allowed.');
-    return false;
-  }
-
-  // No validation for commentsToggle or visibilitySelect — optional fields
-
-  return true;
-}
-
-  // Upload image to Imgur and return the image link
+  // Upload image to Imgur and return link
   async function uploadToImgur(file) {
     const formData = new FormData();
     formData.append('image', file);
@@ -510,104 +510,54 @@
     progressMessage.textContent = 'Uploading image...';
 
     try {
-      // Upload image first
       const imageUrl = await uploadToImgur(selectedImage);
 
-      progressMessage.textContent = 'Saving post to database...';
+      progressMessage.textContent = 'Saving post data...';
 
-      // Get current user
       const user = auth.currentUser;
       if (!user) throw new Error('User not authenticated');
 
+      const postId = Date.now().toString(); // simple unique ID, you can improve this later
+      const postRef = ref(db, `post/${postId}`);
+
       // Prepare post data
-      const newPostRef = ref(db, 'post/' + Date.now()); // Using timestamp as unique key
       const postData = {
         userId: user.uid,
-        username: user.displayName || 'Anonymous',
-        userProfilePic: user.photoURL || fallbackImageUrl,
         imageUrl,
         title: title.value.trim(),
         description: description.value.trim(),
         tags,
-        monetize: monetizeCheckbox.checked && !monetizeCheckbox.disabled,
+        monetize: monetizeCheckbox.checked ? 'on' : 'off',
         cpmEstimate: cpmEstimate.textContent.replace('Estimated CPM: ', ''),
         commentsEnabled: commentsToggle.checked,
         visibility: visibilitySelect.value,
-        createdAt: Date.now(),
-        views: 0,
-        likes: 0,
-        commentsCount: 0
+        createdAt: Date.now()
       };
 
-      await set(newPostRef, postData);
+      await set(postRef, postData);
 
-      progressMessage.textContent = 'Post uploaded successfully!';
-
-      // Reset form/UI after successful upload
-      selectedImage = null;
-      dropZone.innerHTML = '<div>Click or drag image here</div>';
-      postDetails.style.display = 'none';
-      title.value = '';
-      description.value = '';
-      tags = [];
-      tagInput.querySelectorAll('.tag').forEach(el => el.remove());
-      monetizeCheckbox.checked = false;
-      commentsToggle.checked = true; // or false, your call
-      visibilitySelect.value = 'public';
-      calcCPM();
-
+      progressMessage.textContent = 'Upload successful!';
       setTimeout(() => {
         progressOverlay.style.display = 'none';
-        progressMessage.textContent = '';
-      }, 2000);
+        // Reset form
+        selectedImage = null;
+        postDetails.style.display = 'none';
+        dropZone.innerHTML = 'Click or drag image here to upload';
+        title.value = '';
+        description.value = '';
+        tags = [];
+        tagInput.querySelectorAll('.tag').forEach(tag => tag.remove());
+        monetizeCheckbox.checked = false;
+        commentsToggle.checked = true;
+        visibilitySelect.value = 'public';
+        cpmEstimate.textContent = 'Estimated CPM: $0.00 (Low)';
+      }, 1500);
 
-    } catch (err) {
+    } catch (error) {
       progressOverlay.style.display = 'none';
-      alert('Failed to upload post: ' + err.message);
+      alert('Upload failed: ' + error.message);
     }
   });
-</script>
-<script>
-  async function uploadPost() {
-  if (!validateForm()) return;
-
-  // Show progress overlay or spinner here
-  progressOverlay.style.display = 'flex';
-  progressMessage.textContent = 'Uploading...';
-
-  try {
-    // Upload image to Imgur first
-    const imageUrl = await uploadToImgur(selectedImage);
-
-    const user = auth.currentUser;
-    if (!user) throw new Error('User not logged in.');
-
-    // Prepare post data — include optional fields only if they exist, else null
-    const postData = {
-      imageUrl,
-      title: title.value.trim(),
-      description: description.value.trim(),
-      tags,
-      monetize: monetizeCheckbox.checked,
-      commentsEnabled: commentsToggle ? commentsToggle.checked : null,
-      visibility: visibilitySelect ? visibilitySelect.value : null,
-      createdAt: Date.now(),
-      userId: user.uid
-    };
-
-    // Write to Firebase under /post with a unique key
-    const postRef = ref(db, 'post/' + Date.now() + '_' + user.uid);
-    await set(postRef, postData);
-
-    alert('Post uploaded successfully!');
-    // Reset form or navigate as needed
-
-  } catch (error) {
-    alert('Upload failed: ' + error.message);
-  } finally {
-    progressOverlay.style.display = 'none';
-  }
-}
 </script>
 </body>
 </html>
