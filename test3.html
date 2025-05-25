@@ -471,11 +471,7 @@
     return false;
   }
 
-  // Only validate visibilitySelect because commentsToggle might not exist
-  if (!visibilitySelect || !visibilitySelect.value) {
-    alert('Please select visibility.');
-    return false;
-  }
+  // No validation for commentsToggle or visibilitySelect — optional fields
 
   return true;
 }
