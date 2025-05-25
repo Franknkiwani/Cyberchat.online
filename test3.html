@@ -83,96 +83,99 @@
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js"></script>
 
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
-      authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
-      databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
-      projectId: "itzhoyoo-f9f7e",
-      storageBucket: "itzhoyoo-f9f7e.filestorage.app",
-      messagingSenderId: "1094792075584",
-      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5"
-    };
+<script>
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+  const auth = firebase.auth();
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+  const dashboardItems = {
+    posts: document.querySelector('.dashboard-item:nth-child(1) .value'),
+    views: document.querySelector('.dashboard-item:nth-child(2) .value'),
+    earnings: document.querySelector('.dashboard-item:nth-child(3) .value'),
+    followers: document.querySelector('.dashboard-item:nth-child(4) .value'),
+    monetized: document.querySelector('.dashboard-item:nth-child(5) .value'),
+    likes: document.querySelector('.dashboard-item:nth-child(6) .value')
+  };
 
-    const dashboardItems = {
-      posts: document.querySelector('.dashboard-item:nth-child(1) .value'),
-      views: document.querySelector('.dashboard-item:nth-child(2) .value'),
-      earnings: document.querySelector('.dashboard-item:nth-child(3) .value'),
-      followers: document.querySelector('.dashboard-item:nth-child(4) .value'),
-      monetized: document.querySelector('.dashboard-item:nth-child(5) .value'),
-      likes: document.querySelector('.dashboard-item:nth-child(6) .value')
-    };
+  function formatNumber(num) {
+    if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+    if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+    return num.toString();
+  }
 
-    function formatNumber(num) {
-      if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
-      if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
-      return num.toString();
-    }
+  auth.onAuthStateChanged(user => {
+    if (user) {
+      const uid = user.uid;
+      const userStatsRef = db.ref(`/users/${uid}/stats`);
+      const userGraphRef = db.ref(`/users/${uid}/graphData`);
 
-    db.ref('/stats').on('value', (snapshot) => {
-      const data = snapshot.val() || {};
-      dashboardItems.posts.textContent = data.posts || 0;
-      dashboardItems.views.textContent = formatNumber(data.views || 0);
-      dashboardItems.earnings.textContent = `$${data.earnings || 0}`;
-      dashboardItems.followers.textContent = data.followers || 0;
-      dashboardItems.monetized.textContent = data.monetized || 'Off';
-      dashboardItems.likes.textContent = formatNumber(data.likes || 0);
-    });
-
-    const canvas = document.getElementById("graph");
-    const ctx = canvas.getContext("2d");
-    const width = canvas.width;
-    const height = canvas.height;
-
-    function drawLine(data, color, scale) {
-      ctx.beginPath();
-      ctx.strokeStyle = color;
-      data.forEach((val, i) => {
-        const x = (i / (data.length - 1)) * width;
-        const y = height - val * scale;
-        if (i === 0) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
+      userStatsRef.on('value', snapshot => {
+        const data = snapshot.val() || {};
+        dashboardItems.posts.textContent = data.posts || 0;
+        dashboardItems.views.textContent = formatNumber(data.views || 0);
+        dashboardItems.earnings.textContent = `$${data.earnings || 0}`;
+        dashboardItems.followers.textContent = data.followers || 0;
+        dashboardItems.monetized.textContent = data.monetized || 'Off';
+        dashboardItems.likes.textContent = formatNumber(data.likes || 0);
       });
-      ctx.stroke();
+
+      userGraphRef.on('value', snapshot => {
+        const data = snapshot.val() || {};
+        const views = data.views || [];
+        const followers = data.followers || [];
+        const earnings = data.earnings || [];
+        updateGraph(views, followers, earnings);
+      });
+
+    } else {
+      alert("You're not logged in. Log in to see your stats.");
     }
+  });
 
-    function drawGrid(maxY) {
-      ctx.clearRect(0, 0, width, height);
-      ctx.strokeStyle = "#2f363d";
-      ctx.lineWidth = 1;
-      for (let i = 0; i <= 5; i++) {
-        const y = (i / 5) * height;
-        ctx.beginPath();
-        ctx.moveTo(0, y);
-        ctx.lineTo(width, y);
-        ctx.stroke();
-        const label = Math.round(maxY * (1 - i / 5));
-        ctx.fillStyle = "#8b949e";
-        ctx.fillText(label, 5, y - 5);
-      }
-    }
+  // Draw Graph
+  const canvas = document.getElementById("graph");
+  const ctx = canvas.getContext("2d");
+  const width = canvas.width;
+  const height = canvas.height;
 
-    function updateGraph(views, followers, earnings) {
-      const maxVal = Math.max(...views, ...followers.map(f => f * 20), ...earnings.map(e => e * 25)) || 100;
-      drawGrid(maxVal);
-
-      drawLine(views, "rgba(0, 255, 255, 0.8)", 1);
-      drawLine(followers, "rgba(255, 140, 0, 0.8)", 20);
-      drawLine(earnings, "rgba(0, 255, 0, 0.8)", 25);
-    }
-
-    db.ref('/graphData').on('value', (snapshot) => {
-      const data = snapshot.val() || {};
-      const views = data.views || [];
-      const followers = data.followers || [];
-      const earnings = data.earnings || [];
-      updateGraph(views, followers, earnings);
+  function drawLine(data, color, scale) {
+    ctx.beginPath();
+    ctx.strokeStyle = color;
+    data.forEach((val, i) => {
+      const x = (i / (data.length - 1)) * width;
+      const y = height - val * scale;
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
     });
-  </script>
+    ctx.stroke();
+  }
+
+  function drawGrid(maxY) {
+    ctx.clearRect(0, 0, width, height);
+    ctx.strokeStyle = "#2f363d";
+    ctx.lineWidth = 1;
+    for (let i = 0; i <= 5; i++) {
+      const y = (i / 5) * height;
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(width, y);
+      ctx.stroke();
+      const label = Math.round(maxY * (1 - i / 5));
+      ctx.fillStyle = "#8b949e";
+      ctx.fillText(label, 5, y - 5);
+    }
+  }
+
+  function updateGraph(views, followers, earnings) {
+    const maxVal = Math.max(...views, ...followers.map(f => f * 20), ...earnings.map(e => e * 25)) || 100;
+    drawGrid(maxVal);
+    drawLine(views, "rgba(0, 255, 255, 0.8)", 1);
+    drawLine(followers, "rgba(255, 140, 0, 0.8)", 20);
+    drawLine(earnings, "rgba(0, 255, 0, 0.8)", 25);
+  }
+</script>
 
 </body>
 </html>
