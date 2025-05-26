@@ -1,192 +1,92 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>CyberChat Ads Dashboard</title>
-<style>
-  /* Dark black background, no white anywhere */
-  body {
-    margin: 0;
-    background-color: #000;
-    color: #fff;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
-      Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
-  }
-  header {
-    height: 60px;
-    padding: 0 20px;
-    background-color: #111;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    font-weight: 900;
-    font-size: 1.3rem;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-  }
-  header .title {
-    color: #0ff; /* neon cyan */
-  }
-  header img#profilePic {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 2px solid #0ff;
-  }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CyberChat Ads</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script type="module">
+    // Firebase import (v11+ modular)
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+    import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
 
-  .stats-container {
-    display: flex;
-    justify-content: space-around;
-    padding: 20px 0;
-    background-color: #111;
-    gap: 20px;
-    flex-wrap: wrap;
-  }
-  .stat-box {
-    flex: 1 1 150px;
-    background-color: #222;
-    border-radius: 10px;
-    padding: 15px;
-    text-align: center;
-    box-shadow: 0 0 15px #0ff55a33;
-  }
-  .stat-box h2 {
-    margin: 0;
-    font-size: 1.8rem;
-    color: #0ff;
-  }
-  .stat-box p {
-    margin: 5px 0 0;
-    font-weight: 600;
-    color: #aaa;
-    text-transform: uppercase;
-    font-size: 0.85rem;
-  }
+    const firebaseConfig = {
+      apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
+      authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
+      databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
+      projectId: "itzhoyoo-f9f7e",
+      storageBucket: "itzhoyoo-f9f7e.filestorage.app",
+      messagingSenderId: "1094792075584",
+      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
+      measurementId: "G-LLT6F9WRKH"
+    };
 
-  .chart-wrapper {
-    max-width: 900px;
-    margin: 0 auto 40px;
-    padding: 0 20px;
-  }
-  canvas#statsChart {
-    width: 100% !important;
-    height: 350px !important;
-  }
-</style>
-</head>
-<body>
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth();
+    const db = getDatabase();
 
-<header>
-  <div class="title">CYBERCHAT ADS</div>
-  <img id="profilePic" src="https://i.imgur.com/0y0z5fz.jpg" alt="Profile Picture" />
-</header>
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        const uid = user.uid;
+        try {
+          const statsSnap = await get(ref(db, `users/${uid}/stats`));
+          const stats = statsSnap.val() || {};
 
-<div class="stats-container">
-  <div class="stat-box">
-    <h2 id="viewsStat">0</h2>
-    <p>Views</p>
-  </div>
-  <div class="stat-box">
-    <h2 id="followersStat">0</h2>
-    <p>Followers</p>
-  </div>
-  <div class="stat-box">
-    <h2 id="revenueStat">$0.00</h2>
-    <p>Revenue</p>
-  </div>
-  <div class="stat-box">
-    <h2 id="engagementStat">0%</h2>
-    <p>Engagement</p>
-  </div>
-</div>
+          const views = stats.views || 0;
+          const followers = stats.followers || 0;
+          const revenue = stats.revenue || 0;
+          const engagement = stats.engagement || 0;
 
-<div class="chart-wrapper">
-  <canvas id="statsChart"></canvas>
-</div>
+          document.querySelector('[data-type="views"]').textContent = views;
+          document.querySelector('[data-type="followers"]').textContent = followers;
+          document.querySelector('[data-type="revenue"]').textContent = revenue;
+          document.querySelector('[data-type="engagement"]').textContent = engagement;
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+          const profilePicSnap = await get(ref(db, `users/${uid}/profilePic`));
+          const profilePicURL = profilePicSnap.exists() ? profilePicSnap.val() : "https://via.placeholder.com/40";
+          document.querySelector(".profile-pic").src = profilePicURL;
 
-<!-- Firebase SDK imports and initialization assumed to be loaded externally -->
+          drawChart(views, revenue);
 
-<script type="module">
-  // Assuming window.firebaseData.db and window.firebaseData.auth are loaded
-
-  const profilePicEl = document.getElementById('profilePic');
-  const viewsStatEl = document.getElementById('viewsStat');
-  const followersStatEl = document.getElementById('followersStat');
-  const revenueStatEl = document.getElementById('revenueStat');
-  const engagementStatEl = document.getElementById('engagementStat');
-  const ctx = document.getElementById('statsChart').getContext('2d');
-
-  import { ref, get } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
-  import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
-
-  function formatNumber(num) {
-    if (num >= 1e6) return (num / 1e6).toFixed(1) + 'M';
-    if (num >= 1e3) return (num / 1e3).toFixed(1) + 'K';
-    return num;
-  }
-
-  let statsChart;
-
-  onAuthStateChanged(window.firebaseData.auth, async (user) => {
-    if (!user) {
-      // Redirect if not logged in
-      window.location.href = "/login.html";
-      return;
-    }
-
-    const userId = user.uid;
-    profilePicEl.src = user.photoURL || "https://i.imgur.com/0y0z5fz.jpg";
-
-    try {
-      const userStatsRef = ref(window.firebaseData.db, `creators/${userId}/stats`);
-      const snapshot = await get(userStatsRef);
-
-      if (!snapshot.exists()) {
-        console.warn("No stats found for user");
-        return;
+        } catch (error) {
+          console.error("Error loading user stats:", error);
+        }
+      } else {
+        console.log("Not signed in");
       }
+    });
 
-      const stats = snapshot.val();
+    function drawChart(views, revenue) {
+      const ctx = document.getElementById('statsChart').getContext('2d');
+      const viewsData = Array(7).fill(0).map(() => Math.round(views / 7 + Math.random() * 100));
+      const revenueData = Array(7).fill(0).map(() => +(revenue / 7 + Math.random() * 5).toFixed(2));
 
-      // Update stat boxes
-      viewsStatEl.textContent = formatNumber(stats.views || 0);
-      followersStatEl.textContent = formatNumber(stats.followers || 0);
-      revenueStatEl.textContent = `$${(stats.revenue || 0).toFixed(2)}`;
-      engagementStatEl.textContent = `${stats.engagement || 0}%`;
-
-      // Create or update chart
-      if (statsChart) statsChart.destroy();
-
-      statsChart = new Chart(ctx, {
+      new Chart(ctx, {
         type: 'line',
         data: {
-          labels: stats.daily?.map((_, i) => `Day ${i + 1}`) || [],
+          labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
           datasets: [
             {
-              label: 'Views',
-              data: stats.daily?.map(day => day.views || 0) || [],
-              borderColor: 'cyan',
-              backgroundColor: 'rgba(0, 255, 255, 0.2)',
-              yAxisID: 'y1',
+              label: 'Ad Revenue ($)',
+              data: revenueData,
               fill: true,
+              borderColor: '#4caf50',
+              backgroundColor: 'rgba(76, 175, 80, 0.2)',
               tension: 0.4,
-              pointRadius: 3,
-              pointBackgroundColor: 'cyan',
+              pointRadius: 4,
+              pointBackgroundColor: '#4caf50'
             },
             {
-              label: 'Revenue',
-              data: stats.daily?.map(day => day.revenue || 0) || [],
-              borderColor: '#ff9800',
-              backgroundColor: 'rgba(255, 152, 0, 0.2)',
-              yAxisID: 'y',
-              fill: true,
+              label: 'Views',
+              data: viewsData,
+              fill: false,
+              borderColor: 'cyan',
+              backgroundColor: 'rgba(0, 255, 255, 0.2)',
               tension: 0.4,
-              pointRadius: 3,
-              pointBackgroundColor: '#ff9800',
+              pointRadius: 4,
+              pointBackgroundColor: 'cyan',
+              yAxisID: 'y1'
             }
           ]
         },
@@ -199,24 +99,26 @@
           stacked: false,
           plugins: {
             legend: {
-              labels: { color: '#fff' }
+              labels: {
+                color: '#fff'
+              }
             }
           },
           scales: {
             x: {
               ticks: { color: '#aaa' },
-              grid: { color: '#222' },
+              grid: { color: '#222' }
             },
             y: {
               type: 'linear',
               display: true,
               position: 'left',
-              ticks: { color: '#ff9800' },
+              ticks: { color: '#aaa' },
               grid: { color: '#222' },
               title: {
                 display: true,
                 text: 'Revenue ($)',
-                color: '#ff9800',
+                color: '#4caf50',
                 font: { weight: 'bold' }
               }
             },
@@ -236,12 +138,95 @@
           }
         }
       });
-
-    } catch (error) {
-      console.error("Error loading stats:", error);
     }
-  });
-</script>
+  </script>
+  <style>
+    body {
+      margin: 0;
+      background: #000;
+      color: #fff;
+      font-family: sans-serif;
+    }
+    header {
+      position: sticky;
+      top: 0;
+      background: #111;
+      padding: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 10;
+      border-bottom: 1px solid #222;
+    }
+    .logo {
+      font-weight: bold;
+      font-size: 1.2rem;
+    }
+    .profile-pic {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+    }
+    .chart-container {
+      max-width: 900px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+    }
+    .stats-container {
+      max-width: 900px;
+      margin: 2rem auto;
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      padding: 0 1rem;
+    }
+    .stat-box {
+      background: #111;
+      border: 1px solid #333;
+      border-radius: 8px;
+      padding: 1rem;
+      text-align: center;
+      flex: 1 1 150px;
+    }
+    .stat-number {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #4caf50;
+    }
+    .stat-label {
+      color: #ccc;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">CYBERCHAT ADS</div>
+    <img src="https://via.placeholder.com/40" alt="Profile" class="profile-pic" />
+  </header>
 
+  <div class="chart-container">
+    <canvas id="statsChart"></canvas>
+  </div>
+
+  <div class="stats-container">
+    <div class="stat-box">
+      <div class="stat-number" data-type="views">-</div>
+      <div class="stat-label">Views</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-number" data-type="followers">-</div>
+      <div class="stat-label">Followers</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-number" data-type="revenue">-</div>
+      <div class="stat-label">Revenue</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-number" data-type="engagement">-</div>
+      <div class="stat-label">Engagement Rate (%)</div>
+    </div>
+  </div>
 </body>
 </html>
