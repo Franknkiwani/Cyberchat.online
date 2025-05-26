@@ -1,257 +1,227 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>CyberChat Ads</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
-    import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
-      authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
-      databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
-      projectId: "itzhoyoo-f9f7e",
-      storageBucket: "itzhoyoo-f9f7e.filestorage.app",
-      messagingSenderId: "1094792075584",
-      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
-      measurementId: "G-LLT6F9WRKH"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth();
-    const db = getDatabase();
-
-    let chartInstance = null;
-
-    onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        const uid = user.uid;
-        try {
-          const statsSnap = await get(ref(db, `users/${uid}/stats`));
-          const stats = statsSnap.val() || {};
-
-          const views = Number(stats.views) || 0;
-          const followers = Number(stats.followers) || 0;
-          const revenue = Number(stats.revenue) || 0;
-          const engagement = Number(stats.engagement) || 0;
-
-          document.querySelector('[data-type="views"]').textContent = views.toLocaleString();
-          document.querySelector('[data-type="followers"]').textContent = followers.toLocaleString();
-          document.querySelector('[data-type="revenue"]').textContent = `$${revenue.toFixed(2)}`;
-          document.querySelector('[data-type="engagement"]').textContent = `${engagement.toFixed(1)}%`;
-
-          const profilePicSnap = await get(ref(db, `users/${uid}/profilePic`));
-          const profilePicURL = profilePicSnap.exists() ? profilePicSnap.val() : "https://via.placeholder.com/40";
-          document.querySelector(".profile-pic").src = profilePicURL;
-
-          drawChart(views, revenue);
-
-        } catch (error) {
-          console.error("Error loading user stats:", error);
-        }
-      } else {
-        console.log("Not signed in");
-        // Optional: Clear stats & chart if no user
-        document.querySelectorAll(".stat-number").forEach(el => el.textContent = "-");
-        document.querySelector(".profile-pic").src = "https://via.placeholder.com/40";
-        if(chartInstance){
-          chartInstance.destroy();
-          chartInstance = null;
-        }
-      }
-    });
-
-    function drawChart(totalViews, totalRevenue) {
-      const ctx = document.getElementById('statsChart').getContext('2d');
-
-      // Generate fake daily data by splitting total over 7 days with a slight random jitter
-      const viewsData = Array(7).fill(0).map(() => Math.round(totalViews / 7 + (Math.random() - 0.5) * 100));
-      const revenueData = Array(7).fill(0).map(() => +(totalRevenue / 7 + (Math.random() - 0.5) * 5).toFixed(2));
-
-      if(chartInstance){
-        chartInstance.destroy();
-      }
-
-      chartInstance = new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-          datasets: [
-            {
-              label: 'Ad Revenue ($)',
-              data: revenueData,
-              fill: true,
-              borderColor: '#4caf50',
-              backgroundColor: 'rgba(76, 175, 80, 0.2)',
-              tension: 0.4,
-              pointRadius: 4,
-              pointBackgroundColor: '#4caf50',
-              yAxisID: 'y'
-            },
-            {
-              label: 'Views',
-              data: viewsData,
-              fill: false,
-              borderColor: 'cyan',
-              backgroundColor: 'rgba(0, 255, 255, 0.2)',
-              tension: 0.4,
-              pointRadius: 4,
-              pointBackgroundColor: 'cyan',
-              yAxisID: 'y1'
-            }
-          ]
-        },
-        options: {
-          responsive: true,
-          interaction: {
-            mode: 'index',
-            intersect: false,
-          },
-          stacked: false,
-          plugins: {
-            legend: {
-              labels: {
-                color: '#fff'
-              }
-            }
-          },
-          scales: {
-            x: {
-              ticks: { color: '#aaa' },
-              grid: { color: '#222' }
-            },
-            y: {
-              type: 'linear',
-              display: true,
-              position: 'left',
-              ticks: { color: '#aaa' },
-              grid: { color: '#222' },
-              title: {
-                display: true,
-                text: 'Revenue ($)',
-                color: '#4caf50',
-                font: { weight: 'bold' }
-              }
-            },
-            y1: {
-              type: 'linear',
-              display: true,
-              position: 'right',
-              ticks: { color: 'cyan' },
-              grid: { drawOnChartArea: false },
-              title: {
-                display: true,
-                text: 'Views',
-                color: 'cyan',
-                font: { weight: 'bold' }
-              }
-            }
-          }
-        }
-      });
-    }
-  </script>
-  <style>
-    body {
-      margin: 0;
-      background: #000;
-      color: #fff;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
-        Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-    }
-    header {
-      position: sticky;
-      top: 0;
-      background: #111;
-      padding: 1rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      z-index: 10;
-      border-bottom: 1px solid #222;
-    }
-    .logo {
-      font-weight: 900;
-      font-size: 1.3rem;
-      letter-spacing: 1.5px;
-      user-select: none;
-    }
-    .profile-pic {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 2px solid #4caf50;
-      background: #222;
-    }
-    .chart-container {
-      max-width: 900px;
-      margin: 2rem auto;
-      padding: 0 1rem;
-    }
-    .stats-container {
-      max-width: 900px;
-      margin: 2rem auto;
-      display: flex;
-      gap: 1rem;
-      justify-content: center;
-      flex-wrap: wrap;
-      padding: 0 1rem;
-    }
-    .stat-box {
-      background: #111;
-      border: 1px solid #333;
-      border-radius: 8px;
-      padding: 1rem 2rem;
-      text-align: center;
-      flex: 1 1 150px;
-      user-select: none;
-    }
-    .stat-number {
-      font-size: 1.7rem;
-      font-weight: 700;
-      color: #4caf50;
-    }
-    .stat-label {
-      color: #ccc;
-      font-size: 0.9rem;
-      margin-top: 0.3rem;
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Live User Stats - Dark Gamer</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap');
+  * {
+    margin: 0; padding: 0; box-sizing: border-box;
+  }
+  body, html {
+    height: 100%;
+    background: #0a0a0f;
+    color: #0ff; /* Neon cyan */
+    font-family: 'Orbitron', monospace;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    user-select: none;
+  }
+  header {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 20px;
+    text-shadow: 0 0 15px #0ff, 0 0 30px #00f;
+    letter-spacing: 0.1em;
+  }
+  #chartContainer {
+    width: 90vw;
+    max-width: 900px;
+    height: 450px;
+    background: rgba(10,10,15,0.8);
+    border-radius: 15px;
+    box-shadow: 0 0 25px #00ffff55;
+    padding: 20px;
+    backdrop-filter: blur(8px);
+  }
+  canvas {
+    width: 100% !important;
+    height: 100% !important;
+  }
+  footer {
+    margin-top: 30px;
+    font-size: 0.9rem;
+    color: #00f6ffaa;
+  }
+  #loginMessage {
+    margin-bottom: 15px;
+    font-size: 1.2rem;
+    color: #0ff7;
+  }
+  button {
+    background: #00ffff33;
+    border: 1.5px solid #0ff;
+    color: #0ff;
+    padding: 8px 20px;
+    border-radius: 6px;
+    font-family: 'Orbitron', monospace;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.3s;
+  }
+  button:hover {
+    background: #00ffff88;
+  }
+</style>
 </head>
 <body>
-  <header>
-    <div class="logo">CYBERCHAT ADS</div>
-    <img src="https://via.placeholder.com/40" alt="Profile" class="profile-pic" />
-  </header>
 
-  <main>
-    <div class="chart-container">
-      <canvas id="statsChart"></canvas>
-    </div>
+<header>CyberGame User Stats</header>
+<div id="loginMessage">Checking login status...</div>
+<button id="loginBtn" style="display:none;">Login with Google</button>
+<div id="chartContainer" style="display:none;">
+  <canvas id="liveChart"></canvas>
+</div>
+<footer>Powered by Firebase &amp; Chart.js</footer>
 
-    <div class="stats-container">
-      <div class="stat-box">
-        <div class="stat-number" data-type="views">-</div>
-        <div class="stat-label">Views</div>
-      </div>
-      <div class="stat-box">
-        <div class="stat-number" data-type="followers">-</div>
-        <div class="stat-label">Followers</div>
-      </div>
-      <div class="stat-box">
-        <div class="stat-number" data-type="revenue">-</div>
-        <div class="stat-label">Revenue</div>
-      </div>
-      <div class="stat-box">
-        <div class="stat-number" data-type="engagement">-</div>
-        <div class="stat-label">Engagement Rate (%)</div>
-      </div>
-    </div>
-  </main>
+<script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+  // Firebase config - replace with your project config!
+  const firebaseConfig = {
+    apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
+    authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
+    databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
+    projectId: "itzhoyoo-f9f7e",
+    storageBucket: "itzhoyoo-f9f7e.filestorage.app",
+    messagingSenderId: "1094792075584",
+    appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.database();
+
+  const loginMessage = document.getElementById('loginMessage');
+  const loginBtn = document.getElementById('loginBtn');
+  const chartContainer = document.getElementById('chartContainer');
+
+  // Chart.js setup
+  const ctx = document.getElementById('liveChart').getContext('2d');
+  const liveChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: [], // timestamps
+      datasets: [
+        {
+          label: 'Views',
+          borderColor: '#00ffff',
+          backgroundColor: 'rgba(0,255,255,0.15)',
+          fill: true,
+          tension: 0.3,
+          data: [],
+          pointRadius: 3,
+          pointHoverRadius: 6,
+          borderWidth: 2,
+        },
+        {
+          label: 'Followers',
+          borderColor: '#ff00ff',
+          backgroundColor: 'rgba(255,0,255,0.15)',
+          fill: true,
+          tension: 0.3,
+          data: [],
+          pointRadius: 3,
+          pointHoverRadius: 6,
+          borderWidth: 2,
+        }
+      ]
+    },
+    options: {
+      animation: { duration: 500 },
+      responsive: true,
+      scales: {
+        x: {
+          type: 'time',
+          time: { unit: 'minute', tooltipFormat: 'HH:mm:ss' },
+          grid: { color: '#004444' },
+          ticks: { color: '#0ff' }
+        },
+        y: {
+          beginAtZero: true,
+          grid: { color: '#004444' },
+          ticks: { color: '#0ff' }
+        }
+      },
+      plugins: {
+        legend: {
+          labels: { color: '#0ff', font: { weight: 'bold' } }
+        },
+        tooltip: {
+          mode: 'nearest',
+          intersect: false,
+          backgroundColor: '#002222',
+          titleColor: '#0ff',
+          bodyColor: '#0ff'
+        }
+      }
+    }
+  });
+
+  // Helper to update chart with data points (merged and sorted timestamps)
+  function updateChartData(viewsData, followersData) {
+    // Combine timestamps
+    const timestampsSet = new Set([
+      ...Object.keys(viewsData),
+      ...Object.keys(followersData)
+    ]);
+    const timestamps = Array.from(timestampsSet).sort((a,b) => a - b).slice(-30);
+
+    liveChart.data.labels = timestamps.map(ts => new Date(Number(ts)));
+
+    liveChart.data.datasets[0].data = timestamps.map(ts => viewsData[ts] ?? null);
+    liveChart.data.datasets[1].data = timestamps.map(ts => followersData[ts] ?? null);
+
+    liveChart.update();
+  }
+
+  // Listen to auth state
+  auth.onAuthStateChanged(user => {
+    if (user) {
+      loginMessage.style.display = 'none';
+      loginBtn.style.display = 'none';
+      chartContainer.style.display = 'block';
+
+      const uid = user.uid;
+      const viewsRef = db.ref(`/users/${uid}/stats/views`);
+      const followersRef = db.ref(`/users/${uid}/stats/followers`);
+
+      // Store latest snapshots
+      let latestViews = {};
+      let latestFollowers = {};
+
+      viewsRef.on('value', snapshot => {
+        latestViews = snapshot.val() || {};
+        updateChartData(latestViews, latestFollowers);
+      });
+
+      followersRef.on('value', snapshot => {
+        latestFollowers = snapshot.val() || {};
+        updateChartData(latestViews, latestFollowers);
+      });
+
+    } else {
+      // Not logged in, show login button
+      loginMessage.textContent = 'You must login to see your live stats.';
+      loginMessage.style.display = 'block';
+      loginBtn.style.display = 'inline-block';
+      chartContainer.style.display = 'none';
+    }
+  });
+
+  // Login with Google
+  loginBtn.onclick = () => {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    auth.signInWithPopup(provider).catch(console.error);
+  };
+</script>
+
 </body>
 </html>
