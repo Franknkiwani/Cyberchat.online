@@ -6,7 +6,6 @@
   <title>CyberChat Ads</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script type="module">
-    // Firebase import (v11+ modular)
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
     import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
@@ -26,6 +25,8 @@
     const auth = getAuth();
     const db = getDatabase();
 
+    let chartInstance = null;
+
     onAuthStateChanged(auth, async (user) => {
       if (user) {
         const uid = user.uid;
@@ -33,15 +34,15 @@
           const statsSnap = await get(ref(db, `users/${uid}/stats`));
           const stats = statsSnap.val() || {};
 
-          const views = stats.views || 0;
-          const followers = stats.followers || 0;
-          const revenue = stats.revenue || 0;
-          const engagement = stats.engagement || 0;
+          const views = Number(stats.views) || 0;
+          const followers = Number(stats.followers) || 0;
+          const revenue = Number(stats.revenue) || 0;
+          const engagement = Number(stats.engagement) || 0;
 
-          document.querySelector('[data-type="views"]').textContent = views;
-          document.querySelector('[data-type="followers"]').textContent = followers;
-          document.querySelector('[data-type="revenue"]').textContent = revenue;
-          document.querySelector('[data-type="engagement"]').textContent = engagement;
+          document.querySelector('[data-type="views"]').textContent = views.toLocaleString();
+          document.querySelector('[data-type="followers"]').textContent = followers.toLocaleString();
+          document.querySelector('[data-type="revenue"]').textContent = `$${revenue.toFixed(2)}`;
+          document.querySelector('[data-type="engagement"]').textContent = `${engagement.toFixed(1)}%`;
 
           const profilePicSnap = await get(ref(db, `users/${uid}/profilePic`));
           const profilePicURL = profilePicSnap.exists() ? profilePicSnap.val() : "https://via.placeholder.com/40";
@@ -54,15 +55,28 @@
         }
       } else {
         console.log("Not signed in");
+        // Optional: Clear stats & chart if no user
+        document.querySelectorAll(".stat-number").forEach(el => el.textContent = "-");
+        document.querySelector(".profile-pic").src = "https://via.placeholder.com/40";
+        if(chartInstance){
+          chartInstance.destroy();
+          chartInstance = null;
+        }
       }
     });
 
-    function drawChart(views, revenue) {
+    function drawChart(totalViews, totalRevenue) {
       const ctx = document.getElementById('statsChart').getContext('2d');
-      const viewsData = Array(7).fill(0).map(() => Math.round(views / 7 + Math.random() * 100));
-      const revenueData = Array(7).fill(0).map(() => +(revenue / 7 + Math.random() * 5).toFixed(2));
 
-      new Chart(ctx, {
+      // Generate fake daily data by splitting total over 7 days with a slight random jitter
+      const viewsData = Array(7).fill(0).map(() => Math.round(totalViews / 7 + (Math.random() - 0.5) * 100));
+      const revenueData = Array(7).fill(0).map(() => +(totalRevenue / 7 + (Math.random() - 0.5) * 5).toFixed(2));
+
+      if(chartInstance){
+        chartInstance.destroy();
+      }
+
+      chartInstance = new Chart(ctx, {
         type: 'line',
         data: {
           labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
@@ -75,7 +89,8 @@
               backgroundColor: 'rgba(76, 175, 80, 0.2)',
               tension: 0.4,
               pointRadius: 4,
-              pointBackgroundColor: '#4caf50'
+              pointBackgroundColor: '#4caf50',
+              yAxisID: 'y'
             },
             {
               label: 'Views',
@@ -145,7 +160,8 @@
       margin: 0;
       background: #000;
       color: #fff;
-      font-family: sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
+        Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
     }
     header {
       position: sticky;
@@ -159,13 +175,18 @@
       border-bottom: 1px solid #222;
     }
     .logo {
-      font-weight: bold;
-      font-size: 1.2rem;
+      font-weight: 900;
+      font-size: 1.3rem;
+      letter-spacing: 1.5px;
+      user-select: none;
     }
     .profile-pic {
       width: 40px;
       height: 40px;
       border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid #4caf50;
+      background: #222;
     }
     .chart-container {
       max-width: 900px;
@@ -185,18 +206,20 @@
       background: #111;
       border: 1px solid #333;
       border-radius: 8px;
-      padding: 1rem;
+      padding: 1rem 2rem;
       text-align: center;
       flex: 1 1 150px;
+      user-select: none;
     }
     .stat-number {
-      font-size: 1.5rem;
-      font-weight: bold;
+      font-size: 1.7rem;
+      font-weight: 700;
       color: #4caf50;
     }
     .stat-label {
       color: #ccc;
       font-size: 0.9rem;
+      margin-top: 0.3rem;
     }
   </style>
 </head>
@@ -206,27 +229,29 @@
     <img src="https://via.placeholder.com/40" alt="Profile" class="profile-pic" />
   </header>
 
-  <div class="chart-container">
-    <canvas id="statsChart"></canvas>
-  </div>
+  <main>
+    <div class="chart-container">
+      <canvas id="statsChart"></canvas>
+    </div>
 
-  <div class="stats-container">
-    <div class="stat-box">
-      <div class="stat-number" data-type="views">-</div>
-      <div class="stat-label">Views</div>
+    <div class="stats-container">
+      <div class="stat-box">
+        <div class="stat-number" data-type="views">-</div>
+        <div class="stat-label">Views</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-number" data-type="followers">-</div>
+        <div class="stat-label">Followers</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-number" data-type="revenue">-</div>
+        <div class="stat-label">Revenue</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-number" data-type="engagement">-</div>
+        <div class="stat-label">Engagement Rate (%)</div>
+      </div>
     </div>
-    <div class="stat-box">
-      <div class="stat-number" data-type="followers">-</div>
-      <div class="stat-label">Followers</div>
-    </div>
-    <div class="stat-box">
-      <div class="stat-number" data-type="revenue">-</div>
-      <div class="stat-label">Revenue</div>
-    </div>
-    <div class="stat-box">
-      <div class="stat-number" data-type="engagement">-</div>
-      <div class="stat-label">Engagement Rate (%)</div>
-    </div>
-  </div>
+  </main>
 </body>
 </html>
