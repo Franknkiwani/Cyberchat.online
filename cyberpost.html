@@ -173,150 +173,119 @@
   </div>
   <!-- Firebase and App Script -->
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-import { getAuth, onAuthStateChanged, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
-import { getDatabase, ref, get, child, push, set } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+  import { getDatabase, ref, push, set, get, child } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
-  authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
-  databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
-  projectId: "itzhoyoo-f9f7e",
-  storageBucket: "itzhoyoo-f9f7e.appspot.com",
-  messagingSenderId: "1094792075584",
-  appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
-  measurementId: "G-LLT6F9WRKH"
-};
+  const firebaseConfig = {
+    apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
+    authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
+    databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
+    projectId: "itzhoyoo-f9f7e",
+    storageBucket: "itzhoyoo-f9f7e.appspot.com",
+    messagingSenderId: "1094792075584",
+    appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5"
+  };
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const database = getDatabase(app);
-const provider = new GoogleAuthProvider();
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const database = getDatabase(app);
 
-const loginModal = document.getElementById('loginModal');
-const loginBtn = document.getElementById('loginBtn');
-const profilePic = document.getElementById('profilePic');
-const userHandle = document.getElementById('userHandle');
-const userFollowers = document.getElementById('userFollowers');
-const previewImage = document.getElementById('previewImage');
-const imgurUrlContainer = document.getElementById('imgurUrlContainer');
+  const postBtn = document.getElementById('postBtn');
+  const previewImage = document.getElementById('previewImage');
+  const imgurUrlContainer = document.getElementById('imgurUrlContainer');
 
-function showLogin() {
-  loginModal.classList.remove('hidden');
-  document.body.style.overflow = 'hidden';
-}
-function hideLogin() {
-  loginModal.classList.add('hidden');
-  document.body.style.overflow = 'auto';
-}
+  // Load image from sessionStorage
+  document.addEventListener('DOMContentLoaded', () => {
+    const imageData = sessionStorage.getItem('uploadedImage');
+    if (imageData && previewImage) {
+      previewImage.src = imageData;
+      previewImage.style.objectFit = 'cover';
+    } else {
+      alert("No image found. Redirecting...");
+      window.history.back();
+    }
+  });
 
-loginBtn.addEventListener('click', () => {
-  signInWithPopup(auth, provider)
-    .catch((error) => alert("Login failed: " + error.message));
-});
+  postBtn.addEventListener('click', async () => {
+    const title = document.getElementById('titleInput').value.trim();
+    const caption = document.getElementById('captionInput').value.trim();
+    const tags = document.getElementById('tagsInput').value.trim();
+    const category = document.getElementById('categorySelect').value;
 
-onAuthStateChanged(auth, async (user) => {
-  if (user) {
-    hideLogin();
-    const uid = user.uid;
+    if (!title || !caption || !tags || !category) return alert('All fields are required.');
 
-    profilePic.src = user.photoURL || 'https://via.placeholder.com/40';
-    userHandle.textContent = '@' + (user.displayName?.replace(/\s+/g, '').toLowerCase() || 'user');
+    const user = auth.currentUser;
+    if (!user) return alert('Please log in to post.');
 
     try {
-      const dbRef = ref(database);
-      const snapshot = await get(child(dbRef, `users/${uid}/followers`));
-      userFollowers.textContent = snapshot.exists()
-        ? `Followers: ${snapshot.val()}`
-        : 'Followers: 0';
-    } catch (error) {
-      userFollowers.textContent = 'Followers: --';
+      // Upload image to Imgur
+      const imageData = previewImage.src;
+      const imgurRes = await fetch('https://api.imgur.com/3/image', {
+        method: 'POST',
+        headers: {
+          Authorization: 'Client-ID 784e530b6023501',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ image: imageData.split(',')[1], type: 'base64' }),
+      });
+
+      const imgurJson = await imgurRes.json();
+      if (!imgurJson.success) throw new Error('Imgur upload failed');
+      const imgurLink = imgurJson.data.link;
+
+      // Get monetization status
+      const snapshot = await get(child(ref(database), `users/${user.uid}/monetize`));
+      const isMonetized = snapshot.exists() && snapshot.val() === 'on';
+
+      // Calculate CPM
+      const cpm = calcCPM(title, caption);
+
+      const postData = {
+        userId: user.uid,
+        userName: user.displayName || user.email,
+        userPhoto: user.photoURL || '',
+        title,
+        caption,
+        tags: tags.split(',').map(t => t.trim()),
+        category,
+        imageUrl: imgurLink,
+        createdAt: Date.now(),
+        views: 0,
+        clicks: 0,
+        monetization: isMonetized ? 'on' : 'off',
+        cpm: cpm.toFixed(2)
+      };
+
+      // Write to /posts
+      const postsRef = ref(database, 'posts');
+      const newPostRef = push(postsRef);
+      await set(newPostRef, postData);
+
+      // Also write to /post for compatibility
+      const altRef = ref(database, 'post/' + newPostRef.key);
+      await set(altRef, postData);
+
+      alert('Post uploaded successfully!');
+      document.getElementById('titleInput').value = '';
+      document.getElementById('captionInput').value = '';
+      document.getElementById('tagsInput').value = '';
+      document.getElementById('categorySelect').value = '';
+      imgurUrlContainer.innerHTML = `<p class="text-green-400 mt-2">Imgur URL: <a href="${imgurLink}" target="_blank" class="underline">${imgurLink}</a></p>`;
+      previewImage.src = 'https://via.placeholder.com/1280x720.png?text=Preview+Image';
+
+    } catch (err) {
+      console.error(err);
+      alert("Failed to upload post: " + err.message);
     }
-  } else {
-    showLogin();
-    profilePic.src = 'https://via.placeholder.com/40';
-    userHandle.textContent = '@guest';
-    userFollowers.textContent = 'Followers: --';
+  });
+
+  function calcCPM(title, caption) {
+    const baseCPM = 0.10; // base per image
+    const titleCPM = 0.01 * title.length;
+    const captionCPM = 0.01 * Math.floor(caption.length / 10);
+    return baseCPM + titleCPM + captionCPM;
   }
-});
-
-// Load image from sessionStorage and disable manual upload
-document.addEventListener('DOMContentLoaded', () => {
-  const imageData = sessionStorage.getItem('uploadedImage');
-  if (imageData && previewImage) {
-    previewImage.src = imageData;
-    previewImage.style.objectFit = 'cover';
-  } else {
-    alert("No image found. Redirecting...");
-    window.history.back();
-  }
-});
-
-const postBtn = document.getElementById('postBtn');
-
-postBtn.addEventListener('click', async () => {
-  const titleInput = document.getElementById('titleInput');
-  const captionInput = document.getElementById('captionInput');
-  const tagsInput = document.getElementById('tagsInput');
-  const categorySelect = document.getElementById('categorySelect');
-
-  if (!titleInput.value.trim()) return alert('Title is required');
-  if (!captionInput.value.trim()) return alert('Caption is required');
-  if (!tagsInput.value.trim()) return alert('Tags are required');
-  if (!categorySelect.value) return alert('Please select a category');
-
-  const user = auth.currentUser;
-  if (!user) return alert('You must be logged in to post.');
-
-  const imageData = previewImage.src;
-
-  try {
-    // Upload to Imgur
-    const imgurRes = await fetch('https://api.imgur.com/3/image', {
-      method: 'POST',
-      headers: {
-        Authorization: 'Client-ID 784e530b6023501',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ image: imageData.split(',')[1], type: 'base64' }),
-    });
-
-    const imgurJson = await imgurRes.json();
-    if (!imgurJson.success) throw new Error('Imgur upload failed');
-
-    const imgurLink = imgurJson.data.link;
-    imgurUrlContainer.innerHTML = `<p class="text-green-400 mt-2">Imgur URL: <a href="${imgurLink}" target="_blank" class="underline">${imgurLink}</a></p>`;
-
-    // Prepare post data
-    const postData = {
-      userId: user.uid,
-      userName: user.displayName || user.email || 'Anonymous',
-      userPhoto: user.photoURL || '',
-      title: titleInput.value.trim(),
-      caption: captionInput.value.trim(),
-      tags: tagsInput.value.trim().split(',').map(t => t.trim()).filter(Boolean),
-      category: categorySelect.value,
-      imageUrl: imgurLink,
-      createdAt: Date.now()
-    };
-
-    const postsRef = ref(database, 'posts');
-    const newPostRef = push(postsRef);
-    await set(newPostRef, postData);
-
-    alert('Post published successfully!');
-    titleInput.value = '';
-    captionInput.value = '';
-    tagsInput.value = '';
-    categorySelect.value = '';
-    imgurUrlContainer.innerHTML = '';
-    previewImage.src = 'https://via.placeholder.com/1280x720.png?text=Preview+Image';
-
-  } catch (error) {
-    console.error('Post error:', error);
-    alert('Failed to publish post: ' + error.message);
-  }
-});
 </script>
 </body>
 </html>
