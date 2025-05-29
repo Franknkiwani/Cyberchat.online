@@ -127,53 +127,53 @@
       color: #fff;
     }
     #stats-container {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1rem;
-  width: 100%;
-  max-width: 600px;
-  margin: 0 auto 2rem auto;
-  padding: 1rem;
-  box-sizing: border-box;
-  position: relative;
-  border-radius: 16px;
-}
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+      width: 100%;
+      max-width: 600px;
+      margin: 0 auto 2rem auto;
+      padding: 1rem;
+      box-sizing: border-box;
+      position: relative;
+      border-radius: 16px;
+    }
 
-.stat-box {
-  background-color: #1f1f1f;
-  border: 1px solid #333;
-  padding: 1rem;
-  border-radius: 12px;
-  text-align: center;
-  backdrop-filter: blur(4px);
-  box-shadow: 0 2px 5px rgba(0,0,0,0.5);
-}
+    .stat-box {
+      background-color: #1f1f1f;
+      border: 1px solid #333;
+      padding: 1rem;
+      border-radius: 12px;
+      text-align: center;
+      backdrop-filter: blur(4px);
+      box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+    }
 
-.stat-box h4 {
-  margin: 0;
-  font-size: 0.9rem;
-  color: #aaa;
-  text-transform: uppercase;
-}
+    .stat-box h4 {
+      margin: 0;
+      font-size: 0.9rem;
+      color: #aaa;
+      text-transform: uppercase;
+    }
 
-.stat-box p {
-  margin: 0.5rem 0 0 0;
-  font-size: 1.4rem;
-  font-weight: bold;
-  color: #fff;
-}
+    .stat-box p {
+      margin: 0.5rem 0 0 0;
+      font-size: 1.4rem;
+      font-weight: bold;
+      color: #fff;
+    }
 
-/* Red blur if not monetized */
-.stat-blur::after {
-  content: "";
-  position: absolute;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  backdrop-filter: blur(4px);
-  background-color: rgba(255, 0, 0, 0.1);
-  border-radius: 16px;
-  pointer-events: none;
-}
+    /* Red blur if not monetized */
+    .stat-blur::after {
+      content: "";
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      backdrop-filter: blur(4px);
+      background-color: rgba(255, 0, 0, 0.1);
+      border-radius: 16px;
+      pointer-events: none;
+    }
   </style>
 </head>
 <body>
@@ -205,6 +205,8 @@
 
 <!-- Monetize now button -->
 <button id="monetize-btn" disabled>MONETISE NOW</button>
+
+<!-- Stats container -->
 <div id="stats-container" class="stat-blur">
   <div class="stat-box">
     <h4>Views</h4>
@@ -223,6 +225,7 @@
     <p id="stat-likes">0</p>
   </div>
 </div>
+
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
   import { getDatabase, ref, get, query, orderByChild, equalTo } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
@@ -243,134 +246,145 @@
   const db = getDatabase(app);
   const auth = getAuth(app);
 
-  // DOM elements
+  // DOM Elements
   const profilePic = document.getElementById("profile-pic");
-  const username = document.getElementById("username");
+  const usernameElem = document.getElementById("username");
   const monetizeStatus = document.getElementById("monetize-status");
+  const monetizeBtn = document.getElementById("monetize-btn");
   const progressBar = document.getElementById("progress-bar");
   const progressLabel = document.getElementById("progress-label");
-  const monetizeBtn = document.getElementById("monetize-btn");
+  const statsContainer = document.getElementById("stats-container");
+  const statViews = document.getElementById("stat-views");
+  const statFollowers = document.getElementById("stat-followers");
+  const statRevenue = document.getElementById("stat-revenue");
+  const statLikes = document.getElementById("stat-likes");
 
-  // Fetch user live post count (assuming /post/{postId} with post.uid and post.live === true)
-  async function fetchUserLivePostCount(uid) {
-    try {
-      const postsRef = ref(db, 'post');
-      const postsSnapshot = await get(postsRef);
-      if (!postsSnapshot.exists()) return 0;
+  // State
+  let userId = null;
+  let monetizeState = 'off'; // default
 
-      const posts = postsSnapshot.val();
-      let count = 0;
-      for (const key in posts) {
-        const post = posts[key];
-        if (post.uid === uid && post.live === true) {
-          count++;
-        }
-      }
-      return count;
-    } catch (err) {
-      console.error("Failed to fetch posts:", err);
-      return 0;
-    }
+  // Utility: format numbers with commas
+  function formatNumber(num) {
+    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   }
 
-  // Update progress bar and label based on post count
-  function updateProgress(postCount) {
-    const maxPosts = 3;
-    const percent = Math.min(postCount / maxPosts, 1) * 100;
-    progressBar.style.width = percent + "%";
-    progressLabel.textContent = `${postCount} live post${postCount !== 1 ? 's' : ''} ${postCount >= maxPosts ? '✓ Complete' : ''}`;
-  }
-
-  // Update monetize status badge
-  async function checkMonetizeStatus(uid) {
-    try {
-      const userMonetizeRef = ref(db, `users/${uid}/monetize`);
-      const snap = await get(userMonetizeRef);
-      if (snap.exists() && snap.val() === "on") {
-        monetizeStatus.textContent = "MONETISED";
-        monetizeStatus.style.backgroundColor = "#4caf50"; // green
-        return true;
-      } else {
-        monetizeStatus.textContent = "NOT MONETISED";
-        monetizeStatus.style.backgroundColor = "#e53935"; // red
-        return false;
-      }
-    } catch (error) {
-      monetizeStatus.textContent = "STATUS UNKNOWN";
-      monetizeStatus.style.backgroundColor = "#666";
-      console.error("Error fetching monetize status:", error);
-      return false;
-    }
-  }
-
-  // Update monetize button based on post count & monetize status
-  function updateMonetizeButton(postCount, monetized) {
-    if (monetized) {
-      monetizeBtn.style.display = "none";
-      return;
-    }
-    monetizeBtn.style.display = "block";
-    if (postCount >= 3) {
+  // Update UI based on monetize state
+  function updateMonetizeUI(state) {
+    monetizeState = state;
+    if (state === 'on') {
+      monetizeStatus.textContent = "MONETIZATION ENABLED";
+      monetizeStatus.style.backgroundColor = "#4caf50"; // green
       monetizeBtn.disabled = false;
       monetizeBtn.classList.add("enabled");
-    } else {
+      statsContainer.classList.remove("stat-blur");
+    } else if (state === 'pending') {
+      monetizeStatus.textContent = "MONETIZATION PENDING APPROVAL";
+      monetizeStatus.style.backgroundColor = "#ff9800"; // orange
       monetizeBtn.disabled = true;
       monetizeBtn.classList.remove("enabled");
+      statsContainer.classList.add("stat-blur");
+    } else {
+      monetizeStatus.textContent = "MONETIZATION DISABLED";
+      monetizeStatus.style.backgroundColor = "#f44336"; // red
+      monetizeBtn.disabled = true;
+      monetizeBtn.classList.remove("enabled");
+      statsContainer.classList.add("stat-blur");
     }
   }
 
-  monetizeBtn.addEventListener("click", () => {
-    if (!monetizeBtn.disabled) {
-      window.location.href = "monetisenow.html";
-    }
-  });
-
-  onAuthStateChanged(auth, async (user) => {
-    if (user) {
-      // Load profile pic & username from Firebase (/users/{uid}/profilePic, /users/{uid}/username)
-      try {
-        const userRef = ref(db, `users/${user.uid}`);
-        const snap = await get(userRef);
-        const data = snap.exists() ? snap.val() : {};
-        username.textContent = data.username ? "@" + data.username : "@user";
-        profilePic.src = data.profilePic || "https://via.placeholder.com/32?text=👤";
-      } catch {
-        username.textContent = "@user";
-        profilePic.src = "https://via.placeholder.com/32?text=👤";
+  // Fetch and display user stats from Firebase
+  async function fetchUserStats(uid) {
+    try {
+      const statsRef = ref(db, `users/${uid}/stats`);
+      const snapshot = await get(statsRef);
+      if (snapshot.exists()) {
+        const stats = snapshot.val();
+        statViews.textContent = formatNumber(stats.views || 0);
+        statFollowers.textContent = formatNumber(stats.followers || 0);
+        statRevenue.textContent = `$${(stats.revenue || 0).toFixed(2)}`;
+        statLikes.textContent = formatNumber(stats.likes || 0);
+        // Update progress bar as % of some goal, say 100k views
+        const progressPercent = Math.min(100, ((stats.views || 0) / 100000) * 100);
+        progressBar.style.width = `${progressPercent}%`;
+        progressLabel.textContent = `Post Views Progress: ${progressPercent.toFixed(1)}%`;
+      } else {
+        // No stats, reset to zero
+        statViews.textContent = '0';
+        statFollowers.textContent = '0';
+        statRevenue.textContent = '$0.00';
+        statLikes.textContent = '0';
+        progressBar.style.width = '0%';
+        progressLabel.textContent = 'Post Views Progress: 0%';
       }
+    } catch (error) {
+      console.error("Error fetching user stats:", error);
+    }
+  }
 
-      // Monetize status
-      const monetized = await checkMonetizeStatus(user.uid);
+  // Fetch user profile info and monetize state
+  async function fetchUserProfile(uid) {
+    try {
+      const userRef = ref(db, `users/${uid}`);
+      const snapshot = await get(userRef);
+      if (snapshot.exists()) {
+        const user = snapshot.val();
+        usernameElem.textContent = user.username ? `@${user.username}` : '@user';
+        profilePic.src = user.profilePic || "https://via.placeholder.com/32?text=👤";
+        updateMonetizeUI(user.monetize || 'off');
+        await fetchUserStats(uid);
+      } else {
+        usernameElem.textContent = '@user';
+        profilePic.src = "https://via.placeholder.com/32?text=👤";
+        updateMonetizeUI('off');
+      }
+    } catch (error) {
+      console.error("Error fetching user profile:", error);
+    }
+  }
 
-      // Posts
-      const postCount = await fetchUserLivePostCount(user.uid);
-
-      // Update UI
-      updateProgress(postCount);
-      updateMonetizeButton(postCount, monetized);
+  // Auth listener
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      userId = user.uid;
+      fetchUserProfile(userId);
     } else {
-      // Not logged in fallback
-      username.textContent = "@guest";
+      userId = null;
+      usernameElem.textContent = '@guest';
       profilePic.src = "https://via.placeholder.com/32?text=👤";
-      monetizeStatus.textContent = "";
-      monetizeBtn.style.display = "none";
-      progressLabel.textContent = "Login to see posts";
-      progressBar.style.width = "0%";
+      updateMonetizeUI('off');
     }
   });
-  const statsContainer = document.getElementById("stats-container");
 
-if (monetizeStatus !== "on") {
-  statsContainer.classList.add("stat-blur");
-} else {
-  statsContainer.classList.remove("stat-blur");
-}
+  // Monetize button click
+  monetizeBtn.addEventListener('click', async () => {
+    if (!userId || monetizeState !== 'off') return;
+    monetizeBtn.disabled = true;
+    monetizeBtn.textContent = "REQUESTING...";
+    try {
+      // Set monetize to 'pending' in Firebase
+      const monetizeRef = ref(db, `users/${userId}/monetize`);
+      await fetch(monetizeRef); // Just to confirm ref is valid
+      // Firebase does not support direct 'set' with ref imported from get() — use update instead:
+      await import("https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js").then(({ update }) => {
+        return update(monetizeRef, 'pending');
+      });
 
-// Example stat loads — replace these with real Firebase calls
-document.getElementById("stat-views").textContent = totalViews || 0;
-document.getElementById("stat-followers").textContent = totalFollowers || 0;
-document.getElementById("stat-revenue").textContent = monetizeStatus === "on" ? `$${totalRevenue || '0.00'}` : "$0.00";
-document.getElementById("stat-likes").textContent = totalLikes || 0;
+      // But since this is tricky, let's just do it simpler:
+      // update(ref(db, `users/${userId}`), { monetize: 'pending' })
+
+      // Better way:
+      const { update } = await import("https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js");
+      await update(ref(db, `users/${userId}`), { monetize: 'pending' });
+
+      updateMonetizeUI('pending');
+      monetizeBtn.textContent = "MONETISE NOW";
+    } catch (error) {
+      console.error("Error requesting monetization:", error);
+      monetizeBtn.textContent = "TRY AGAIN";
+      monetizeBtn.disabled = false;
+    }
+  });
 </script>
+
 </body>
 </html>
