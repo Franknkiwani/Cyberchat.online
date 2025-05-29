@@ -1,20 +1,27 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Manual Stat Uploader</title>
+  <title>Stat Uploader with UID Dropdown</title>
   <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-database-compat.js"></script>
   <style>
     body { font-family: sans-serif; padding: 2rem; background: #111; color: white; }
-    input, button { margin-top: 0.5rem; padding: 0.5rem; width: 100%; background: #222; color: white; border: 1px solid #555; border-radius: 6px; }
+    select, input, button { margin-top: 0.5rem; padding: 0.5rem; width: 100%; background: #222; color: white; border: 1px solid #555; border-radius: 6px; }
     button { background: #22c55e; color: black; font-weight: bold; }
     label { margin-top: 1rem; display: block; }
   </style>
 </head>
 <body>
-  <h2>Manual Stat Uploader</h2>
-  <label>User UID</label>
-  <input id="uidInput" placeholder="Paste UID here" />
+  <h2>Stat Uploader</h2>
+
+  <label>Select User UID</label>
+  <select id="uidDropdown">
+    <option value="">-- Select a user --</option>
+    <option value="user1UID">user1UID</option>
+    <option value="user2UID">user2UID</option>
+    <option value="user3UID">user3UID</option>
+    <!-- Add more UIDs as needed -->
+  </select>
 
   <label>Views</label>
   <input type="number" id="viewsInput" value="1000" />
@@ -45,13 +52,13 @@
     const db = firebase.database();
 
     function uploadStats() {
-      const uid = document.getElementById("uidInput").value.trim();
+      const uid = document.getElementById("uidDropdown").value;
       const views = parseInt(document.getElementById("viewsInput").value);
       const clicks = parseInt(document.getElementById("clicksInput").value);
       const earnings = parseFloat(document.getElementById("earningsInput").value);
 
       if (!uid) {
-        alert("Please enter a UID.");
+        alert("Please select a user UID.");
         return;
       }
 
