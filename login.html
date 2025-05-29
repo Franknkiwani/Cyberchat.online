@@ -1,143 +1,141 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>CyberChat Dashboard</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CyberChat Creator Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --bg: #0e0e0e;
+      --card: rgba(255, 255, 255, 0.06);
+      --glass: rgba(255, 255, 255, 0.08);
+      --border: rgba(255, 255, 255, 0.12);
+      --accent: #00ffcc;
+    }
+    * {
+      margin: 0; padding: 0; box-sizing: border-box;
+      font-family: 'Inter', sans-serif;
+    }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-      background: #121212;
+      background: var(--bg);
       color: #fff;
       display: flex;
       min-height: 100vh;
     }
     .main {
       flex: 1;
+      padding: 30px;
+    }
+    .stats {
+      display: flex;
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+    .stat-card {
+      background: var(--glass);
+      backdrop-filter: blur(15px);
+      border: 1px solid var(--border);
+      border-radius: 15px;
       padding: 20px;
+      flex: 1;
+      text-align: center;
+      transition: all 0.3s ease;
+    }
+    .stat-card:hover {
+      transform: scale(1.02);
+      border-color: var(--accent);
+    }
+    .stat-card h2 {
+      font-size: 24px;
+      margin-bottom: 10px;
+      color: var(--accent);
+    }
+    .stat-card p {
+      font-size: 16px;
+      color: #ccc;
+    }
+    .posts {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+    }
+    .post-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      position: relative;
+      transition: all 0.2s ease;
+    }
+    .post-card:hover {
+      transform: scale(1.01);
+    }
+    .post-card img {
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+    }
+    .post-content {
+      padding: 15px;
+    }
+    .post-content p {
+      font-size: 14px;
+      color: #ccc;
+    }
+    .delete-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: #ff4444;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 8px;
+      color: #fff;
+      cursor: pointer;
     }
     .right {
-      width: 250px;
-      background: #1b1b1b;
-      padding: 20px;
-      border-left: 1px solid #2a2a2a;
+      width: 280px;
+      background: var(--glass);
+      backdrop-filter: blur(15px);
+      border-left: 1px solid var(--border);
       display: flex;
       flex-direction: column;
       align-items: center;
+      padding: 30px 20px;
     }
     .right img {
       width: 100px;
       height: 100px;
       border-radius: 50%;
-      margin-bottom: 10px;
       object-fit: cover;
+      margin-bottom: 15px;
+      border: 2px solid var(--accent);
     }
     .username {
+      color: #ccc;
       font-size: 16px;
-      color: #bbb;
-    }
-    header {
-      font-size: 24px;
-      font-weight: bold;
-      margin-bottom: 20px;
-    }
-    .stats {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 15px;
-      margin-bottom: 25px;
-    }
-    .stat-card {
-      flex: 1 1 30%;
-      background: #1f1f1f;
-      border-radius: 12px;
-      padding: 20px;
-      text-align: center;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.4);
-    }
-    .stat-card h2 {
-      font-size: 18px;
-      color: #aaa;
-      margin-bottom: 8px;
-    }
-    .stat-card p {
-      font-size: 22px;
-      font-weight: bold;
-      color: #fff;
-    }
-    .posts {
-      margin-top: 20px;
-    }
-    .post-card {
-      background: #1a1a1a;
-      border-radius: 10px;
-      margin-bottom: 15px;
-      padding: 15px;
-      display: flex;
-      gap: 15px;
-      align-items: center;
-      justify-content: space-between;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-    }
-    .post-info {
-      display: flex;
-      gap: 15px;
-      align-items: center;
-    }
-    .post-info img {
-      width: 80px;
-      height: 80px;
-      object-fit: cover;
-      border-radius: 8px;
-    }
-    .post-info div {
-      max-width: 300px;
-    }
-    .post-info h3 {
-      font-size: 16px;
-      margin-bottom: 5px;
-    }
-    .post-info p {
-      font-size: 13px;
-      color: #aaa;
-    }
-    button.delete-btn {
-      background: #ff4d4d;
-      border: none;
-      padding: 10px 15px;
-      color: #fff;
-      border-radius: 6px;
-      cursor: pointer;
-      font-weight: bold;
-    }
-    button.delete-btn:hover {
-      background: #e60000;
     }
   </style>
 </head>
 <body>
-
   <div class="main">
-    <header>📊 Dashboard</header>
     <div class="stats">
-      <div class="stat-card"><h2>Posts</h2><p id="stat-posts">0</p></div>
-      <div class="stat-card"><h2>Total Views</h2><p id="stat-views">0</p></div>
-      <div class="stat-card"><h2>Revenue</h2><p id="stat-revenue">$0.00</p></div>
+      <div class="stat-card"><h2 id="postCount">0</h2><p>Posts</p></div>
+      <div class="stat-card"><h2 id="totalViews">0</h2><p>Total Views</p></div>
+      <div class="stat-card"><h2 id="totalRevenue">$0.00</h2><p>Revenue</p></div>
     </div>
-    <div class="posts" id="user-posts"></div>
+    <div class="posts" id="postContainer"></div>
   </div>
-
   <div class="right">
-    <img id="profile-pic" src="https://via.placeholder.com/100" alt="Profile Picture">
+    <img id="profilePic" src="fallback.png" alt="Profile Pic">
     <div class="username" id="username">@username</div>
   </div>
 
-  <!-- Firebase SDKs -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
     import { getDatabase, ref, onValue, remove } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
@@ -146,92 +144,100 @@
       projectId: "itzhoyoo-f9f7e",
       storageBucket: "itzhoyoo-f9f7e.filestorage.app",
       messagingSenderId: "1094792075584",
-      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5"
+      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
+      measurementId: "G-LLT6F9WRKH"
     };
 
     const app = initializeApp(firebaseConfig);
-    const auth = getAuth();
-    const db = getDatabase();
+    const db = getDatabase(app);
+    const auth = getAuth(app);
+
+    const postContainer = document.getElementById('postContainer');
+    const postCountEl = document.getElementById('postCount');
+    const totalViewsEl = document.getElementById('totalViews');
+    const totalRevenueEl = document.getElementById('totalRevenue');
+
+    let allPosts = [];
 
     onAuthStateChanged(auth, user => {
-      if (!user) {
-        alert("Not signed in");
-        window.location.href = "/login.html";
-        return;
+      if (user) {
+        const uid = user.uid;
+        loadUserProfile(uid);
+        fetchPosts(uid);
       }
-
-      const uid = user.uid;
-      loadProfile(uid);
-      watchPosts(uid);
     });
 
-    function loadProfile(uid) {
-      const userRef = ref(db, `users/${uid}`);
+    function loadUserProfile(uid) {
+      const userRef = ref(db, 'users/' + uid);
       onValue(userRef, snap => {
         const data = snap.val();
-        if (data) {
-          document.getElementById("username").textContent = `@${data.username || "unknown"}`;
-          document.getElementById("profile-pic").src = data.profile || "https://via.placeholder.com/100";
-        }
+        document.getElementById('username').textContent = '@' + (data.username || 'anonymous');
+        document.getElementById('profilePic').src = data.pfp || 'fallback.png';
       });
     }
 
-    function watchPosts(uid) {
-      const postsRef = ref(db, "post");
-      onValue(postsRef, snap => {
-        const allPosts = snap.val() || {};
-        const userPosts = [];
-        let totalViews = 0;
-        let revenue = 0;
+    function fetchPosts(uid) {
+      const sources = ['post', 'posts'];
+      let combined = [];
 
-        Object.entries(allPosts).forEach(([id, post]) => {
-          if (post.uid === uid) {
-            userPosts.push({ id, ...post });
-            totalViews += parseInt(post.views || 0);
-            revenue += parseFloat(post.revenue || 0);
-          }
+      sources.forEach(source => {
+        const sourceRef = ref(db, source);
+        onValue(sourceRef, snap => {
+          const posts = [];
+          snap.forEach(child => {
+            const post = child.val();
+            if (post.uid === uid) {
+              posts.push({ ...post, key: child.key, source });
+            }
+          });
+
+          combined = [...combined, ...posts];
+          localStorage.setItem('myPosts', JSON.stringify(combined));
+          updateDashboard(combined);
+        });
+      });
+    }
+
+    function updateDashboard(posts) {
+      let totalViews = 0, totalRevenue = 0;
+
+      postContainer.innerHTML = "";
+      posts.forEach(post => {
+        totalViews += post.views || 0;
+        totalRevenue += parseFloat(post.revenue || 0);
+
+        const card = document.createElement('div');
+        card.className = 'post-card';
+        card.innerHTML = `
+          <img src="${post.image || 'fallback.png'}" alt="post">
+          <div class="post-content">
+            <p><strong>${post.title || 'No Title'}</strong></p>
+            <p>${post.views || 0} views - $${(post.revenue || 0).toFixed(2)}</p>
+          </div>
+          <button class="delete-btn">Delete</button>
+        `;
+
+        card.querySelector('.delete-btn').addEventListener('click', () => {
+          const postRef = ref(db, `${post.source}/${post.key}`);
+          remove(postRef);
+          card.remove();
         });
 
-        // Save to localStorage
-        localStorage.setItem(`user_posts_${uid}`, JSON.stringify(userPosts));
-
-        // Update stats
-        document.getElementById("stat-posts").textContent = userPosts.length;
-        document.getElementById("stat-views").textContent = totalViews;
-        document.getElementById("stat-revenue").textContent = `$${revenue.toFixed(2)}`;
-
-        // Render posts
-        renderPosts(userPosts);
+        postContainer.appendChild(card);
       });
+
+      postCountEl.textContent = posts.length;
+      totalViewsEl.textContent = totalViews;
+      totalRevenueEl.textContent = "$" + totalRevenue.toFixed(2);
     }
 
-    function renderPosts(posts) {
-      const container = document.getElementById("user-posts");
-      container.innerHTML = '';
-      posts.forEach(post => {
-        const div = document.createElement("div");
-        div.className = "post-card";
-        div.innerHTML = `
-          <div class="post-info">
-            <img src="${post.image || 'https://via.placeholder.com/80'}" alt="post img">
-            <div>
-              <h3>${post.title || 'Untitled'}</h3>
-              <p>${post.description || 'No description provided.'}</p>
-            </div>
-          </div>
-          <button class="delete-btn" onclick="deletePost('${post.id}')">Delete</button>
-        `;
-        container.appendChild(div);
-      });
-    }
-
-    window.deletePost = function(postId) {
-      if (confirm("Are you sure you want to delete this post?")) {
-        remove(ref(db, `post/${postId}`))
-          .then(() => alert("Post deleted"))
-          .catch(err => console.error("Error deleting post:", err));
+    // Load cached posts on refresh
+    window.addEventListener('load', () => {
+      const cache = localStorage.getItem('myPosts');
+      if (cache) {
+        updateDashboard(JSON.parse(cache));
       }
-    };
+    });
   </script>
 </body>
 </html>
