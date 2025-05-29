@@ -1,222 +1,384 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" >
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Post Creator - CyberChat</title>
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
-  import { getDatabase, ref, get, push, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CyberChat Post Creator — Login & Profile Required</title>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+    import { getDatabase, ref, get, set, push, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
 
-  // === YOUR FIREBASE CONFIG - REPLACE THESE VALUES ===
-  const firebaseConfig = {
-    apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
-    authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
-    databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
-    projectId: "itzhoyoo-f9f7e",
-    storageBucket: "itzhoyoo-f9f7e.filestorage.app",
-    messagingSenderId: "1094792075584",
-    appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
-    measurementId: "G-LLT6F9WRKH"
-  };
+    // ==== FIREBASE CONFIG - REPLACE WITH YOURS ====
+    const firebaseConfig = {
+      apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
+      authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
+      databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
+      projectId: "itzhoyoo-f9f7e",
+      storageBucket: "itzhoyoo-f9f7e.filestorage.app",
+      messagingSenderId: "1094792075584",
+      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
+      measurementId: "G-LLT6F9WRKH"
+    };
 
-  const imgurClientID = "891e5bb4aa94282"; // Your Imgur Client ID
+    const imgurClientID = "891e5bb4aa94282"; // Your Imgur Client ID
 
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const db = getDatabase(app);
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
 
-  let currentUser = null;
-  let userProfile = null;
+    let currentUser = null;
+    let userProfile = null;
 
-  window.addEventListener('DOMContentLoaded', () => {
-    const profilePicEl = document.getElementById('profile-pic');
-    const usernameEl = document.getElementById('username');
-    const postForm = document.getElementById('post-form');
-    const postText = document.getElementById('post-text');
-    const postImageInput = document.getElementById('post-image');
-    const submitBtn = document.getElementById('submit-btn');
-    const messageBox = document.getElementById('message-box');
+    window.addEventListener('DOMContentLoaded', () => {
+      // DOM Elements
+      const loginSection = document.getElementById('login-section');
+      const registerSection = document.getElementById('register-section');
+      const profileSection = document.getElementById('profile-section');
+      const postSection = document.getElementById('post-section');
+      const logoutBtn = document.getElementById('logout-btn');
 
-    // Show message on the page
-    function showMessage(text, isError = false) {
-      messageBox.textContent = text;
-      messageBox.style.color = isError ? 'tomato' : 'lightgreen';
-      messageBox.style.opacity = '1';
-      setTimeout(() => {
-        messageBox.style.opacity = '0';
-      }, 4000);
-    }
+      // Login form elements
+      const loginEmail = document.getElementById('login-email');
+      const loginPassword = document.getElementById('login-password');
+      const loginBtn = document.getElementById('login-btn');
+      const loginMsg = document.getElementById('login-msg');
+      const showRegisterLink = document.getElementById('show-register');
 
-    function resetForm() {
-      postText.value = '';
-      postImageInput.value = '';
-    }
+      // Register form elements
+      const registerEmail = document.getElementById('register-email');
+      const registerPassword = document.getElementById('register-password');
+      const registerBtn = document.getElementById('register-btn');
+      const registerMsg = document.getElementById('register-msg');
+      const showLoginLink = document.getElementById('show-login');
 
-    // Upload image to Imgur
-    async function uploadImageToImgur(file) {
-      const formData = new FormData();
-      formData.append('image', file);
+      // Profile form elements
+      const profileUsername = document.getElementById('profile-username');
+      const profilePicUrl = document.getElementById('profile-pic-url');
+      const profileSaveBtn = document.getElementById('profile-save-btn');
+      const profileMsg = document.getElementById('profile-msg');
 
-      const res = await fetch('https://api.imgur.com/3/image', {
-        method: 'POST',
-        headers: {
-          Authorization: 'Client-ID ' + imgurClientID,
-        },
-        body: formData,
-      });
+      // Post form elements
+      const profilePicEl = document.getElementById('profile-pic');
+      const usernameEl = document.getElementById('username');
+      const postForm = document.getElementById('post-form');
+      const postText = document.getElementById('post-text');
+      const postImageInput = document.getElementById('post-image');
+      const submitBtn = document.getElementById('submit-btn');
+      const postMsg = document.getElementById('post-msg');
 
-      const data = await res.json();
-      if (!res.ok || !data.success) throw new Error('Imgur upload failed: ' + (data.data?.error || res.status));
-      return data.data.link;
-    }
-
-    // Handle form submit
-    postForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      if (!currentUser || !userProfile) {
-        showMessage('User not authenticated.', true);
-        return;
-      }
-      if (!postText.value.trim()) {
-        showMessage('Post text cannot be empty.', true);
-        return;
+      // Helper: show messages
+      function showMessage(elem, text, isError = false) {
+        elem.textContent = text;
+        elem.style.color = isError ? 'tomato' : 'lightgreen';
+        elem.style.opacity = '1';
+        setTimeout(() => { elem.style.opacity = '0'; }, 4000);
       }
 
-      submitBtn.disabled = true;
-      showMessage('Uploading post...', false);
+      // Show/hide sections helper
+      function showSection(section) {
+        [loginSection, registerSection, profileSection, postSection].forEach(s => s.style.display = 'none');
+        section.style.display = 'block';
+      }
 
-      try {
-        let imageUrl = '';
-        if (postImageInput.files.length > 0) {
-          imageUrl = await uploadImageToImgur(postImageInput.files[0]);
+      // Toggle login/register forms
+      showRegisterLink.onclick = (e) => { e.preventDefault(); showSection(registerSection); };
+      showLoginLink.onclick = (e) => { e.preventDefault(); showSection(loginSection); };
+
+      // Logout button
+      logoutBtn.onclick = () => {
+        signOut(auth);
+      };
+
+      // LOGIN
+      loginBtn.onclick = async () => {
+        loginMsg.textContent = '';
+        if (!loginEmail.value || !loginPassword.value) {
+          showMessage(loginMsg, 'Email and password required', true);
+          return;
         }
-
-        // Save post in Firebase
-        const postsRef = ref(db, 'posts');
-        await push(postsRef, {
-          uid: currentUser.uid,
-          username: userProfile.username || 'Unknown',
-          profilePic: userProfile.profilePic || '',
-          text: postText.value.trim(),
-          image: imageUrl,
-          createdAt: serverTimestamp(),
-        });
-
-        showMessage('Post uploaded successfully!');
-        resetForm();
-      } catch (err) {
-        console.error(err);
-        showMessage('Error: ' + err.message, true);
-      } finally {
-        submitBtn.disabled = false;
-      }
-    });
-
-    // Watch auth state and fetch profile
-    onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        currentUser = user;
+        loginBtn.disabled = true;
         try {
-          const userRef = ref(db, `users/${user.uid}`);
-          const snapshot = await get(userRef);
-          if (snapshot.exists()) {
-            userProfile = snapshot.val();
-            usernameEl.textContent = userProfile.username || 'Unknown User';
+          await signInWithEmailAndPassword(auth, loginEmail.value, loginPassword.value);
+          showMessage(loginMsg, 'Login successful!');
+        } catch (err) {
+          showMessage(loginMsg, err.message, true);
+        } finally {
+          loginBtn.disabled = false;
+        }
+      };
+
+      // REGISTER
+      registerBtn.onclick = async () => {
+        registerMsg.textContent = '';
+        if (!registerEmail.value || !registerPassword.value) {
+          showMessage(registerMsg, 'Email and password required', true);
+          return;
+        }
+        registerBtn.disabled = true;
+        try {
+          const userCred = await createUserWithEmailAndPassword(auth, registerEmail.value, registerPassword.value);
+          // Create empty profile placeholder
+          await set(ref(db, `users/${userCred.user.uid}`), {
+            username: '',
+            profilePic: ''
+          });
+          showMessage(registerMsg, 'Registered! Please complete your profile.');
+          showSection(profileSection);
+        } catch (err) {
+          showMessage(registerMsg, err.message, true);
+        } finally {
+          registerBtn.disabled = false;
+        }
+      };
+
+      // PROFILE SAVE
+      profileSaveBtn.onclick = async () => {
+        profileMsg.textContent = '';
+        if (!profileUsername.value.trim()) {
+          showMessage(profileMsg, 'Username is required.', true);
+          return;
+        }
+        if (!currentUser) {
+          showMessage(profileMsg, 'No user logged in.', true);
+          return;
+        }
+        profileSaveBtn.disabled = true;
+        try {
+          await set(ref(db, `users/${currentUser.uid}`), {
+            username: profileUsername.value.trim(),
+            profilePic: profilePicUrl.value.trim() || 'https://via.placeholder.com/50?text=User'
+          });
+          showMessage(profileMsg, 'Profile saved!');
+          await loadUserProfile(); // reload profile data
+          showSection(postSection);
+        } catch (err) {
+          showMessage(profileMsg, err.message, true);
+        } finally {
+          profileSaveBtn.disabled = false;
+        }
+      };
+
+      // Load user profile from Firebase and update UI
+      async function loadUserProfile() {
+        if (!currentUser) return;
+        try {
+          const userSnap = await get(ref(db, `users/${currentUser.uid}`));
+          if (userSnap.exists()) {
+            userProfile = userSnap.val();
+            usernameEl.textContent = userProfile.username || 'No Username';
             profilePicEl.src = userProfile.profilePic || 'https://via.placeholder.com/50?text=User';
+            // Prefill profile form in case user edits later
+            profileUsername.value = userProfile.username || '';
+            profilePicUrl.value = userProfile.profilePic || '';
           } else {
-            userProfile = { username: 'Unknown User', profilePic: 'https://via.placeholder.com/50?text=User' };
-            usernameEl.textContent = userProfile.username;
-            profilePicEl.src = userProfile.profilePic;
+            userProfile = null;
+            usernameEl.textContent = 'No profile found';
+            profilePicEl.src = 'https://via.placeholder.com/50?text=User';
           }
         } catch (e) {
-          console.error('Failed to fetch user profile:', e);
-          userProfile = { username: 'Unknown User', profilePic: 'https://via.placeholder.com/50?text=User' };
-          usernameEl.textContent = userProfile.username;
-          profilePicEl.src = userProfile.profilePic;
+          console.error('Error loading profile:', e);
+          userProfile = null;
         }
-      } else {
-        currentUser = null;
-        userProfile = null;
-        usernameEl.textContent = 'Not logged in';
-        profilePicEl.src = 'https://via.placeholder.com/50?text=User';
       }
-    });
-  });
-</script>
 
-<style>
-  body {
-    background: #0f172a;
-    color: white;
-    font-family: 'Inter', sans-serif;
-    padding: 1rem;
-  }
-  .header {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    margin-bottom: 1.5rem;
-  }
-  .header img {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    object-fit: cover;
-  }
-  #message-box {
-    margin-top: 1rem;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    font-weight: 600;
-  }
-  form > * {
-    display: block;
-    width: 100%;
-    margin-bottom: 1rem;
-  }
-  textarea {
-    resize: vertical;
-    min-height: 100px;
-    padding: 0.5rem;
-    font-size: 1rem;
-  }
-  input[type="file"] {
-    color: white;
-  }
-  button {
-    background: #06b6d4;
-    border: none;
-    padding: 0.75rem 1.5rem;
-    font-weight: 700;
-    cursor: pointer;
-    border-radius: 0.375rem;
-    transition: background 0.3s ease;
-  }
-  button:disabled {
-    background: #4dd0e1;
-    cursor: not-allowed;
-  }
-  button:hover:not(:disabled) {
-    background: #0891b2;
-  }
-</style>
+      // Upload image to Imgur
+      async function uploadImageToImgur(file) {
+        const formData = new FormData();
+        formData.append('image', file);
+
+        const res = await fetch('https://api.imgur.com/3/image', {
+          method: 'POST',
+          headers: { Authorization: 'Client-ID ' + imgurClientID },
+          body: formData,
+        });
+
+        const data = await res.json();
+        if (!res.ok || !data.success) throw new Error('Imgur upload failed: ' + (data.data?.error || res.status));
+        return data.data.link;
+      }
+
+      // POST FORM SUBMIT
+      postForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        postMsg.textContent = '';
+        if (!postText.value.trim()) {
+          showMessage(postMsg, 'Post text cannot be empty.', true);
+          return;
+        }
+
+        submitBtn.disabled = true;
+
+        try {
+          let imageUrl = null;
+
+          if (postImageInput.files.length > 0) {
+            // Upload the first image to Imgur
+            imageUrl = await uploadImageToImgur(postImageInput.files[0]);
+          }
+
+          // Prepare post data
+          const newPostRef = push(ref(db, 'posts'));
+          const postData = {
+            uid: currentUser.uid,
+            username: userProfile.username,
+            profilePic: userProfile.profilePic,
+            text: postText.value.trim(),
+            imageUrl: imageUrl || '',
+            likesCount: 0,
+            commentsCount: 0,
+            createdAt: serverTimestamp()
+          };
+
+          await set(newPostRef, postData);
+
+          showMessage(postMsg, 'Post uploaded successfully!');
+
+          // Reset form
+          postText.value = '';
+          postImageInput.value = '';
+
+        } catch (error) {
+          console.error(error);
+          showMessage(postMsg, 'Failed to upload post: ' + error.message, true);
+        } finally {
+          submitBtn.disabled = false;
+        }
+      });
+
+      // On Auth state changed
+      onAuthStateChanged(auth, async (user) => {
+        currentUser = user;
+        if (user) {
+          // Load profile
+          await loadUserProfile();
+
+          // Check if profile is complete
+          if (!userProfile || !userProfile.username) {
+            // Show profile completion form
+            showSection(profileSection);
+          } else {
+            // Show post form
+            showSection(postSection);
+          }
+        } else {
+          // No user signed in, show login
+          userProfile = null;
+          showSection(loginSection);
+        }
+      });
+    });
+  </script>
+
+  <style>
+    body {
+      background: #121212;
+      color: #eee;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0; padding: 1rem;
+      display: flex;
+      justify-content: center;
+    }
+    section {
+      max-width: 420px;
+      width: 100%;
+      margin: auto;
+      display: none;
+    }
+    section.active {
+      display: block;
+    }
+    input, textarea, button {
+      width: 100%;
+      margin: 0.4rem 0 1rem;
+      padding: 0.8rem;
+      border-radius: 6px;
+      border: none;
+      font-size: 1rem;
+    }
+    textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+    button {
+      background: #0af;
+      color: white;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background 0.3s ease;
+      border: none;
+    }
+    button:disabled {
+      background: #044;
+      cursor: not-allowed;
+    }
+    img.profile-pic {
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      object-fit: cover;
+      margin-bottom: 1rem;
+      border: 2px solid #0af;
+    }
+    .msg {
+      height: 1.5rem;
+      font-weight: 600;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    a.link {
+      color: #0af;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+  </style>
 </head>
 <body>
 
-  <div class="header">
-    <img id="profile-pic" src="https://via.placeholder.com/50?text=User" alt="Profile Picture" />
-    <div id="username">Loading user...</div>
-  </div>
+  <!-- LOGIN -->
+  <section id="login-section" style="display:block;">
+    <h2>Login to CyberChat</h2>
+    <input id="login-email" type="email" placeholder="Email" required />
+    <input id="login-password" type="password" placeholder="Password" required />
+    <button id="login-btn">Login</button>
+    <div class="msg" id="login-msg"></div>
+    <p>Don't have an account? <a href="#" class="link" id="show-register">Register here</a></p>
+  </section>
 
-  <form id="post-form" autocomplete="off">
-    <textarea id="post-text" placeholder="What's on your mind?" required></textarea>
-    <input type="file" id="post-image" accept="image/*" />
-    <button id="submit-btn" type="submit">Post This Magic</button>
-  </form>
+  <!-- REGISTER -->
+  <section id="register-section">
+    <h2>Create an account</h2>
+    <input id="register-email" type="email" placeholder="Email" required />
+    <input id="register-password" type="password" placeholder="Password" required />
+    <button id="register-btn">Register</button>
+    <div class="msg" id="register-msg"></div>
+    <p>Already have an account? <a href="#" class="link" id="show-login">Login here</a></p>
+  </section>
 
-  <div id="message-box"></div>
+  <!-- PROFILE SETUP -->
+  <section id="profile-section">
+    <h2>Complete your profile</h2>
+    <input id="profile-username" type="text" placeholder="Username" required />
+    <input id="profile-pic-url" type="url" placeholder="Profile Picture URL (or leave blank for default)" />
+    <button id="profile-save-btn">Save Profile</button>
+    <div class="msg" id="profile-msg"></div>
+    <button id="logout-btn" style="background:#f33;">Logout</button>
+  </section>
+
+  <!-- POST CREATION -->
+  <section id="post-section">
+    <div style="display:flex; align-items:center; margin-bottom:1rem;">
+      <img id="profile-pic" class="profile-pic" src="https://via.placeholder.com/50?text=User" alt="Profile pic" />
+      <span id="username" style="margin-left: 1rem; font-weight: bold;"></span>
+      <button id="logout-btn" style="margin-left:auto; background:#f33; width: 80px;">Logout</button>
+    </div>
+    <form id="post-form">
+      <textarea id="post-text" placeholder="What's on your mind, Boss?" required></textarea>
+      <input id="post-image" type="file" accept="image/*" />
+      <button id="submit-btn" type="submit">Post This Magic</button>
+    </form>
+    <div class="msg" id="post-msg"></div>
+  </section>
 
 </body>
 </html>
