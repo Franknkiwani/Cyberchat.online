@@ -1,160 +1,180 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" >
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Upload Post - Hoyoo Studio</title>
+  <title>Upload Post</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
   <style>
     body {
-      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-      background: #0d0f14;
+      background-color: #000000;
+    }
+    input, textarea, select {
       color: #fff;
-      padding: 0;
-      margin: 0;
+      font-weight: 600;
+      background-color: #151515 !important;
     }
-    .sticky-header {
-      position: sticky;
-      top: 0;
-      background: #000;
-      padding: 12px 20px;
-      display: flex;
-      justify-content: flex-end;
-      align-items: center;
-      z-index: 1000;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.6);
+    input:-webkit-autofill,
+    textarea:-webkit-autofill,
+    select:-webkit-autofill {
+      box-shadow: 0 0 0px 1000px #151515 inset;
+      -webkit-text-fill-color: #fff !important;
+      font-weight: 600;
     }
-    .header-content {
-      display: flex;
-      align-items: center;
-      gap: 12px;
+    header {
+      background-color: #0f0f0f;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.5);
     }
-    #handleDisplay {
-      font-size: 14px;
-      color: #ccc;
-      font-weight: 500;
-    }
-    #profilePic {
-      width: 34px;
-      height: 34px;
+    .profile-pic {
+      width: 40px;
+      height: 40px;
       border-radius: 50%;
       object-fit: cover;
-      border: 2px solid #333;
     }
-    .upload-card {
-      background: #1a1d24;
-      border-radius: 20px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
-      padding: 24px;
-      max-width: 600px;
-      width: 80%;
-      margin: 40px auto;
+    /* Modal styles */
+    #loginModal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      backdrop-filter: blur(6px);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
     }
-    textarea, select, input[type="text"] {
-      width: 90%;
-      background: #2a2e38;
-      color: #fff;
-      border: 1px solid #3a3f4b;
-      border-radius: 12px;
-      padding: 12px;
-      font-size: 15px;
-      margin-bottom: 14px;
-      outline: none;
-    }
-    .file-label {
-      display: inline-block;
-      background: #2a2e38;
-      color: #fff;
-      padding: 10px 14px;
-      border-radius: 10px;
-      font-size: 14px;
-      cursor: pointer;
-    }
-    #editBtn {
-      background: hotpink;
-      border: none;
-      padding: 8px 14px;
-      border-radius: 10px;
-      margin-left: 10px;
-      cursor: pointer;
-      font-size: 14px;
-      color: #000;
-    }
-    input[type="file"] {
+    #loginModal.hidden {
       display: none;
     }
-    .image-preview {
-      margin-top: 12px;
-      position: relative;
-    }
-    .image-preview img {
-      max-width: 100%;
+    #loginModalContent {
+      background: #111;
+      padding: 2rem;
       border-radius: 12px;
-    }
-    .upload-btn {
-      background: #f64f59;
-      color: #fff;
-      border: none;
-      padding: 14px 20px;
-      border-radius: 14px;
-      font-size: 16px;
-      cursor: pointer;
+      box-shadow: 0 0 10px #ff4444;
+      max-width: 360px;
       width: 90%;
-      margin-top: 16px;
+      text-align: center;
+      color: white;
     }
-    label {
-      font-size: 14px;
-      color: #ccc;
-      margin-bottom: 4px;
-      display: block;
+    #loginModalContent button {
+      background-color: #ff4444;
+      padding: 0.75rem 1.5rem;
+      border-radius: 8px;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      margin-top: 1.5rem;
+      transition: background-color 0.3s ease;
+    }
+    #loginModalContent button:hover {
+      background-color: #cc3333;
     }
   </style>
 </head>
-<body>
+<body class="text-white min-h-screen flex flex-col font-sans">
 
-  <header class="sticky-header">
-    <div class="header-content">
-      <span id="handleDisplay">@loading</span>
-      <img id="profilePic" src="" alt="Profile" />
+  <!-- Header -->
+  <header class="sticky top-0 z-30 w-full px-6 py-4 bg-[#0f0f0f] border-b border-gray-800 flex items-center justify-between shadow">
+    <div class="flex items-center space-x-4">
+      <!-- Profile Picture and Info -->
+      <img id="profilePic" src="https://via.placeholder.com/40" alt="Profile Pic" class="profile-pic" />
+      <div class="text-white">
+        <p id="userHandle" class="font-bold">@loading...</p>
+        <p id="userFollowers" class="text-sm text-gray-400">Followers: --</p>
+      </div>
     </div>
+    <button id="postBtn"
+      class="bg-red-600 hover:bg-red-700 active:bg-red-800 transition px-5 py-2 rounded text-sm font-medium shadow">
+      Publish
+    </button>
   </header>
 
-  <div class="upload-card">
-    <label for="postText">What's on your mind, Boss?</label>
-    <textarea id="postText" placeholder="Type your thoughts here..."></textarea>
+  <!-- Main Content -->
+  <main class="flex-1 overflow-y-auto px-6 py-8 max-w-4xl w-full mx-auto space-y-10">
 
-    <label>Upload Photo</label>
-    <label for="fileUpload" class="file-label" role="button">Upload Photo</label>
-    <input type="file" id="fileUpload" accept="image/*" />
-    <button id="editBtn" style="display:none;">Edit</button>
+    <!-- Preview Image -->
+    <section class="space-y-3">
+      <h2 class="text-base font-semibold text-gray-300 text-center">Post Image</h2>
+      <div class="w-full aspect-square max-w-md mx-auto rounded-lg overflow-hidden bg-gray-900 border border-gray-800 shadow">
+        <img id="previewImage" src="https://via.placeholder.com/720x720.png?text=Post+Image+Preview"
+          alt="Post Preview" class="w-full h-full object-cover" />
+      </div>
+    </section>
+<div id="imgurUrlContainer" class="text-sm mt-2"></div>
+    <!-- Title -->
+    <section class="space-y-1 max-w-xl mx-auto">
+      <label for="titleInput" class="block text-sm text-gray-400 font-medium">Post Title</label>
+      <input 
+        id="titleInput" 
+        type="text" 
+        maxlength="100"
+        placeholder="Enter post title here (e.g. My first cyber post)" 
+        class="w-full border border-gray-700 rounded px-4 py-3 focus:outline-none focus:ring-2 focus:ring-red-500 transition"
+        aria-describedby="titleHelp"
+        autocomplete="off"
+      />
+      <p id="titleHelp" class="text-xs text-gray-500">Max 100 characters</p>
+    </section>
 
-    <div class="image-preview" id="previewContainer" style="display:none;">
-      <img id="previewImage" src="" alt="Post image preview" />
+    <!-- Description -->
+    <section class="space-y-1 max-w-xl mx-auto">
+      <label for="captionInput" class="block text-sm text-gray-400 font-medium">Description</label>
+      <textarea 
+        id="captionInput" 
+        maxlength="500" 
+        rows="5" 
+        placeholder="Write a description... (e.g. A glimpse into the neon-lit streets)" 
+        class="w-full border border-gray-700 rounded px-4 py-3 resize-none focus:outline-none focus:ring-2 focus:ring-red-500 transition"
+        aria-describedby="descHelp"
+        autocomplete="off"
+      ></textarea>
+      <p id="descHelp" class="text-xs text-gray-500">Max 500 characters</p>
+    </section>
+
+    <!-- Tags -->
+    <section class="space-y-1 max-w-xl mx-auto">
+      <label for="tagsInput" class="block text-sm text-gray-400 font-medium">Tags</label>
+      <input 
+        id="tagsInput" 
+        type="text" 
+        maxlength="100"
+        placeholder="Add tags separated by commas (e.g. tech, photography, travel)" 
+        class="w-full border border-gray-700 rounded px-4 py-3 focus:outline-none focus:ring-2 focus:ring-red-500 transition"
+        aria-describedby="tagsHelp"
+        autocomplete="off"
+      />
+      <p id="tagsHelp" class="text-xs text-gray-500">Separate tags with commas, max 100 characters</p>
+    </section>
+
+    <!-- Category -->
+    <section class="space-y-1 max-w-xl mx-auto">
+      <label for="categorySelect" class="block text-sm text-gray-400 font-medium">Category</label>
+      <select 
+        id="categorySelect"
+        class="w-full border border-gray-700 rounded px-4 py-3 focus:outline-none focus:ring-2 focus:ring-red-500 transition"
+      >
+        <option value="" disabled selected>Select a category</option>
+        <option value="Travel">Travel</option>
+        <option value="Tech">Tech</option>
+        <option value="Gaming">Gaming</option>
+        <option value="Lifestyle">Lifestyle</option>
+        <option value="Music">Music</option>
+      </select>
+    </section>
+    
+  </main>
+
+  <!-- Login Modal -->
+  <div id="loginModal">
+    <div id="loginModalContent">
+      <h2 class="text-xl font-bold mb-4">Please Log In</h2>
+      <p class="mb-6">You must be logged in to upload posts.</p>
+      <button id="loginBtn">Log In</button>
     </div>
-
-    <label for="visibility">Visibility</label>
-    <select id="visibility">
-      <option>Public</option>
-      <option>Unlisted</option>
-      <option>Private</option>
-    </select>
-
-    <label for="audience">Is this made for kids?</label>
-    <select id="audience">
-      <option>No, it's not made for kids</option>
-      <option>Yes, it's made for kids</option>
-    </select>
-
-    <label for="description">Description</label>
-    <textarea id="description" placeholder="Tell your audience more..."></textarea>
-
-    <label for="tags">Tags (comma separated)</label>
-    <input type="text" id="tags" placeholder="e.g. gaming, funny, epic" />
-
-    <button class="upload-btn" onclick="uploadPost()">Post This Magic</button>
   </div>
+  <!-- Firebase and App Script -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+import { getAuth, onAuthStateChanged, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
 import { getDatabase, ref, get, child, push, set } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
 
 const firebaseConfig = {
@@ -162,7 +182,7 @@ const firebaseConfig = {
   authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
   databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
   projectId: "itzhoyoo-f9f7e",
-  storageBucket: "itzhoyoo-f9f7e.filestorage.app",
+  storageBucket: "itzhoyoo-f9f7e.appspot.com",
   messagingSenderId: "1094792075584",
   appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
   measurementId: "G-LLT6F9WRKH"
@@ -170,257 +190,135 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
-const db = getDatabase(app);
+const database = getDatabase(app);
+const provider = new GoogleAuthProvider();
 
-const handleDisplay = document.getElementById("handleDisplay");
-const profilePic = document.getElementById("profilePic");
-const postText = document.getElementById('postText');
-const fileUpload = document.getElementById('fileUpload');
-const previewContainer = document.getElementById('previewContainer');
+const loginModal = document.getElementById('loginModal');
+const loginBtn = document.getElementById('loginBtn');
+const profilePic = document.getElementById('profilePic');
+const userHandle = document.getElementById('userHandle');
+const userFollowers = document.getElementById('userFollowers');
 const previewImage = document.getElementById('previewImage');
-const editBtn = document.getElementById('editBtn');
-const monetizeBar = document.getElementById('monetizeBar');
-const monetizeToggle = document.getElementById('monetizeToggle');
-const cpmDisplay = document.getElementById('cpmDisplay');
+const imgurUrlContainer = document.getElementById('imgurUrlContainer');
 
-let currentUser = null;
-let userCanMonetize = false;
-let cropper = null;
-let croppedImageData = null;
-let averageCPM = 0;
-
-// --- UTIL: Add red asterisks for required fields ---
-function markRequiredFields() {
-  // For demo, assume these IDs exist for inputs you want required
-  const requiredFields = ['postText', 'fileUpload', 'description', 'tags'];
-  requiredFields.forEach(id => {
-    const el = document.getElementById(id);
-    if (!el) return;
-    let label = document.querySelector(`label[for="${id}"]`);
-    if (label && !label.querySelector('.required-star')) {
-      const star = document.createElement('span');
-      star.textContent = ' *';
-      star.className = 'required-star';
-      star.style.color = 'red';
-      label.appendChild(star);
-    }
-  });
+function showLogin() {
+  loginModal.classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+}
+function hideLogin() {
+  loginModal.classList.add('hidden');
+  document.body.style.overflow = 'auto';
 }
 
-// Call it on load
-markRequiredFields();
+loginBtn.addEventListener('click', () => {
+  signInWithPopup(auth, provider)
+    .catch((error) => alert("Login failed: " + error.message));
+});
 
-// --- AUTH & USER LOAD ---
 onAuthStateChanged(auth, async (user) => {
   if (user) {
-    currentUser = user;
+    hideLogin();
+    const uid = user.uid;
+
+    profilePic.src = user.photoURL || 'https://via.placeholder.com/40';
+    userHandle.textContent = '@' + (user.displayName?.replace(/\s+/g, '').toLowerCase() || 'user');
+
     try {
-      const userSnap = await get(child(ref(db), `users/${user.uid}`));
-      const userData = userSnap.exists() ? userSnap.val() : {};
-      const handle = userData.handle || user.email.split("@")[0];
-      const photoURL = userData.profilepic || `https://ui-avatars.com/api/?name=${handle}`;
-      handleDisplay.textContent = `@${handle}`;
-      profilePic.src = photoURL;
-
-      userCanMonetize = !!userData.monetize;
-
-      // Load average CPM from /ads (assume stored as averageCPM in ads root)
-      const adsSnap = await get(ref(db, '/ads'));
-      if (adsSnap.exists()) {
-        const adsData = adsSnap.val();
-        // Calculate weighted average CPM or just get 'averageCPM' key if exists
-        if (adsData.averageCPM) {
-          averageCPM = parseFloat(adsData.averageCPM);
-        } else {
-          // Fallback: average all CPMs from adsData
-          const cpms = Object.values(adsData).map(ad => parseFloat(ad.cpm)).filter(cpm => !isNaN(cpm));
-          averageCPM = cpms.length ? (cpms.reduce((a,b) => a+b,0)/cpms.length) : 0;
-        }
-      }
-
-      setupMonetizeBar();
-
-    } catch (err) {
-      console.error("Failed to fetch user data or ads:", err);
-      handleDisplay.textContent = `@${user.email.split("@")[0]}`;
-      profilePic.src = `https://ui-avatars.com/api/?name=${user.email.split("@")[0]}`;
+      const dbRef = ref(database);
+      const snapshot = await get(child(dbRef, `users/${uid}/followers`));
+      userFollowers.textContent = snapshot.exists()
+        ? `Followers: ${snapshot.val()}`
+        : 'Followers: 0';
+    } catch (error) {
+      userFollowers.textContent = 'Followers: --';
     }
   } else {
-    window.location.href = "/login"; // Redirect if not logged in
+    showLogin();
+    profilePic.src = 'https://via.placeholder.com/40';
+    userHandle.textContent = '@guest';
+    userFollowers.textContent = 'Followers: --';
   }
 });
 
-// --- CROPPER SETUP ---
-editBtn.addEventListener('click', () => {
-  if (fileUpload.files.length === 0) {
-    alert("No image uploaded yet.");
-    return;
-  }
-
-  if (cropper) cropper.destroy(); // Reset if exists
-
-  // Create a temporary image for cropping
-  const img = document.createElement('img');
-  img.src = previewImage.src;
-  img.id = 'cropperImage';
-  img.style.maxWidth = '100%';
-  previewContainer.innerHTML = '';
-  previewContainer.appendChild(img);
-
-  cropper = new Cropper(img, {
-    aspectRatio: 1,
-    viewMode: 1,
-    autoCropArea: 1,
-    movable: true,
-    zoomable: true,
-    scalable: false,
-    crop(event) {
-      // Nothing here, we'll crop on confirm
-    }
-  });
-
-  // Show crop confirm button
-  let confirmBtn = document.createElement('button');
-  confirmBtn.textContent = "Crop & Save";
-  confirmBtn.style.marginTop = '10px';
-  confirmBtn.onclick = () => {
-    const canvas = cropper.getCroppedCanvas({
-      width: 500,
-      height: 500,
-      imageSmoothingQuality: 'high',
-    });
-    croppedImageData = canvas.toDataURL('image/jpeg', 0.9);
-    previewImage.src = croppedImageData;
-    sessionStorage.setItem('postImage', croppedImageData);
-    previewContainer.innerHTML = '';
-    previewContainer.appendChild(previewImage);
-    editBtn.style.display = 'inline-block';
-    cropper.destroy();
-    cropper = null;
-    confirmBtn.remove();
-  };
-  previewContainer.appendChild(confirmBtn);
-});
-
-// --- FILE UPLOAD & PREVIEW ---
-fileUpload.addEventListener('change', (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
-
-  if (!file.type.startsWith('image/')) {
-    alert('Only images please.');
-    fileUpload.value = "";
-    return;
-  }
-
-  const reader = new FileReader();
-  reader.onload = function(evt) {
-    previewImage.src = evt.target.result;
-    previewContainer.style.display = 'block';
-    sessionStorage.setItem('postImage', evt.target.result);
-    editBtn.style.display = 'inline-block';
-    croppedImageData = null; // Reset cropped image since new file uploaded
-  };
-  reader.readAsDataURL(file);
-});
-
-// --- SAVE TEXT DRAFT ---
-postText.addEventListener('input', () => {
-  sessionStorage.setItem('postText', postText.value);
-});
-
-// --- MONETIZE BAR SETUP ---
-function setupMonetizeBar() {
-  monetizeBar.style.display = 'block';
-  cpmDisplay.textContent = `Estimated CPM: $${averageCPM.toFixed(2)}`;
-
-  if (userCanMonetize) {
-    monetizeToggle.disabled = false;
-    monetizeToggle.checked = false;
-    monetizeToggle.title = "Toggle Monetization On/Off";
+document.addEventListener('DOMContentLoaded', () => {
+  const imageData = sessionStorage.getItem('uploadedImage');
+  if (imageData && previewImage) {
+    previewImage.src = imageData;
+    previewImage.style.objectFit = 'cover';
   } else {
-    monetizeToggle.disabled = true;
-    monetizeToggle.checked = false;
-    monetizeToggle.title = "You must enable monetization in your profile to monetize posts.";
+    alert("No image found. Redirecting...");
+    window.history.back();
   }
-}
+});
 
-// --- CALCULATE CPM FOR POST ---
-function calculateCPM(title, description) {
-  // Basic naive approach: CPM influenced by keyword count & average CPM
-  // You can get fancier with NLP later, but for now:
-  let base = averageCPM;
+const postBtn = document.getElementById('postBtn');
 
-  // Reward longer descriptive posts (max 50 words)
-  const words = (title + " " + description).split(/\s+/).filter(Boolean).slice(0,50).length;
-  const factor = 1 + (words / 100); // up to 1.5x for 50 words
+postBtn.addEventListener('click', async () => {
+  const titleInput = document.getElementById('titleInput');
+  const captionInput = document.getElementById('captionInput');
+  const tagsInput = document.getElementById('tagsInput');
+  const categorySelect = document.getElementById('categorySelect');
 
-  // Just a multiplier on base CPM
-  return base * factor;
-}
+  if (!titleInput.value.trim()) return alert('Title is required');
+  if (!captionInput.value.trim()) return alert('Caption is required');
+  if (!tagsInput.value.trim()) return alert('Tags are required');
+  if (!categorySelect.value) return alert('Please select a category');
 
-// --- POST UPLOAD HANDLER ---
-window.uploadPost = async function() {
-  const title = postText.value.trim();
-  const description = document.getElementById('description')?.value.trim() || '';
-  const tagsRaw = document.getElementById('tags')?.value || '';
-  const tags = tagsRaw
-    .split(',')
-    .map(t => t.trim().toLowerCase())
-    .filter(t => t && /^[a-z0-9\s\-]+$/.test(t));
+  const user = auth.currentUser;
+  if (!user) return alert('You must be logged in to post.');
 
-  if (!title) {
-    alert('The "What’s on your mind, Boss?" field is required.');
-    return;
-  }
+  const imageData = previewImage.src;
 
-  // Must have at least an image or text (title)
-  const imageToSave = croppedImageData || sessionStorage.getItem('postImage') || '';
-
-  if (!title && !imageToSave) {
-    alert('You gotta say something or upload a pic!');
-    return;
-  }
-
-  const cpm = calculateCPM(title, description);
-
-  const postData = {
-    title,
-    description,
-    tags,
-    image: imageToSave,
-    authorUid: currentUser.uid,
-    authorHandle: handleDisplay.textContent.replace('@',''),
-    timestamp: Date.now(),
-    monetized: userCanMonetize && monetizeToggle.checked,
-    cpm: parseFloat(cpm.toFixed(2)),
-  };
+  imgurUrlContainer.textContent = 'Uploading image to Imgur...';
 
   try {
-    const newPostRef = push(ref(db, '/post'));
-    await set(newPostRef, postData);
+    const imgurRes = await fetch('https://api.imgur.com/3/image', {
+      method: 'POST',
+      headers: {
+        Authorization: 'Client-ID 784e530b6023501',
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ image: imageData.split(',')[1], type: 'base64' }),
+    });
 
-    alert(`Post uploaded! Estimated CPM: $${postData.cpm}. ${postData.monetized ? 'Monetization enabled. Nice!' : 'Monetization off.'}`);
+    const imgurJson = await imgurRes.json();
 
-    // Clear inputs and session storage
-    postText.value = '';
-    document.getElementById('description').value = '';
-    document.getElementById('tags').value = '';
-    fileUpload.value = '';
-    previewImage.src = '';
-    previewContainer.style.display = 'none';
-    editBtn.style.display = 'none';
-    monetizeToggle.checked = false;
-    sessionStorage.removeItem('postText');
-    sessionStorage.removeItem('postImage');
-    croppedImageData = null;
+    if (!imgurJson.success) throw new Error("Imgur upload failed.");
 
-  } catch (e) {
-    console.error('Failed to upload post:', e);
-    alert('Upload failed, try again later.');
+    const imgurUrl = imgurJson.data.link;
+    imgurUrlContainer.innerHTML = `Uploaded to <a href="${imgurUrl}" target="_blank" class="underline text-blue-400">${imgurUrl}</a>`;
+
+    const tagsArray = tagsInput.value
+      .split(',')
+      .map(tag => '#' + tag.trim().replace(/^#/, ''))
+      .filter(tag => tag !== '');
+
+    const newPostRef = push(ref(database, 'post'));
+
+    await set(newPostRef, {
+      uid: user.uid,
+      title: titleInput.value.trim(),
+      description: captionInput.value.trim(),
+      imageUrl: imgurUrl,
+      tags: tagsArray,
+      category: categorySelect.value,
+      visibility: 'public',
+      createdAt: Date.now(),
+      author: {
+        displayName: user.displayName || 'Anonymous',
+        photoURL: user.photoURL || '',
+      }
+    });
+
+    alert("Post uploaded successfully!");
+    window.location.href = '/'; // redirect to home or post page
+
+  } catch (error) {
+    console.error(error);
+    alert("Upload failed: " + error.message);
+    imgurUrlContainer.textContent = 'Upload failed.';
   }
-};
-
+});
 </script>
 </body>
 </html>
