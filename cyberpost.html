@@ -240,7 +240,6 @@ onAuthStateChanged(auth, async (user) => {
   }
 });
 
-// Load image from sessionStorage and disable manual upload
 document.addEventListener('DOMContentLoaded', () => {
   const imageData = sessionStorage.getItem('uploadedImage');
   if (imageData && previewImage) {
@@ -270,8 +269,9 @@ postBtn.addEventListener('click', async () => {
 
   const imageData = previewImage.src;
 
+  imgurUrlContainer.textContent = 'Uploading image to Imgur...';
+
   try {
-    // Upload to Imgur
     const imgurRes = await fetch('https://api.imgur.com/3/image', {
       method: 'POST',
       headers: {
@@ -282,39 +282,41 @@ postBtn.addEventListener('click', async () => {
     });
 
     const imgurJson = await imgurRes.json();
-    if (!imgurJson.success) throw new Error('Imgur upload failed');
 
-    const imgurLink = imgurJson.data.link;
-    imgurUrlContainer.innerHTML = `<p class="text-green-400 mt-2">Imgur URL: <a href="${imgurLink}" target="_blank" class="underline">${imgurLink}</a></p>`;
+    if (!imgurJson.success) throw new Error("Imgur upload failed.");
 
-    // Prepare post data
-    const postData = {
-      userId: user.uid,
-      userName: user.displayName || user.email || 'Anonymous',
-      userPhoto: user.photoURL || '',
+    const imgurUrl = imgurJson.data.link;
+    imgurUrlContainer.innerHTML = `Uploaded to <a href="${imgurUrl}" target="_blank" class="underline text-blue-400">${imgurUrl}</a>`;
+
+    const tagsArray = tagsInput.value
+      .split(',')
+      .map(tag => '#' + tag.trim().replace(/^#/, ''))
+      .filter(tag => tag !== '');
+
+    const newPostRef = push(ref(database, 'post'));
+
+    await set(newPostRef, {
+      uid: user.uid,
       title: titleInput.value.trim(),
-      caption: captionInput.value.trim(),
-      tags: tagsInput.value.trim().split(',').map(t => t.trim()).filter(Boolean),
+      description: captionInput.value.trim(),
+      imageUrl: imgurUrl,
+      tags: tagsArray,
       category: categorySelect.value,
-      imageUrl: imgurLink,
-      createdAt: Date.now()
-    };
+      visibility: 'public',
+      createdAt: Date.now(),
+      author: {
+        displayName: user.displayName || 'Anonymous',
+        photoURL: user.photoURL || '',
+      }
+    });
 
-    const postsRef = ref(database, 'posts');
-    const newPostRef = push(postsRef);
-    await set(newPostRef, postData);
-
-    alert('Post published successfully!');
-    titleInput.value = '';
-    captionInput.value = '';
-    tagsInput.value = '';
-    categorySelect.value = '';
-    imgurUrlContainer.innerHTML = '';
-    previewImage.src = 'https://via.placeholder.com/1280x720.png?text=Preview+Image';
+    alert("Post uploaded successfully!");
+    window.location.href = '/'; // redirect to home or post page
 
   } catch (error) {
-    console.error('Post error:', error);
-    alert('Failed to publish post: ' + error.message);
+    console.error(error);
+    alert("Upload failed: " + error.message);
+    imgurUrlContainer.textContent = 'Upload failed.';
   }
 });
 </script>
