@@ -1,42 +1,12 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>Stat Uploader with UID Dropdown</title>
-  <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-database-compat.js"></script>
-  <style>
-    body { font-family: sans-serif; padding: 2rem; background: #111; color: white; }
-    select, input, button { margin-top: 0.5rem; padding: 0.5rem; width: 100%; background: #222; color: white; border: 1px solid #555; border-radius: 6px; }
-    button { background: #22c55e; color: black; font-weight: bold; }
-    label { margin-top: 1rem; display: block; }
-  </style>
-</head>
-<body>
-  <h2>Stat Uploader</h2>
+  <meta charset="UTF-8" />
+  <title>Push Test Stats</title>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+    import { getDatabase, ref, set, get, child } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
 
-  <label>Select User UID</label>
-  <select id="uidDropdown">
-    <option value="">-- Select a user --</option>
-    <option value="user1UID">user1UID</option>
-    <option value="user2UID">user2UID</option>
-    <option value="user3UID">user3UID</option>
-    <!-- Add more UIDs as needed -->
-  </select>
-
-  <label>Views</label>
-  <input type="number" id="viewsInput" value="1000" />
-
-  <label>Clicks</label>
-  <input type="number" id="clicksInput" value="250" />
-
-  <label>Earnings ($)</label>
-  <input type="number" id="earningsInput" step="0.01" value="15.75" />
-
-  <button onclick="uploadStats()">Upload Stats</button>
-
-  <div id="statusMsg" style="margin-top: 1rem;"></div>
-
-  <script>
     const firebaseConfig = {
       apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
       authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
@@ -48,31 +18,114 @@
       measurementId: "G-LLT6F9WRKH"
     };
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
 
-    function uploadStats() {
-      const uid = document.getElementById("uidDropdown").value;
-      const views = parseInt(document.getElementById("viewsInput").value);
-      const clicks = parseInt(document.getElementById("clicksInput").value);
-      const earnings = parseFloat(document.getElementById("earningsInput").value);
+    const dropdown = document.getElementById("uidDropdown");
+    const status = document.getElementById("status");
 
-      if (!uid) {
-        alert("Please select a user UID.");
+    // Populate dropdown with usernames
+    async function loadUsers() {
+      const usersRef = ref(db, 'users');
+      const snapshot = await get(usersRef);
+      if (snapshot.exists()) {
+        const users = snapshot.val();
+        for (const uid in users) {
+          const user = users[uid];
+          const username = user.username || "NoUsername";
+          const option = document.createElement("option");
+          option.value = uid;
+          option.textContent = `${username} (${uid})`;
+          dropdown.appendChild(option);
+        }
+      } else {
+        status.textContent = "No users found.";
+      }
+    }
+
+    loadUsers();
+
+    document.getElementById("pushBtn").addEventListener("click", async () => {
+      const uid = dropdown.value;
+      const views = parseInt(document.getElementById("views").value);
+      const clicks = parseInt(document.getElementById("clicks").value);
+      const earnings = parseFloat(document.getElementById("earnings").value);
+
+      if (!uid || isNaN(views) || isNaN(clicks) || isNaN(earnings)) {
+        status.textContent = "Please fill out all fields.";
         return;
       }
 
-      db.ref(`users/${uid}/stats`).set({
-        views,
-        clicks,
-        earnings
-      }).then(() => {
-        document.getElementById("statusMsg").innerText = `✅ Stats uploaded to user ${uid}`;
-      }).catch(err => {
+      try {
+        await set(ref(db, `stats/${uid}/today`), {
+          views,
+          clicks,
+          earnings
+        });
+        status.textContent = `✅ Pushed stats for ${uid}`;
+      } catch (err) {
         console.error(err);
-        document.getElementById("statusMsg").innerText = `❌ Upload failed: ${err.message}`;
-      });
-    }
+        status.textContent = "❌ Failed to push stats.";
+      }
+    });
   </script>
+
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      padding: 2rem;
+      background: #111827;
+      color: #f3f4f6;
+    }
+    label {
+      display: block;
+      margin-top: 1rem;
+    }
+    input, select {
+      padding: 0.5rem;
+      width: 100%;
+      max-width: 300px;
+      border-radius: 0.5rem;
+      border: none;
+      margin-top: 0.25rem;
+      background: #1f2937;
+      color: white;
+    }
+    button {
+      margin-top: 2rem;
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: 0.5rem;
+      background: #22c55e;
+      color: #fff;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    #status {
+      margin-top: 1rem;
+      font-size: 0.95rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>📊 Push Fake Stats (No Login)</h1>
+
+  <label for="uidDropdown">Select User</label>
+  <select id="uidDropdown">
+    <option value="">-- Choose a user --</option>
+  </select>
+
+  <label for="views">Views</label>
+  <input type="number" id="views" placeholder="e.g. 1200" />
+
+  <label for="clicks">Clicks</label>
+  <input type="number" id="clicks" placeholder="e.g. 340" />
+
+  <label for="earnings">Earnings ($)</label>
+  <input type="number" step="0.01" id="earnings" placeholder="e.g. 14.50" />
+
+  <button id="pushBtn">Push Stats</button>
+
+  <div id="status"></div>
 </body>
 </html>
