@@ -1,12 +1,11 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Firebase Stat Uploader</title>
+  <title>Firebase Stats Injector</title>
   <script type="module">
-    // Import Firebase modules
+    // Firebase modules
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js";
     import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js";
-    import { getAuth, onAuthStateChanged, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js";
 
     // Your Firebase config
     const firebaseConfig = {
@@ -22,61 +21,45 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
-    const auth = getAuth(app);
-    const provider = new GoogleAuthProvider();
 
-    // DOM elements
-    let uid = null;
+    // Hardcoded UID (use your real test user ID here)
+    const testUID = "fake-test-user-uid";
 
     window.onload = () => {
-      const loginBtn = document.getElementById('loginBtn');
-      const uploadBtn = document.getElementById('uploadStatsBtn');
-
-      loginBtn.onclick = () => {
-        signInWithPopup(auth, provider)
-          .then(result => {
-            uid = result.user.uid;
-            document.getElementById("status").textContent = "Logged in as: " + result.user.email;
-          })
-          .catch(console.error);
-      };
+      const uploadBtn = document.getElementById("uploadStatsBtn");
 
       uploadBtn.onclick = () => {
-        if (!uid) {
-          alert("Log in first.");
-          return;
-        }
-
         const views = parseInt(document.getElementById("views").value);
         const clicks = parseInt(document.getElementById("clicks").value);
         const earnings = parseFloat(document.getElementById("earnings").value);
 
-        set(ref(db, `users/${uid}/stats`), {
+        const statsRef = ref(db, `users/${testUID}/stats`);
+        set(statsRef, {
           views,
           clicks,
           earnings
         }).then(() => {
-          alert("Stats updated!");
-        }).catch(console.error);
+          alert("Stats uploaded successfully!");
+        }).catch(err => {
+          console.error(err);
+          alert("Upload failed.");
+        });
       };
     };
   </script>
 </head>
-<body style="font-family: sans-serif; max-width: 500px; margin: 40px auto;">
-  <h2>🔥 Firebase Stat Uploader</h2>
-  <p id="status">Not logged in</p>
-  <button id="loginBtn">Login with Google</button>
-  <hr>
+<body style="font-family: Arial, sans-serif; max-width: 500px; margin: 40px auto;">
+  <h2>🚀 Firebase Test Stat Uploader</h2>
 
   <label>Views:</label>
-  <input type="number" id="views" value="1230" /><br><br>
+  <input type="number" id="views" value="1000" /><br><br>
 
   <label>Clicks:</label>
-  <input type="number" id="clicks" value="320" /><br><br>
+  <input type="number" id="clicks" value="250" /><br><br>
 
   <label>Earnings ($):</label>
-  <input type="number" step="0.01" id="earnings" value="12.5" /><br><br>
+  <input type="number" step="0.01" id="earnings" value="15.75" /><br><br>
 
-  <button id="uploadStatsBtn">Upload Stats to Firebase</button>
+  <button id="uploadStatsBtn">Upload to Firebase</button>
 </body>
 </html>
