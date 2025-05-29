@@ -1,15 +1,86 @@
 <!DOCTYPE html>
-<html lang="en" >
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>CyberChat Post Creator — Login & Profile Required</title>
+  <meta charset="UTF-8">
+  <title>CyberChat Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    * {margin: 0; padding: 0; box-sizing: border-box;}
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #121212;
+      color: #fff;
+      padding: 20px;
+    }
+    header {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 20px;
+    }
+    .stats {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin-bottom: 25px;
+    }
+    .stat-card {
+      flex: 1 1 45%;
+      background: #1f1f1f;
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+    }
+    .stat-card h2 {
+      font-size: 18px;
+      color: #aaa;
+      margin-bottom: 8px;
+    }
+    .stat-card p {
+      font-size: 22px;
+      font-weight: bold;
+      color: #fff;
+    }
+    .posts {
+      margin-top: 30px;
+    }
+    .post-card {
+      background: #1a1a1a;
+      border-radius: 10px;
+      margin-bottom: 15px;
+      padding: 15px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+    }
+    .post-card h3 {
+      font-size: 18px;
+      margin-bottom: 6px;
+    }
+    .post-card p {
+      color: #ccc;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <header>📊 Dashboard</header>
+
+  <div class="stats" id="stats">
+    <div class="stat-card"><h2>Posts</h2><p id="stat-posts">0</p></div>
+    <div class="stat-card"><h2>Views</h2><p id="stat-views">0</p></div>
+    <div class="stat-card"><h2>Clicks</h2><p id="stat-clicks">0</p></div>
+    <div class="stat-card"><h2>Revenue</h2><p id="stat-revenue">$0.00</p></div>
+  </div>
+
+  <div class="posts" id="user-posts">
+    <!-- Posts will be loaded here -->
+  </div>
+
+  <!-- Firebase SDKs -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-    import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
-    import { getDatabase, ref, get, set, push, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+    import { getDatabase, ref, get, child } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
 
-    // ==== FIREBASE CONFIG - REPLACE WITH YOURS ====
     const firebaseConfig = {
       apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
       authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
@@ -21,364 +92,76 @@
       measurementId: "G-LLT6F9WRKH"
     };
 
-    const imgurClientID = "891e5bb4aa94282"; // Your Imgur Client ID
-
     const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getDatabase(app);
+    const auth = getAuth();
+    const db = getDatabase();
 
-    let currentUser = null;
-    let userProfile = null;
-
-    window.addEventListener('DOMContentLoaded', () => {
-      // DOM Elements
-      const loginSection = document.getElementById('login-section');
-      const registerSection = document.getElementById('register-section');
-      const profileSection = document.getElementById('profile-section');
-      const postSection = document.getElementById('post-section');
-      const logoutBtn = document.getElementById('logout-btn');
-
-      // Login form elements
-      const loginEmail = document.getElementById('login-email');
-      const loginPassword = document.getElementById('login-password');
-      const loginBtn = document.getElementById('login-btn');
-      const loginMsg = document.getElementById('login-msg');
-      const showRegisterLink = document.getElementById('show-register');
-
-      // Register form elements
-      const registerEmail = document.getElementById('register-email');
-      const registerPassword = document.getElementById('register-password');
-      const registerBtn = document.getElementById('register-btn');
-      const registerMsg = document.getElementById('register-msg');
-      const showLoginLink = document.getElementById('show-login');
-
-      // Profile form elements
-      const profileUsername = document.getElementById('profile-username');
-      const profilePicUrl = document.getElementById('profile-pic-url');
-      const profileSaveBtn = document.getElementById('profile-save-btn');
-      const profileMsg = document.getElementById('profile-msg');
-
-      // Post form elements
-      const profilePicEl = document.getElementById('profile-pic');
-      const usernameEl = document.getElementById('username');
-      const postForm = document.getElementById('post-form');
-      const postText = document.getElementById('post-text');
-      const postImageInput = document.getElementById('post-image');
-      const submitBtn = document.getElementById('submit-btn');
-      const postMsg = document.getElementById('post-msg');
-
-      // Helper: show messages
-      function showMessage(elem, text, isError = false) {
-        elem.textContent = text;
-        elem.style.color = isError ? 'tomato' : 'lightgreen';
-        elem.style.opacity = '1';
-        setTimeout(() => { elem.style.opacity = '0'; }, 4000);
+    onAuthStateChanged(auth, async user => {
+      if (user) {
+        const uid = user.uid;
+        loadStats(uid);
+        loadPosts(uid);
+      } else {
+        alert("Not signed in");
+        window.location.href = "/login.html";
       }
-
-      // Show/hide sections helper
-      function showSection(section) {
-        [loginSection, registerSection, profileSection, postSection].forEach(s => s.style.display = 'none');
-        section.style.display = 'block';
-      }
-
-      // Toggle login/register forms
-      showRegisterLink.onclick = (e) => { e.preventDefault(); showSection(registerSection); };
-      showLoginLink.onclick = (e) => { e.preventDefault(); showSection(loginSection); };
-
-      // Logout button
-      logoutBtn.onclick = () => {
-        signOut(auth);
-      };
-
-      // LOGIN
-      loginBtn.onclick = async () => {
-        loginMsg.textContent = '';
-        if (!loginEmail.value || !loginPassword.value) {
-          showMessage(loginMsg, 'Email and password required', true);
-          return;
-        }
-        loginBtn.disabled = true;
-        try {
-          await signInWithEmailAndPassword(auth, loginEmail.value, loginPassword.value);
-          showMessage(loginMsg, 'Login successful!');
-        } catch (err) {
-          showMessage(loginMsg, err.message, true);
-        } finally {
-          loginBtn.disabled = false;
-        }
-      };
-
-      // REGISTER
-      registerBtn.onclick = async () => {
-        registerMsg.textContent = '';
-        if (!registerEmail.value || !registerPassword.value) {
-          showMessage(registerMsg, 'Email and password required', true);
-          return;
-        }
-        registerBtn.disabled = true;
-        try {
-          const userCred = await createUserWithEmailAndPassword(auth, registerEmail.value, registerPassword.value);
-          // Create empty profile placeholder
-          await set(ref(db, `users/${userCred.user.uid}`), {
-            username: '',
-            profilePic: ''
-          });
-          showMessage(registerMsg, 'Registered! Please complete your profile.');
-          showSection(profileSection);
-        } catch (err) {
-          showMessage(registerMsg, err.message, true);
-        } finally {
-          registerBtn.disabled = false;
-        }
-      };
-
-      // PROFILE SAVE
-      profileSaveBtn.onclick = async () => {
-        profileMsg.textContent = '';
-        if (!profileUsername.value.trim()) {
-          showMessage(profileMsg, 'Username is required.', true);
-          return;
-        }
-        if (!currentUser) {
-          showMessage(profileMsg, 'No user logged in.', true);
-          return;
-        }
-        profileSaveBtn.disabled = true;
-        try {
-          await set(ref(db, `users/${currentUser.uid}`), {
-            username: profileUsername.value.trim(),
-            profilePic: profilePicUrl.value.trim() || 'https://via.placeholder.com/50?text=User'
-          });
-          showMessage(profileMsg, 'Profile saved!');
-          await loadUserProfile(); // reload profile data
-          showSection(postSection);
-        } catch (err) {
-          showMessage(profileMsg, err.message, true);
-        } finally {
-          profileSaveBtn.disabled = false;
-        }
-      };
-
-      // Load user profile from Firebase and update UI
-      async function loadUserProfile() {
-        if (!currentUser) return;
-        try {
-          const userSnap = await get(ref(db, `users/${currentUser.uid}`));
-          if (userSnap.exists()) {
-            userProfile = userSnap.val();
-            usernameEl.textContent = userProfile.username || 'No Username';
-            profilePicEl.src = userProfile.profilePic || 'https://via.placeholder.com/50?text=User';
-            // Prefill profile form in case user edits later
-            profileUsername.value = userProfile.username || '';
-            profilePicUrl.value = userProfile.profilePic || '';
-          } else {
-            userProfile = null;
-            usernameEl.textContent = 'No profile found';
-            profilePicEl.src = 'https://via.placeholder.com/50?text=User';
-          }
-        } catch (e) {
-          console.error('Error loading profile:', e);
-          userProfile = null;
-        }
-      }
-
-      // Upload image to Imgur
-      async function uploadImageToImgur(file) {
-        const formData = new FormData();
-        formData.append('image', file);
-
-        const res = await fetch('https://api.imgur.com/3/image', {
-          method: 'POST',
-          headers: { Authorization: 'Client-ID ' + imgurClientID },
-          body: formData,
-        });
-
-        const data = await res.json();
-        if (!res.ok || !data.success) throw new Error('Imgur upload failed: ' + (data.data?.error || res.status));
-        return data.data.link;
-      }
-
-      // POST FORM SUBMIT
-      postForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        postMsg.textContent = '';
-        if (!postText.value.trim()) {
-          showMessage(postMsg, 'Post text cannot be empty.', true);
-          return;
-        }
-
-        submitBtn.disabled = true;
-
-        try {
-          let imageUrl = null;
-
-          if (postImageInput.files.length > 0) {
-            // Upload the first image to Imgur
-            imageUrl = await uploadImageToImgur(postImageInput.files[0]);
-          }
-
-          // Prepare post data
-          const newPostRef = push(ref(db, 'posts'));
-          const postData = {
-            uid: currentUser.uid,
-            username: userProfile.username,
-            profilePic: userProfile.profilePic,
-            text: postText.value.trim(),
-            imageUrl: imageUrl || '',
-            likesCount: 0,
-            commentsCount: 0,
-            createdAt: serverTimestamp()
-          };
-
-          await set(newPostRef, postData);
-
-          showMessage(postMsg, 'Post uploaded successfully!');
-
-          // Reset form
-          postText.value = '';
-          postImageInput.value = '';
-
-        } catch (error) {
-          console.error(error);
-          showMessage(postMsg, 'Failed to upload post: ' + error.message, true);
-        } finally {
-          submitBtn.disabled = false;
-        }
-      });
-
-      // On Auth state changed
-      onAuthStateChanged(auth, async (user) => {
-        currentUser = user;
-        if (user) {
-          // Load profile
-          await loadUserProfile();
-
-          // Check if profile is complete
-          if (!userProfile || !userProfile.username) {
-            // Show profile completion form
-            showSection(profileSection);
-          } else {
-            // Show post form
-            showSection(postSection);
-          }
-        } else {
-          // No user signed in, show login
-          userProfile = null;
-          showSection(loginSection);
-        }
-      });
     });
+
+    async function loadStats(uid) {
+      const statsRef = ref(db, `users/${uid}/stats`);
+      try {
+        const snap = await get(statsRef);
+        if (snap.exists()) {
+          const stats = snap.val();
+          document.getElementById("stat-posts").textContent = stats.posts || 0;
+          document.getElementById("stat-views").textContent = stats.views || 0;
+          document.getElementById("stat-clicks").textContent = stats.clicks || 0;
+          document.getElementById("stat-revenue").textContent = `$${(stats.revenue || 0).toFixed(2)}`;
+        }
+      } catch (err) {
+        console.error("Failed to load stats:", err);
+      }
+    }
+
+    async function loadPosts(uid) {
+      const localKey = `user_posts_${uid}`;
+      const cached = localStorage.getItem(localKey);
+      const container = document.getElementById("user-posts");
+
+      if (cached) {
+        const posts = JSON.parse(cached);
+        renderPosts(posts, container);
+        console.log("Loaded posts from localStorage");
+      } else {
+        const postsRef = ref(db, "post");
+        try {
+          const snap = await get(postsRef);
+          const allPosts = snap.val() || {};
+          const userPosts = Object.entries(allPosts)
+            .filter(([_, post]) => post.uid === uid)
+            .map(([id, post]) => ({ id, ...post }));
+
+          localStorage.setItem(localKey, JSON.stringify(userPosts));
+          renderPosts(userPosts, container);
+          console.log("Fetched posts from Firebase");
+        } catch (err) {
+          console.error("Failed to load posts:", err);
+        }
+      }
+    }
+
+    function renderPosts(posts, container) {
+      container.innerHTML = '';
+      posts.forEach(post => {
+        const div = document.createElement("div");
+        div.className = "post-card";
+        div.innerHTML = `
+          <h3>${post.title || "Untitled Post"}</h3>
+          <p>${post.description || "No description"}</p>
+        `;
+        container.appendChild(div);
+      });
+    }
   </script>
-
-  <style>
-    body {
-      background: #121212;
-      color: #eee;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      margin: 0; padding: 1rem;
-      display: flex;
-      justify-content: center;
-    }
-    section {
-      max-width: 420px;
-      width: 100%;
-      margin: auto;
-      display: none;
-    }
-    section.active {
-      display: block;
-    }
-    input, textarea, button {
-      width: 100%;
-      margin: 0.4rem 0 1rem;
-      padding: 0.8rem;
-      border-radius: 6px;
-      border: none;
-      font-size: 1rem;
-    }
-    textarea {
-      resize: vertical;
-      min-height: 100px;
-    }
-    button {
-      background: #0af;
-      color: white;
-      cursor: pointer;
-      font-weight: bold;
-      transition: background 0.3s ease;
-      border: none;
-    }
-    button:disabled {
-      background: #044;
-      cursor: not-allowed;
-    }
-    img.profile-pic {
-      border-radius: 50%;
-      width: 50px;
-      height: 50px;
-      object-fit: cover;
-      margin-bottom: 1rem;
-      border: 2px solid #0af;
-    }
-    .msg {
-      height: 1.5rem;
-      font-weight: 600;
-      opacity: 0;
-      transition: opacity 0.3s ease;
-    }
-    a.link {
-      color: #0af;
-      cursor: pointer;
-      text-decoration: underline;
-    }
-  </style>
-</head>
-<body>
-
-  <!-- LOGIN -->
-  <section id="login-section" style="display:block;">
-    <h2>Login to CyberChat</h2>
-    <input id="login-email" type="email" placeholder="Email" required />
-    <input id="login-password" type="password" placeholder="Password" required />
-    <button id="login-btn">Login</button>
-    <div class="msg" id="login-msg"></div>
-    <p>Don't have an account? <a href="#" class="link" id="show-register">Register here</a></p>
-  </section>
-
-  <!-- REGISTER -->
-  <section id="register-section">
-    <h2>Create an account</h2>
-    <input id="register-email" type="email" placeholder="Email" required />
-    <input id="register-password" type="password" placeholder="Password" required />
-    <button id="register-btn">Register</button>
-    <div class="msg" id="register-msg"></div>
-    <p>Already have an account? <a href="#" class="link" id="show-login">Login here</a></p>
-  </section>
-
-  <!-- PROFILE SETUP -->
-  <section id="profile-section">
-    <h2>Complete your profile</h2>
-    <input id="profile-username" type="text" placeholder="Username" required />
-    <input id="profile-pic-url" type="url" placeholder="Profile Picture URL (or leave blank for default)" />
-    <button id="profile-save-btn">Save Profile</button>
-    <div class="msg" id="profile-msg"></div>
-    <button id="logout-btn" style="background:#f33;">Logout</button>
-  </section>
-
-  <!-- POST CREATION -->
-  <section id="post-section">
-    <div style="display:flex; align-items:center; margin-bottom:1rem;">
-      <img id="profile-pic" class="profile-pic" src="https://via.placeholder.com/50?text=User" alt="Profile pic" />
-      <span id="username" style="margin-left: 1rem; font-weight: bold;"></span>
-      <button id="logout-btn" style="margin-left:auto; background:#f33; width: 80px;">Logout</button>
-    </div>
-    <form id="post-form">
-      <textarea id="post-text" placeholder="What's on your mind, Boss?" required></textarea>
-      <input id="post-image" type="file" accept="image/*" />
-      <button id="submit-btn" type="submit">Post This Magic</button>
-    </form>
-    <div class="msg" id="post-msg"></div>
-  </section>
-
 </body>
 </html>
