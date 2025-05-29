@@ -16,21 +16,41 @@
       align-items: center;
       min-height: 100vh;
     }
-    header {
-      width: 100%;
-      background: #1f1f1f;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 0.3rem 1rem;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.7);
-    }
-    .logo-container {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      user-select: none;
-    }
+   header {
+  width : 99%;
+  margin: 0 auto;
+  background: #1f1f1f;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.3rem 1rem;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.7);
+  border-radius: 12px;
+  box-sizing: border-box;
+}
+
+.logo-container {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  user-select: none;
+}
+
+svg {
+  width: 22px;
+  height: 22px;
+  fill: #2196f3; /* Blue to match .chat */
+  flex-shrink: 0;
+}
+
+.app-name {
+  font-weight: 900;
+  font-size: 1.1rem;
+  letter-spacing: 2px;
+  user-select: none;
+}
+
+.cyber
     svg {
       width: 22px;
       height: 22px;
@@ -225,10 +245,9 @@
     <p id="stat-likes">0</p>
   </div>
 </div>
-
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-  import { getDatabase, ref, get, query, orderByChild, equalTo } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+  import { getDatabase, ref, get, update } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
   import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
 
   const firebaseConfig = {
@@ -303,12 +322,12 @@
         statFollowers.textContent = formatNumber(stats.followers || 0);
         statRevenue.textContent = `$${(stats.revenue || 0).toFixed(2)}`;
         statLikes.textContent = formatNumber(stats.likes || 0);
-        // Update progress bar as % of some goal, say 100k views
+
+        // Progress logic (e.g. towards 100k views)
         const progressPercent = Math.min(100, ((stats.views || 0) / 100000) * 100);
         progressBar.style.width = `${progressPercent}%`;
         progressLabel.textContent = `Post Views Progress: ${progressPercent.toFixed(1)}%`;
       } else {
-        // No stats, reset to zero
         statViews.textContent = '0';
         statFollowers.textContent = '0';
         statRevenue.textContent = '$0.00';
@@ -361,21 +380,7 @@
     monetizeBtn.disabled = true;
     monetizeBtn.textContent = "REQUESTING...";
     try {
-      // Set monetize to 'pending' in Firebase
-      const monetizeRef = ref(db, `users/${userId}/monetize`);
-      await fetch(monetizeRef); // Just to confirm ref is valid
-      // Firebase does not support direct 'set' with ref imported from get() — use update instead:
-      await import("https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js").then(({ update }) => {
-        return update(monetizeRef, 'pending');
-      });
-
-      // But since this is tricky, let's just do it simpler:
-      // update(ref(db, `users/${userId}`), { monetize: 'pending' })
-
-      // Better way:
-      const { update } = await import("https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js");
       await update(ref(db, `users/${userId}`), { monetize: 'pending' });
-
       updateMonetizeUI('pending');
       monetizeBtn.textContent = "MONETISE NOW";
     } catch (error) {
@@ -385,6 +390,5 @@
     }
   });
 </script>
-
 </body>
 </html>
