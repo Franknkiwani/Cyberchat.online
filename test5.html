@@ -1,42 +1,62 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" >
 <head>
   <meta charset="UTF-8" />
-  <title>Stats Clicker (Real User)</title>
-  <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-database-compat.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CyberChat Pro Post Feed - Fixes</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
   <style>
     body {
-      font-family: sans-serif;
-      text-align: center;
-      padding: 2rem;
+      background: #0f172a;
+      font-family: 'Inter', sans-serif;
+      color: white;
     }
-    button {
-      margin: 10px;
-      padding: 10px 20px;
-      font-size: 18px;
+    .glass {
+      backdrop-filter: blur(12px);
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
     }
-    #status {
-      margin-top: 1rem;
-      font-weight: bold;
+    img.profile-pic {
+      width: 48px;
+      height: 48px;
+      object-fit: cover;
+      border-radius: 9999px;
+      flex-shrink: 0;
+    }
+    img.post-image {
+      width: 100%;
+      max-height: 360px;
+      object-fit: contain;
+      border-radius: 1rem;
+    }
+    button.like-btn, button.follow-btn {
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.2s ease;
+    }
+    button.like-btn.liked {
+      color: #ef4444;
+    }
+    button.follow-btn.following {
+      background-color: #06b6d4;
+      color: white;
     }
   </style>
 </head>
 <body>
-  <h1>👤 Logged In Stat Booster</h1>
 
-  <p id="userInfo">Loading user...</p>
+  <main class="max-w-3xl mx-auto p-6 space-y-8">
 
-  <div>
-    <button onclick="addStat('views')">+1 View</button>
-    <button onclick="addStat('clicks')">+1 Click</button>
-    <button onclick="addStat('earnings')">+0.01 Earning</button>
-  </div>
+    <div id="posts" class="space-y-8"></div>
 
-  <div id="status"></div>
+  </main>
 
-  <script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+    import { getDatabase, ref, onValue, update, remove, get } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+
     const firebaseConfig = {
       apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
       authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
@@ -44,41 +64,193 @@
       projectId: "itzhoyoo-f9f7e",
       storageBucket: "itzhoyoo-f9f7e.filestorage.app",
       messagingSenderId: "1094792075584",
-      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5"
+      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
+      measurementId: "G-LLT6F9WRKH"
     };
 
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.database();
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const auth = getAuth();
+
     let currentUser = null;
 
-    // Listen for real auth state
-    auth.onAuthStateChanged(user => {
+    onAuthStateChanged(auth, (user) => {
       if (user) {
         currentUser = user;
-        document.getElementById('userInfo').textContent = `Logged in as: ${user.email || user.uid}`;
+        loadPosts();
       } else {
-        document.getElementById('userInfo').textContent = 'Not logged in. Redirecting...';
-        // Redirect to login page or show login modal
-        setTimeout(() => window.location.href = '/login.html', 1500); // Update with your login page
+        document.getElementById('posts').innerHTML = `<p class="text-center text-gray-400">Please log in to see posts.</p>`;
       }
     });
 
-    function addStat(type) {
-      if (!currentUser) return alert("You must be logged in.");
+    function formatDate(ts) {
+      const d = new Date(ts);
+      return d.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+    }
 
-      const statRef = db.ref(`users/${currentUser.uid}/stats/${type}`);
-      statRef.transaction(current => {
-        return type === 'earnings'
-          ? (parseFloat(current) || 0) + 0.01
-          : (current || 0) + 1;
-      }).then(() => {
-        document.getElementById('status').textContent = `${type} updated!`;
-      }).catch(err => {
-        console.error(err);
-        document.getElementById('status').textContent = `Error: ${err.message}`;
+    function loadPosts() {
+      const postsRef = ref(db, 'posts'); // <-- correct plural path here
+
+      onValue(postsRef, (snapshot) => {
+        const posts = snapshot.val();
+        const container = document.getElementById('posts');
+        container.innerHTML = '';
+
+        if (!posts) {
+          container.innerHTML = '<p class="text-gray-400 text-center">No posts yet.</p>';
+          return;
+        }
+
+        const sortedPosts = Object.entries(posts).sort((a,b) => b[1].date - a[1].date);
+
+        for (const [postId, post] of sortedPosts) {
+          createPostElement(postId, post, container);
+        }
       });
     }
+
+    async function createPostElement(postId, post, container) {
+      const username = post.username || "UnknownUser";
+      const handle = post.handle || username.toLowerCase().replace(/\s+/g, '');
+      const profilePic = post.profilePic || 'https://via.placeholder.com/48?text=U';
+      const date = post.date || Date.now();
+      const title = post.title || '';
+      const description = post.description || '';
+      const image = post.image || null;
+      const commentsCount = post.commentsCount || 0;
+      const postOwnerId = post.userId || null;
+
+      const likesObj = post.likes || {};
+      let likesCount = Object.keys(likesObj).length;
+
+      // Check if current user liked this post
+      let likedByUser = currentUser && likesObj[currentUser.uid] === true;
+
+      // Check if current user follows post owner
+      let isFollowing = false;
+      if (postOwnerId && currentUser) {
+        const followingSnap = await get(ref(db, `following/${currentUser.uid}/${postOwnerId}`));
+        isFollowing = followingSnap.exists();
+      }
+
+      const postEl = document.createElement('article');
+      postEl.className = "glass p-6 rounded-2xl shadow-md";
+
+      postEl.innerHTML = `
+        <header class="flex items-center mb-4 gap-3">
+          <img src="${profilePic}" alt="${username}" class="profile-pic" loading="lazy" />
+          <div class="flex flex-col flex-grow min-w-0">
+            <div class="flex items-center justify-between gap-2">
+              <div class="font-semibold text-white truncate">${username}</div>
+              <button class="follow-btn text-sm font-semibold rounded px-4 py-1 transition ${
+                isFollowing ? "following" : "bg-gray-700"
+              }">${isFollowing ? "Following" : "Follow"}</button>
+            </div>
+            <div class="text-gray-400 text-xs truncate">@${handle}</div>
+            <time class="text-gray-400 text-xs mt-0.5">${formatDate(date)}</time>
+          </div>
+        </header>
+
+        ${image ? `<img src="${image}" alt="${title}" class="post-image mb-4" loading="lazy" />` : ''}
+
+        <h2 class="text-xl font-semibold mb-2 truncate">${title}</h2>
+        <p class="text-gray-300 mb-6 whitespace-pre-wrap">${description}</p>
+
+        <footer class="flex gap-8 items-center text-gray-300">
+          <button class="like-btn flex items-center gap-2 text-xl ${likedByUser ? "liked" : ""}" aria-label="Like post">
+            <i data-lucide="heart" class="w-6 h-6"></i>
+            <span>${likesCount}</span>
+          </button>
+          <div class="flex items-center gap-2 text-xl cursor-default opacity-70" aria-label="Comments count">
+            <i data-lucide="message-circle" class="w-6 h-6"></i>
+            <span>${commentsCount}</span>
+          </div>
+        </footer>
+      `;
+
+      container.appendChild(postEl);
+      lucide.createIcons();
+
+      // Buttons
+      const likeBtn = postEl.querySelector('button.like-btn');
+      const followBtn = postEl.querySelector('button.follow-btn');
+
+      likeBtn.addEventListener('click', async () => {
+        if (!currentUser) return alert("Log in to like posts");
+
+        const likeRef = ref(db, `posts/${postId}/likes/${currentUser.uid}`);
+
+        if (likedByUser) {
+          // Optimistic UI update
+          likesCount--;
+          likedByUser = false;
+          likeBtn.classList.remove("liked");
+          likeBtn.querySelector('span').textContent = likesCount;
+
+          try {
+            await remove(likeRef);
+          } catch(e) {
+            console.error("Failed to remove like:", e);
+          }
+        } else {
+          likesCount++;
+          likedByUser = true;
+          likeBtn.classList.add("liked");
+          likeBtn.querySelector('span').textContent = likesCount;
+
+          try {
+            await update(likeRef, true);
+          } catch(e) {
+            console.error("Failed to add like:", e);
+            // revert optimistic UI
+            likesCount--;
+            likedByUser = false;
+            likeBtn.classList.remove("liked");
+            likeBtn.querySelector('span').textContent = likesCount;
+          }
+        }
+      });
+
+      followBtn.addEventListener('click', async () => {
+        if (!currentUser) return alert("Log in to follow users");
+
+        if (!postOwnerId) return alert("User info missing for follow");
+
+        const followRef = ref(db, `following/${currentUser.uid}/${postOwnerId}`);
+
+        if (isFollowing) {
+          // Optimistic UI update
+          isFollowing = false;
+          followBtn.classList.remove("following");
+          followBtn.textContent = "Follow";
+
+          try {
+            await remove(followRef);
+          } catch (e) {
+            console.error("Failed to unfollow:", e);
+            // revert UI
+            isFollowing = true;
+            followBtn.classList.add("following");
+            followBtn.textContent = "Following";
+          }
+        } else {
+          isFollowing = true;
+          followBtn.classList.add("following");
+          followBtn.textContent = "Following";
+
+          try {
+            await update(followRef, true);
+          } catch (e) {
+            console.error("Failed to follow:", e);
+            // revert UI
+            isFollowing = false;
+            followBtn.classList.remove("following");
+            followBtn.textContent = "Follow";
+          }
+        }
+      });
+    }
+
   </script>
 </body>
 </html>
