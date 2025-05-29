@@ -1,625 +1,254 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Dashboard | CyberChat</title>
-<style>
-  /* Reset & base */
-  * {
-    box-sizing: border-box;
-  }
-  body {
-    margin: 0; padding: 0; background: #121212; color: #eee; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
-      Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-  }
-
-  header {
-    background: #1f1f1f;
-    padding: 1rem 2rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid #333;
-  }
-  header .profile {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-  }
-  header .profile img {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 2px solid #4caf50;
-  }
-  header .profile span {
-    font-weight: 600;
-    font-size: 1.1rem;
-    color: #4caf50;
-  }
-
-  main {
-    flex: 1;
-    max-width: 960px;
-    margin: 2rem auto;
-    width: 95%;
-  }
-
-  section#stats {
-    background: #1e1e1e;
-    padding: 1.25rem 1.5rem;
-    border-radius: 8px;
-    display: flex;
-    justify-content: space-around;
-    margin-bottom: 2rem;
-    box-shadow: 0 0 15px #222;
-  }
-  section#stats div {
-    text-align: center;
-    flex: 1;
-  }
-  section#stats div:not(:last-child) {
-    border-right: 1px solid #333;
-  }
-  section#stats div h2 {
-    font-size: 2rem;
-    margin: 0 0 0.2rem 0;
-    color: #4caf50;
-  }
-  section#stats div p {
-    margin: 0;
-    color: #bbb;
-    font-weight: 500;
-  }
-
-  section#posts {
-    display: flex;
-    flex-direction: column;
-    gap: 1.25rem;
-  }
-
-  .post-card {
-    background: #1f1f1f;
-    border-radius: 8px;
-    display: flex;
-    gap: 1rem;
-    padding: 1rem;
-    box-shadow: 0 0 15px #222;
-  }
-  .post-image {
-    width: 150px;
-    height: 100px;
-    border-radius: 6px;
-    background: #333;
-    flex-shrink: 0;
-    object-fit: cover;
-  }
-  .post-content {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-  }
-  .post-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  .post-title {
-    font-size: 1.2rem;
-    font-weight: 700;
-    color: #4caf50;
-    margin: 0;
-  }
-  .post-description {
-    margin: 0.3rem 0 0.7rem 0;
-    color: #ccc;
-    font-size: 0.9rem;
-  }
-
-  .post-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 0.9rem;
-    color: #aaa;
-  }
-  .post-footer .revenue {
-    display: flex;
-    align-items: center;
-    gap: 0.3rem;
-    font-weight: 600;
-  }
-  .post-footer .revenue .icon {
-    font-size: 1.3rem;
-  }
-  .post-footer .revenue .icon.green {
-    color: #4caf50;
-  }
-  .post-footer .revenue .icon.red {
-    color: #e53935;
-  }
-  .post-footer button {
-    background: transparent;
-    border: none;
-    color: #4caf50;
-    font-weight: 700;
-    cursor: pointer;
-    transition: color 0.2s ease;
-  }
-  .post-footer button:hover {
-    color: #81c784;
-  }
-
-  .post-actions {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    margin-left: 1rem;
-  }
-  .post-actions button {
-    background: #333;
-    border: none;
-    color: #eee;
-    padding: 6px 10px;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-    font-weight: 600;
-  }
-  .post-actions button:hover {
-    background: #4caf50;
-  }
-
-  /* Modal */
-  #editModal {
-    display: none;
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background: rgba(0,0,0,0.8);
-    z-index: 9999;
-    justify-content: center;
-    align-items: center;
-  }
-  #editModal.show {
-    display: flex;
-  }
-  #editModal .modal-content {
-    background: #222;
-    border-radius: 10px;
-    padding: 1.5rem 2rem;
-    width: 90%;
-    max-width: 450px;
-    color: #eee;
-    box-shadow: 0 0 20px #4caf50aa;
-  }
-  #editModal label {
-    display: block;
-    margin-bottom: 0.3rem;
-    font-weight: 600;
-    margin-top: 1rem;
-  }
-  #editModal input[type="text"],
-  #editModal textarea {
-    width: 100%;
-    padding: 0.5rem 0.75rem;
-    border-radius: 5px;
-    border: none;
-    background: #333;
-    color: #eee;
-    font-size: 1rem;
-    resize: vertical;
-  }
-  #editModal textarea {
-    min-height: 80px;
-  }
-  #editModal .checkbox-wrapper {
-    margin-top: 0.75rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
-  #editModal .modal-actions {
-    margin-top: 1.5rem;
-    text-align: right;
-  }
-  #editModal .modal-actions button {
-    background: #4caf50;
-    border: none;
-    color: #121212;
-    font-weight: 700;
-    padding: 0.5rem 1rem;
-    border-radius: 6px;
-    cursor: pointer;
-    margin-left: 1rem;
-    transition: background-color 0.3s ease;
-  }
-  #editModal .modal-actions button.cancel-btn {
-    background: #e53935;
-    color: #eee;
-  }
-  #editModal .modal-actions button:hover {
-    background: #388e3c;
-  }
-  #editModal .modal-actions button.cancel-btn:hover {
-    background: #b71c1c;
-  }
-
-  /* Responsive */
-  @media (max-width: 600px) {
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CyberChat Dashboard</title>
+  <style>
+    body {
+      background-color: #121212;
+      color: #e0e0e0;
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 20px;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+    }
+    .profile {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .profile img {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+    }
+    .stats {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+    .stat-box {
+      background: #1e1e1e;
+      padding: 15px;
+      border-radius: 10px;
+      flex: 1 1 150px;
+    }
+    .posts {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
     .post-card {
+      background: #1e1e1e;
+      padding: 15px;
+      border-radius: 10px;
+      display: flex;
       flex-direction: column;
     }
-    .post-image {
-      width: 100%;
-      height: 180px;
-      border-radius: 8px;
+    .post-card img {
+      max-width: 100%;
+      border-radius: 10px;
+      margin-top: 10px;
     }
     .post-actions {
-      flex-direction: row;
-      justify-content: flex-end;
-      margin-left: 0;
-      margin-top: 0.75rem;
+      display: flex;
+      justify-content: space-between;
+      margin-top: 10px;
     }
-  }
-</style>
+    .post-actions button {
+      background: #333;
+      border: none;
+      padding: 8px 12px;
+      color: white;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background-color: rgba(0,0,0,0.8);
+      justify-content: center;
+      align-items: center;
+    }
+    .modal-content {
+      background: #1e1e1e;
+      padding: 20px;
+      border-radius: 10px;
+      width: 90%;
+      max-width: 400px;
+    }
+    .modal-content input,
+    .modal-content textarea {
+      width: 100%;
+      margin-top: 10px;
+      padding: 8px;
+      border-radius: 5px;
+      border: none;
+      background: #2c2c2c;
+      color: white;
+    }
+  </style>
 </head>
 <body>
 
-<header>
-  <h1>CyberChat Dashboard</h1>
-  <div class="profile" id="profile">
-    <img src="" alt="Profile Pic" id="profilePic" />
-    <span id="username">@username</span>
-  </div>
-</header>
-
-<main>
-  <section id="stats">
-    <div>
-      <h2 id="postsCount">0</h2>
-      <p>Posts</p>
-    </div>
-    <div>
-      <h2 id="totalViews">0</h2>
-      <p>Total Views</p>
-    </div>
-    <div>
-      <h2 id="totalRevenue">$0.00</h2>
-      <p>Revenue</p>
-    </div>
-  </section>
-
-  <section id="posts"></section>
-</main>
-
-<!-- Edit Modal -->
-<div id="editModal">
-  <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="editModalTitle">
-    <h2 id="editModalTitle">Edit Post</h2>
-    <label for="editTitle">Title</label>
-    <input type="text" id="editTitle" maxlength="100" required />
-    <label for="editDesc">Description</label>
-    <textarea id="editDesc" maxlength="1000"></textarea>
-    <div class="checkbox-wrapper">
-      <input type="checkbox" id="editMonetize" />
-      <label for="editMonetize">Monetize Now</label>
-    </div>
-    <div class="modal-actions">
-      <button class="cancel-btn" id="cancelEditBtn">Cancel</button>
-      <button id="saveEditBtn">Save Changes</button>
+  <div class="header">
+    <h1>Dashboard</h1>
+    <div class="profile">
+      <img id="profilePic" src="fallback.jpg" alt="Profile"/>
+      <span id="username">@username</span>
     </div>
   </div>
-</div>
 
-<script type="module">
-// Firebase imports
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-import {
-  getDatabase,
-  ref,
-  onValue,
-  update,
-  remove,
-  get,
-  child,
-} from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
-import {
-  getAuth,
-  onAuthStateChanged,
-} from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+  <div class="stats">
+    <div class="stat-box">Posts: <span id="postCount">0</span></div>
+    <div class="stat-box">Views: <span id="totalViews">0</span></div>
+    <div class="stat-box">Revenue: $<span id="revenue">0.00</span></div>
+  </div>
 
-// Your Firebase config
-const firebaseConfig = {
-  apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
-  authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
-  databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
-  projectId: "itzhoyoo-f9f7e",
-  storageBucket: "itzhoyoo-f9f7e.filestorage.app",
-  messagingSenderId: "1094792075584",
-  appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
-  measurementId: "G-LLT6F9WRKH"
-};
+  <div class="posts" id="postContainer"></div>
 
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-const auth = getAuth(app);
+  <!-- Edit Modal -->
+  <div class="modal" id="editModal">
+    <div class="modal-content">
+      <h3>Edit Post</h3>
+      <input type="text" id="editTitle" placeholder="Title"/>
+      <textarea id="editDesc" placeholder="Description" rows="4"></textarea>
+      <label>
+        Monetization:
+        <input type="checkbox" id="editMonetize"/>
+      </label>
+      <button onclick="savePostEdits()">Save</button>
+    </div>
+  </div>
 
-let currentUser = null;
-let allPosts = []; // local cache of posts [{key, source, ...}]
-let currentEditPost = null;
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+    import {
+      getDatabase, ref, onValue, update, remove
+    } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+    import {
+      getAuth, onAuthStateChanged
+    } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
 
-// DOM elements
-const postsCountEl = document.getElementById("postsCount");
-const totalViewsEl = document.getElementById("totalViews");
-const totalRevenueEl = document.getElementById("totalRevenue");
-const postsSection = document.getElementById("posts");
-const profilePicEl = document.getElementById("profilePic");
-const usernameEl = document.getElementById("username");
+    const firebaseConfig = {
+      apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
+      authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
+      databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
+      projectId: "itzhoyoo-f9f7e",
+      storageBucket: "itzhoyoo-f9f7e.filestorage.app",
+      messagingSenderId: "1094792075584",
+      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5"
+    };
 
-const editModal = document.getElementById("editModal");
-const editTitleInput = document.getElementById("editTitle");
-const editDescInput = document.getElementById("editDesc");
-const editMonetizeCheckbox = document.getElementById("editMonetize");
-const cancelEditBtn = document.getElementById("cancelEditBtn");
-const saveEditBtn = document.getElementById("saveEditBtn");
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const auth = getAuth();
 
-function cachePosts(posts) {
-  localStorage.setItem("dashboard_posts", JSON.stringify(posts));
-}
-function loadCachedPosts() {
-  try {
-    const cached = localStorage.getItem("dashboard_posts");
-    if (!cached) return [];
-    return JSON.parse(cached);
-  } catch {
-    return [];
-  }
-}
+    let allPosts = [];
+    let currentEdit = null;
 
-function renderProfile(user) {
-  // fallback profile pic if none
-  profilePicEl.src = user.photoURL || "https://i.pravatar.cc/150?img=12";
-  usernameEl.textContent = user.displayName ? `@${user.displayName}` : `@user${user.uid.slice(0,5)}`;
-}
+    onAuthStateChanged(auth, user => {
+      if (!user) return alert("Login required");
 
-// Format currency
-function formatCurrency(num) {
-  return `$${num.toFixed(2)}`;
-}
+      document.getElementById("profilePic").src = user.photoURL || "fallback.jpg";
+      document.getElementById("username").textContent = "@" + (user.displayName || user.email.split("@")[0]);
 
-// Calculate CPM based on YouTube-style logic:
-// CPM = base $0.10 per image + $0.01 per title letter + $0.01 per 10 letters description
-function calculateCPM(post) {
-  const imagesCount = Array.isArray(post.images) ? post.images.length : 0;
-  const titleLen = post.title ? post.title.length : 0;
-  const descLen = post.description ? post.description.length : 0;
+      const postPaths = ['post', 'posts'];
 
-  let cpm = 0.10 * imagesCount; // $0.10 per image
-  cpm += 0.01 * titleLen;       // $0.01 per title letter
-  cpm += 0.01 * (descLen / 10); // $0.01 per 10 letters in description
+      let loaded = 0;
+      postPaths.forEach(path => {
+        const userPostRef = ref(db, `/${path}`);
+        onValue(userPostRef, snapshot => {
+          const data = snapshot.val() || {};
+          const userPosts = Object.entries(data).filter(([_, v]) => v.uid === user.uid)
+            .map(([k, v]) => ({ ...v, key: k, source: path }));
 
-  // Clamp CPM between 0.10 and 5.00 (YouTube style max)
-  return Math.min(Math.max(cpm, 0.10), 5.00);
-}
-
-// Render the posts on the dashboard
-function renderPosts(posts) {
-  postsSection.innerHTML = "";
-  posts.forEach(({ key, title, description, images, views = 0, revenue = 0, monetize = "off" }) => {
-    const cpm = calculateCPM({ title, description, images });
-
-    const postCard = document.createElement("article");
-    postCard.className = "post-card";
-
-    const imgSrc = images && images.length > 0 ? images[0] : "";
-    const postImg = document.createElement("img");
-    postImg.className = "post-image";
-    postImg.src = imgSrc || "https://via.placeholder.com/150x100?text=No+Image";
-    postImg.alt = title || "Post image";
-
-    const contentDiv = document.createElement("div");
-    contentDiv.className = "post-content";
-
-    const headerDiv = document.createElement("div");
-    headerDiv.className = "post-header";
-
-    const postTitle = document.createElement("h3");
-    postTitle.className = "post-title";
-    postTitle.textContent = title || "Untitled Post";
-
-    headerDiv.appendChild(postTitle);
-
-    contentDiv.appendChild(headerDiv);
-
-    const descP = document.createElement("p");
-    descP.className = "post-description";
-    descP.textContent = description || "No description";
-
-    contentDiv.appendChild(descP);
-
-    const footerDiv = document.createElement("div");
-    footerDiv.className = "post-footer";
-
-    // Views display
-    const viewsSpan = document.createElement("span");
-    viewsSpan.textContent = `👁️ ${views}`;
-
-    // Revenue display with icon and color
-    const revenueSpan = document.createElement("span");
-    revenueSpan.className = "revenue";
-    const revenueIcon = document.createElement("span");
-    revenueIcon.className = "icon green";
-    revenueIcon.textContent = "💰";
-    revenueSpan.appendChild(revenueIcon);
-    revenueSpan.appendChild(document.createTextNode(` ${formatCurrency(revenue)}`));
-
-    // CPM display (show always)
-    const cpmSpan = document.createElement("span");
-    cpmSpan.style.fontWeight = "600";
-    cpmSpan.style.color = "#81c784";
-    cpmSpan.textContent = `CPM Est: ${formatCurrency(cpm)}`;
-
-    footerDiv.appendChild(viewsSpan);
-    footerDiv.appendChild(revenueSpan);
-    footerDiv.appendChild(cpmSpan);
-
-    contentDiv.appendChild(footerDiv);
-
-    postCard.appendChild(postImg);
-    postCard.appendChild(contentDiv);
-
-    // Actions (Edit, Delete)
-    const actionsDiv = document.createElement("div");
-    actionsDiv.className = "post-actions";
-
-    const editBtn = document.createElement("button");
-    editBtn.textContent = "Edit";
-    editBtn.onclick = () => openEditModal(key);
-
-    const deleteBtn = document.createElement("button");
-    deleteBtn.textContent = "Delete";
-    deleteBtn.onclick = () => deletePost(key);
-
-    actionsDiv.appendChild(editBtn);
-    actionsDiv.appendChild(deleteBtn);
-
-    postCard.appendChild(actionsDiv);
-
-    postsSection.appendChild(postCard);
-  });
-}
-
-// Open edit modal with data loaded
-function openEditModal(postKey) {
-  currentEditPost = allPosts.find(p => p.key === postKey);
-  if (!currentEditPost) return alert("Post not found!");
-
-  editTitleInput.value = currentEditPost.title || "";
-  editDescInput.value = currentEditPost.description || "";
-  editMonetizeCheckbox.checked = currentEditPost.monetize === "on";
-
-  editModal.classList.add("show");
-  editTitleInput.focus();
-}
-
-// Close edit modal
-function closeEditModal() {
-  editModal.classList.remove("show");
-  currentEditPost = null;
-}
-
-// Save edited post changes
-async function saveEditChanges() {
-  if (!currentEditPost) return;
-
-  const newTitle = editTitleInput.value.trim();
-  if (newTitle.length === 0) return alert("Title is required!");
-
-  const newDesc = editDescInput.value.trim();
-  if (newDesc.length > 1000) return alert("Description too long!");
-
-  const newMonetize = editMonetizeCheckbox.checked ? "on" : "off";
-
-  try {
-    await update(ref(db, `/post/${currentEditPost.key}`), {
-      title: newTitle,
-      description: newDesc,
-      monetize: newMonetize,
+          allPosts = allPosts.filter(p => p.source !== path).concat(userPosts);
+          localStorage.setItem("myPosts", JSON.stringify(allPosts));
+          updateStatsAndRender();
+        });
+      });
     });
 
-    // Update local cache & UI
-    currentEditPost.title = newTitle;
-    currentEditPost.description = newDesc;
-    currentEditPost.monetize = newMonetize;
+    function updateStatsAndRender() {
+      const postContainer = document.getElementById("postContainer");
+      postContainer.innerHTML = "";
 
-    cachePosts(allPosts);
-    renderPosts(allPosts);
-    closeEditModal();
-  } catch (e) {
-    alert("Failed to save changes: " + e.message);
-  }
-}
+      let views = 0, revenue = 0;
 
-// Delete post with confirmation
-async function deletePost(postKey) {
-  if (!confirm("Are you sure you want to delete this post?")) return;
+      allPosts.forEach(post => {
+        views += post.views || 0;
+        revenue += post.revenue || 0;
 
-  try {
-    await remove(ref(db, `/post/${postKey}`));
-    allPosts = allPosts.filter(p => p.key !== postKey);
-    cachePosts(allPosts);
-    renderPosts(allPosts);
-  } catch (e) {
-    alert("Failed to delete post: " + e.message);
-  }
-}
+        const card = document.createElement("div");
+        card.className = "post-card";
 
-// Load posts from Firebase once user is authenticated
-function loadPosts() {
-  if (!currentUser) return;
+        card.innerHTML = `
+          <strong>${post.title || "Untitled"}</strong>
+          <p>${post.description || ""}</p>
+          ${post.image ? `<img src="${post.image}" />` : ""}
+          <div class="post-actions">
+            <span>${post.views || 0} views</span>
+            <span style="color: ${post.monetized ? 'limegreen' : 'red'};">
+              $${(post.revenue || 0).toFixed(2)}
+            </span>
+            <div>
+              <button onclick='openEdit(${JSON.stringify(post).replace(/'/g, "\\'")})'>Edit</button>
+              <button onclick='deletePost("${post.source}", "${post.key}")'>Delete</button>
+            </div>
+          </div>
+        `;
+        postContainer.appendChild(card);
+      });
 
-  const postsRef = ref(db, "/post");
-  onValue(postsRef, (snapshot) => {
-    const postsData = snapshot.val() || {};
-    allPosts = [];
-
-    let totalViews = 0;
-    let totalRevenue = 0;
-    let postsCount = 0;
-
-    for (const [key, post] of Object.entries(postsData)) {
-      // Only show posts belonging to current user
-      if (post.uid !== currentUser.uid) continue;
-
-      allPosts.push({ key, ...post });
-      postsCount++;
-      totalViews += post.views || 0;
-      totalRevenue += post.revenue || 0;
+      document.getElementById("postCount").textContent = allPosts.length;
+      document.getElementById("totalViews").textContent = views;
+      document.getElementById("revenue").textContent = revenue.toFixed(2);
     }
 
-    cachePosts(allPosts);
-    postsCountEl.textContent = postsCount;
-    totalViewsEl.textContent = totalViews;
-    totalRevenueEl.textContent = formatCurrency(totalRevenue);
+    function openEdit(post) {
+      currentEdit = post;
+      document.getElementById("editTitle").value = post.title || "";
+      document.getElementById("editDesc").value = post.description || "";
+      document.getElementById("editMonetize").checked = post.monetized || false;
+      document.getElementById("editModal").style.display = "flex";
+    }
 
-    renderPosts(allPosts);
-  });
-}
+    window.savePostEdits = () => {
+      const newTitle = document.getElementById("editTitle").value;
+      const newDesc = document.getElementById("editDesc").value;
+      const monetize = document.getElementById("editMonetize").checked;
 
-// Load user profile data from Firebase Auth
-function loadUserProfile(user) {
-  if (!user) return;
+      const updates = {
+        title: newTitle,
+        description: newDesc,
+        monetized: monetize
+      };
 
-  renderProfile(user);
-  currentUser = user;
-  loadPosts();
-}
+      update(ref(db, `/${currentEdit.source}/${currentEdit.key}`), updates);
+      document.getElementById("editModal").style.display = "none";
+    };
 
-// Auth state observer
-onAuthStateChanged(auth, (user) => {
-  if (user) {
-    loadUserProfile(user);
-  } else {
-    // Redirect to login or show guest message
-    alert("Please log in to access your dashboard.");
-    // You can replace this with window.location = '/login.html';
-  }
-});
+    window.deletePost = (source, key) => {
+      if (confirm("Delete this post?")) {
+        remove(ref(db, `/${source}/${key}`));
+      }
+    };
 
-// Modal event handlers
-cancelEditBtn.addEventListener("click", closeEditModal);
-saveEditBtn.addEventListener("click", saveEditChanges);
-
-// Close modal on outside click
-editModal.addEventListener("click", (e) => {
-  if (e.target === editModal) closeEditModal();
-});
-</script>
+    window.onclick = e => {
+      if (e.target.id === "editModal") {
+        document.getElementById("editModal").style.display = "none";
+      }
+    };
+  </script>
 </body>
 </html>
