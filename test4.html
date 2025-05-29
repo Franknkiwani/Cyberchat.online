@@ -314,7 +314,7 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <script>
-    // Your Firebase config
+    // Firebase config
     const firebaseConfig = {
       apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
       authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
@@ -355,76 +355,87 @@
       perfBarFill.style.width = clampedCTR + '%';
       perfBarText.textContent = clampedCTR.toFixed(1) + '%';
 
-      // Update or create Chart.js chart
+      // Chart update or no-data display
       const ctx = document.getElementById('viewsClicksEarningsChart').getContext('2d');
 
-      if (statsChart) {
-        statsChart.data.datasets[0].data = [views, clicks, earnings];
-        statsChart.update();
+      const noData = views === 0 && clicks === 0 && earnings === 0;
+
+      if (noData) {
+        // Destroy existing chart
+        if (statsChart) {
+          statsChart.destroy();
+          statsChart = null;
+        }
+        // Clear canvas and show no data text
+        ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+        ctx.font = '18px Arial';
+        ctx.fillStyle = '#9ca3af';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('No data available for today', ctx.canvas.width / 2, ctx.canvas.height / 2);
       } else {
-        statsChart = new Chart(ctx, {
-          type: 'bar',
-          data: {
-            labels: ['Views', 'Clicks', 'Earnings ($)'],
-            datasets: [{
-              label: 'Today',
-              data: [views, clicks, earnings],
-              backgroundColor: ['#22c55e', '#16a34a', '#4ade80'],
-              borderRadius: 8,
-              borderSkipped: false,
-            }]
-          },
-          options: {
-            responsive: true,
-            plugins: {
-              legend: { display: false },
-              tooltip: {
-                callbacks: {
-                  label: function(ctx) {
-                    return ctx.dataset.label + ': ' + (ctx.dataIndex === 2 ? '$' + ctx.parsed.y : ctx.parsed.y);
+        // Show or update chart
+        if (statsChart) {
+          statsChart.data.datasets[0].data = [views, clicks, earnings];
+          statsChart.update();
+        } else {
+          statsChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+              labels: ['Views', 'Clicks', 'Earnings ($)'],
+              datasets: [{
+                label: 'Today',
+                data: [views, clicks, earnings],
+                backgroundColor: ['#22c55e', '#16a34a', '#4ade80'],
+                borderRadius: 8,
+                borderSkipped: false,
+              }]
+            },
+            options: {
+              responsive: true,
+              plugins: {
+                legend: { display: false },
+                tooltip: {
+                  callbacks: {
+                    label: function(ctx) {
+                      return ctx.dataset.label + ': ' + (ctx.dataIndex === 2 ? '$' + ctx.parsed.y : ctx.parsed.y);
+                    }
                   }
                 }
-              }
-            },
-            scales: {
-              y: {
-                beginAtZero: true,
-                ticks: { color: '#9ca3af' },
-                grid: { color: '#1f1f1f' }
               },
-              x: {
-                ticks: { color: '#9ca3af' },
-                grid: { display: false }
+              scales: {
+                y: {
+                  beginAtZero: true,
+                  ticks: { color: '#9ca3af' },
+                  grid: { color: '#1f1f1f' }
+                },
+                x: {
+                  ticks: { color: '#9ca3af' },
+                  grid: { display: false }
+                }
               }
             }
-          }
-        });
+          });
+        }
       }
     }
 
     // Listen for auth state changes
     auth.onAuthStateChanged(user => {
       if (user) {
-        // Get user stats from database
         const statsRef = db.ref(`users/${user.uid}/stats`);
         statsRef.on('value', snapshot => {
           const userStats = snapshot.val() || {};
           updateStatsUI(userStats);
 
-          // Update balance button too if you want
+          // Update balance btn
           if (userStats.earnings !== undefined) {
             document.querySelector('.balance-btn').textContent = `$${userStats.earnings.toFixed(3)}`;
           }
         });
-
-        // Update profile pic dynamically if you want
-        // e.g., if you store profile pic URL in user profile, replace src here
-        // document.querySelector('.profile-pic').src = user.photoURL || 'default-pic-url';
       } else {
-        // No user logged in — reset stats UI
         updateStatsUI({ views: 0, clicks: 0, earnings: 0 });
         document.querySelector('.balance-btn').textContent = '$0.000';
-        // Optional: prompt login or redirect
         console.log('No user logged in');
       }
     });
