@@ -338,35 +338,27 @@
       const clicks = stats.clicks || 0;
       const earnings = stats.earnings || 0;
 
-      // Calculate CTR
       const ctr = views > 0 ? (clicks / views) * 100 : 0;
 
-      // Update stat boxes
       document.getElementById('statViews').textContent = views.toLocaleString();
       document.getElementById('statClicks').textContent = clicks.toLocaleString();
       document.getElementById('statEarnings').textContent = `$${earnings.toFixed(2)}`;
       document.getElementById('statCTR').textContent = `${ctr.toFixed(1)}%`;
 
-      // Update performance bar
       const perfBarFill = document.getElementById('performanceBarFill');
       const perfBarText = document.getElementById('performanceBarText');
       const clampedCTR = Math.min(100, ctr);
-
       perfBarFill.style.width = clampedCTR + '%';
       perfBarText.textContent = clampedCTR.toFixed(1) + '%';
 
-      // Chart update or no-data display
       const ctx = document.getElementById('viewsClicksEarningsChart').getContext('2d');
-
       const noData = views === 0 && clicks === 0 && earnings === 0;
 
       if (noData) {
-        // Destroy existing chart
         if (statsChart) {
           statsChart.destroy();
           statsChart = null;
         }
-        // Clear canvas and show no data text
         ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
         ctx.font = '18px Arial';
         ctx.fillStyle = '#9ca3af';
@@ -374,7 +366,6 @@
         ctx.textBaseline = 'middle';
         ctx.fillText('No data available for today', ctx.canvas.width / 2, ctx.canvas.height / 2);
       } else {
-        // Show or update chart
         if (statsChart) {
           statsChart.data.datasets[0].data = [views, clicks, earnings];
           statsChart.update();
@@ -420,15 +411,12 @@
       }
     }
 
-    // Listen for auth state changes
     auth.onAuthStateChanged(user => {
       if (user) {
         const statsRef = db.ref(`users/${user.uid}/stats`);
         statsRef.on('value', snapshot => {
           const userStats = snapshot.val() || {};
           updateStatsUI(userStats);
-
-          // Update balance btn
           if (userStats.earnings !== undefined) {
             document.querySelector('.balance-btn').textContent = `$${userStats.earnings.toFixed(3)}`;
           }
@@ -442,3 +430,4 @@
   </script>
 </body>
 </html>
+
