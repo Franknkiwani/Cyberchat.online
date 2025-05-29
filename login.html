@@ -1,374 +1,193 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" >
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CYBERCHAT ADS</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script type="module">
-    // Firebase Initialization
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-    import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CYBERCHAT - Create Post</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    body {
+      background: #0f172a;
+      font-family: 'Inter', sans-serif;
+      color: white;
+    }
+    .glass {
+      backdrop-filter: blur(12px);
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    input, textarea {
+      background: rgba(255,255,255,0.1);
+      border: none;
+      padding: 0.75rem;
+      border-radius: 0.5rem;
+      color: white;
+    }
+    input::placeholder, textarea::placeholder {
+      color: rgba(255,255,255,0.6);
+    }
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center p-6">
 
+  <header class="glass w-full max-w-xl rounded-2xl p-4 mb-8 flex items-center justify-between">
+    <div class="flex items-center gap-2">
+      <i data-lucide="message-square" class="w-6 h-6 text-cyan-400"></i>
+      <h1 class="text-xl font-bold">Create Post</h1>
+    </div>
+    <img id="profilePic" src="https://via.placeholder.com/40" alt="Profile" class="rounded-full w-10 h-10 object-cover" />
+  </header>
+
+  <form id="postForm" class="glass w-full max-w-xl p-6 rounded-3xl flex flex-col gap-6" autocomplete="off">
+    <input type="text" id="title" placeholder="Post Title" maxlength="100" required />
+    <textarea id="description" placeholder="What's on your mind, Boss?" rows="5" maxlength="1000" required></textarea>
+
+    <label class="flex flex-col gap-1 cursor-pointer">
+      <span>Upload Image <span class="text-red-500">*</span></span>
+      <input type="file" id="imageInput" accept="image/*" required />
+    </label>
+
+    <button type="submit" class="bg-cyan-500 hover:bg-cyan-600 transition rounded-xl py-3 font-semibold" id="submitBtn">
+      Post This Magic
+    </button>
+  </form>
+
+  <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js"></script>
+
+  <script>
     // Firebase config
     const firebaseConfig = {
       apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
       authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
       databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
       projectId: "itzhoyoo-f9f7e",
-      storageBucket: "itzhoyoo-f9f7e.firebasestorage.app",
+      storageBucket: "itzhoyoo-f9f7e.filestorage.app",
       messagingSenderId: "1094792075584",
       appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
       measurementId: "G-LLT6F9WRKH"
     };
 
-    // Initialize Firebase
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
+    import { getDatabase, ref, push, set, serverTimestamp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+
     const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
     const auth = getAuth(app);
+    const db = getDatabase(app);
 
-    let user = null;
-    let userAdData = null;
+    const profilePicEl = document.getElementById("profilePic");
+    const postForm = document.getElementById("postForm");
+    const titleInput = document.getElementById("title");
+    const descInput = document.getElementById("description");
+    const imageInput = document.getElementById("imageInput");
+    const submitBtn = document.getElementById("submitBtn");
 
-    // Check if the user is logged in
-    onAuthStateChanged(auth, (currentUser) => {
-      if (currentUser) {
-        user = currentUser;
-        loadAdData(currentUser.uid);
+    let currentUser = null;
+    let userData = null;
+
+    // Imgur config
+    const IMGUR_CLIENT_ID = "891e5bb4aa94282";
+
+    // Show logged in user profile pic & name
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        currentUser = user;
+        // Load user data from Firebase
+        const userRef = ref(db, `users/${user.uid}`);
+        const snapshot = await new Promise(res => {
+          const unsubscribe = onValue(userRef, snap => {
+            res(snap);
+            unsubscribe();
+          });
+        });
+
+        userData = snapshot.exists() ? snapshot.val() : null;
+
+        if (userData?.profilePic) profilePicEl.src = userData.profilePic;
+        else profilePicEl.src = "https://via.placeholder.com/40?text=User";
+
       } else {
-        setTimeout(() => {
-          alert("Redirecting to login page. Please wait...");
-          window.location.href = "login.html";
-        }, 3000);
+        alert("Please log in first");
+        // Redirect or show login
+        location.href = "/login.html"; // or wherever
       }
     });
 
-    // Load ad views and clicks from Firebase
-    function loadAdData(userId) {
-      const adRef = ref(db, 'users/' + userId + '/ads');
-      get(adRef).then((snapshot) => {
-        if (snapshot.exists()) {
-          userAdData = snapshot.val();
-          updateStats(userAdData.views, userAdData.clicks);
-          updateChart(userAdData.views, userAdData.clicks);
-          showMostRecentAd(userAdData);
-        }
-      });
-    }
+    // Upload image to Imgur
+    async function uploadToImgur(file) {
+      const formData = new FormData();
+      formData.append('image', file);
 
-    // Update stats on the page
-    function updateStats(views, clicks) {
-      document.getElementById('adViews').innerText = views || 0;
-      document.getElementById('adClicks').innerText = clicks || 0;
-    }
-
-    // Update the chart with new data
-    function updateChart(views, clicks) {
-      const ctx = document.getElementById('adsChart').getContext('2d');
-      const adsChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels: ['12 AM', '3 AM', '6 AM', '9 AM', '12 PM', '3 PM', '6 PM', '9 PM'],
-          datasets: [
-            {
-              label: 'Views',
-              data: [views, views, views, views, views, views, views, views],
-              borderColor: '#0ff',
-              borderWidth: 2,
-              fill: false,
-              pointBackgroundColor: '#0ff',
-              tension: 0.4
-            },
-            {
-              label: 'Clicks',
-              data: [clicks, clicks, clicks, clicks, clicks, clicks, clicks, clicks],
-              borderColor: '#00ff00',
-              borderWidth: 2,
-              fill: false,
-              pointBackgroundColor: '#00ff00',
-              tension: 0.4
-            }
-          ]
+      const res = await fetch("https://api.imgur.com/3/image", {
+        method: "POST",
+        headers: {
+          Authorization: "Client-ID " + IMGUR_CLIENT_ID,
         },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          scales: {
-            x: {
-              grid: {
-                color: 'rgba(255, 255, 255, 0.1)'
-              },
-              ticks: {
-                color: '#fff'
-              }
-            },
-            y: {
-              grid: {
-                color: 'rgba(255, 255, 255, 0.1)'
-              },
-              ticks: {
-                color: '#fff'
-              }
-            }
-          },
-          plugins: {
-            legend: {
-              labels: {
-                color: '#fff'
-              }
-            }
-          }
-        }
+        body: formData,
       });
-    }
-
-    // Show most recent ad or placeholder if no ad is found
-    function showMostRecentAd(adData) {
-      const adContainer = document.getElementById('recentAd');
-      if (adData && adData.recentAd) {
-        adContainer.innerHTML = `
-          <div><strong>Most Recent Ad:</strong></div>
-          <div>${adData.recentAd}</div>
-        `;
+      const data = await res.json();
+      if (data.success) {
+        return data.data.link;
       } else {
-        adContainer.innerHTML = `
-          <div><strong>Your Ads appear here:</strong></div>
-          <div>Placeholder: Your ads will be shown here.</div>
-        `;
+        throw new Error("Imgur upload failed");
       }
     }
 
-    // Redirect to ad campaign page
-    function redirectToAdCampaign() {
-      document.getElementById('loadingOverlay').style.display = 'flex';
-      setTimeout(() => {
-        window.location.href = 'adscampaign.html';
-      }, 3000); // Show loading for 3 seconds
-    }
+    postForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      if (!currentUser) return alert("You must be logged in");
+
+      if (!imageInput.files[0]) {
+        alert("Please select an image");
+        return;
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = "Uploading...";
+
+      try {
+        // Upload image first
+        const imgUrl = await uploadToImgur(imageInput.files[0]);
+
+        // Prepare post data
+        const postData = {
+          userId: currentUser.uid,
+          username: userData?.username || "Unknown",
+          profilePic: userData?.profilePic || "",
+          title: titleInput.value.trim(),
+          description: descInput.value.trim(),
+          imageUrl: imgUrl,
+          likesCount: 0,
+          commentsCount: 0,
+          createdAt: Date.now()
+        };
+
+        // Save post to Firebase Realtime Database
+        const postsRef = ref(db, "posts");
+        const newPostRef = push(postsRef);
+        await set(newPostRef, postData);
+
+        alert("Post created successfully!");
+
+        // Reset form
+        postForm.reset();
+
+      } catch (err) {
+        alert("Error creating post: " + err.message);
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = "Post This Magic";
+      }
+    });
+
+    lucide.createIcons();
   </script>
-  <style>
-    :root {
-      --glass-bg: rgba(10, 10, 10, 0.6);
-      --border-glow: #5d5d5d;
-      --primary: #e0e0e0;
-      --accent: #0ff;
-      --green-glow: #00ff00;
-      --neon-glow: #0ff;
-    }
-
-    body {
-      font-family: 'Arial', sans-serif;
-      margin: 0;
-      padding: 0;
-      background-color: #121212;
-    }
-
-    header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 12px 20px;
-      background: var(--glass-bg);
-      border-bottom: 2px solid var(--border-glow);
-      backdrop-filter: blur(12px);
-      box-shadow: 0 4px 10px rgba(0, 255, 255, 0.2);
-    }
-
-    .app-name {
-      font-size: 18px;
-      color: var(--primary);
-      font-weight: bold;
-      text-align: left;
-    }
-
-    .profile-container {
-      display: flex;
-      align-items: center;
-      color: var(--primary);
-      cursor: pointer;
-      position: relative;
-    }
-
-    .profile-container img {
-      width: 30px;
-      height: 30px;
-      border-radius: 50%;
-      margin-right: 10px;
-      border: 2px solid var(--accent);
-      transition: transform 0.2s ease-in-out;
-    }
-
-    .profile-container:hover img {
-      transform: scale(1.1);
-    }
-
-    .profile-text {
-      font-size: 14px;
-    }
-
-    /* Stats Container */
-    .stats-container {
-      display: flex;
-      justify-content: center;
-      gap: 15px;
-      padding: 15px;
-      margin: 20px auto;
-      max-width: 600px;
-    }
-
-    .stat-box {
-      background: var(--glass-bg);
-      border: 2px solid var(--border-glow);
-      padding: 15px;
-      border-radius: 10px;
-      text-align: center;
-      flex: 1;
-      color: var(--primary);
-      box-shadow: 0 4px 12px rgba(0, 255, 255, 0.2);
-    }
-
-    .stat-number {
-      font-size: 22px;
-      font-weight: bold;
-      color: var(--accent);
-    }
-
-    .stat-title {
-      font-size: 12px;
-      margin-top: 6px;
-      text-transform: uppercase;
-      opacity: 0.8;
-    }
-
-    /* Chart Container */
-    .chart-container {
-      background: var(--glass-bg);
-      border: 2px solid var(--border-glow);
-      border-radius: 12px;
-      padding: 15px;
-      max-width: 600px;
-      margin: 20px auto;
-      box-shadow: 0 4px 10px rgba(0, 255, 255, 0.2);
-    }
-
-    .chart-title {
-      font-size: 16px;
-      color: var(--primary);
-      text-align: center;
-      margin-bottom: 10px;
-    }
-
-    /* Loading Overlay */
-    #loadingOverlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background-color: rgba(0, 0, 0, 0.7);
-      display: none;
-      justify-content: center;
-      align-items: center;
-      z-index: 1000;
-    }
-
-    #loadingOverlay .loading-text {
-      color: #fff;
-      font-size: 20px;
-      text-align: center;
-      animation: fadeInOut 3s ease-in-out infinite;
-    }
-
-    @keyframes fadeInOut {
-      0% { opacity: 0; }
-      50% { opacity: 1; }
-      100% { opacity: 0; }
-    }
-
-    /* Add Campaign Button */
-    .add-campaign-btn {
-      position: fixed;
-      left: 20px;
-      bottom: 20px;
-      background: var(--accent);
-      width: 60px;
-      height: 60px;
-      border-radius: 50%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      color: white;
-      font-size: 30px;
-      cursor: pointer;
-      box-shadow: 0 4px 10px rgba(0, 255, 255, 0.5);
-      border: none;
-      transition: transform 0.3s ease;
-    }
-
-    .add-campaign-btn:hover {
-      transform: scale(1.1);
-      background-color: #ff007f;
-    }
-
-    /* No Data Text */
-    .no-data {
-      font-size: 14px;
-      color: #ffb3b3;
-      text-align: center;
-      font-style: italic;
-    }
-
-    .recent-ad-container {
-      text-align: center;
-      margin-top: 15px;
-      font-size: 14px;
-      color: var(--primary);
-    }
-
-    .recent-ad-container div {
-      margin-top: 5px;
-    }
-  </style>
-</head>
-<body>
-  <header>
-    <div class="app-name">CYBERCHAT ADS</div>
-    <div class="profile-container" onclick="redirectToAdCampaign()">
-      <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT6DpSwBOOEA-qcIvGvtMZ48j7rezGPJ6cSzkMwwRbhfqf3URu8EkZxhJw&s=10" alt="Profile Picture">
-      <div class="profile-text">Your Profile</div>
-    </div>
-  </header>
-
-  <!-- Stats Container -->
-  <div class="stats-container">
-    <div class="stat-box">
-      <div class="stat-number" id="adViews">0</div>
-      <div class="stat-title">Ad Views</div>
-    </div>
-    <div class="stat-box">
-      <div class="stat-number" id="adClicks">0</div>
-      <div class="stat-title">Ad Clicks</div>
-    </div>
-  </div>
-
-  <!-- Chart Container -->
-  <div class="chart-container">
-    <div class="chart-title">Ad Performance</div>
-    <canvas id="adsChart" width="400" height="200"></canvas>
-    <div id="recentAd" class="recent-ad-container">
-      <div><strong>Your Ads appear here:</strong></div>
-      <div>Placeholder: Your ads will be shown here.</div>
-    </div>
-  </div>
-
-  <!-- Add Campaign Button -->
-  <button class="add-campaign-btn" onclick="redirectToAdCampaign()">+</button>
-
-  <!-- Loading Overlay -->
-  <div id="loadingOverlay">
-    <div class="loading-text">Redirecting to ad campaign...</div>
-  </div>
-
 </body>
 </html>
