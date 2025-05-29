@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CyberPost</title>
+  <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-database-compat.js"></script>
+  <style>
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'San Francisco', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background: #f9f9f9;
+      color: #111;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: auto;
+      padding: 20px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+      padding: 20px;
+    }
+
+    img {
+      max-width: 100%;
+      border-radius: 12px;
+      margin-bottom: 12px;
+    }
+
+    h2 {
+      margin-top: 0;
+    }
+
+    .tags {
+      color: #888;
+      font-size: 0.9em;
+    }
+
+    .error {
+      text-align: center;
+      padding: 60px 20px;
+      color: #666;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div id="post" class="card"></div>
+    <div id="error" class="error" style="display:none;">Post not found.</div>
+  </div>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
+      authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
+      databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
+      projectId: "itzhoyoo-f9f7e",
+      storageBucket: "itzhoyoo-f9f7e.filestorage.app",
+      messagingSenderId: "1094792075584",
+      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
+      measurementId: "G-LLT6F9WRKH"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    const postContainer = document.getElementById('post');
+    const errorContainer = document.getElementById('error');
+
+    const postId = window.location.pathname.split('/').pop();
+
+    if (postId) {
+      db.ref(`/post/${postId}`).once('value')
+        .then(snapshot => {
+          const post = snapshot.val();
+          if (post) {
+            postContainer.innerHTML = `
+              ${post.image1 ? `<img src="${post.image1}" alt="Post Image">` : ''}
+              <h2>${post.title || 'Untitled Post'}</h2>
+              <p>${post.description || ''}</p>
+              <p class="tags">${(post.tags || []).map(tag => '#' + tag).join(' ')}</p>
+            `;
+          } else {
+            errorContainer.style.display = 'block';
+          }
+        })
+        .catch(err => {
+          console.error(err);
+          errorContainer.textContent = 'Error loading post.';
+          errorContainer.style.display = 'block';
+        });
+    } else {
+      errorContainer.textContent = 'Invalid post URL.';
+      errorContainer.style.display = 'block';
+    }
+  </script>
+</body>
+</html>
