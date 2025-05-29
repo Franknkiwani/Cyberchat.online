@@ -3,387 +3,431 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Revenue & Profile</title>
+  <title>CyberChat — Real Affiliate Stats</title>
+  <meta name="description" content="CyberChat - Affiliate money. Real links, real cash. Your modern affiliate platform." />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle fill='%2322c55e' cx='50' cy='50' r='45'/><text x='50%' y='55%' font-size='50' fill='white' font-family='Segoe UI' font-weight='700' text-anchor='middle' dominant-baseline='middle'>C</text></svg>" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
+    :root {
+      --bg: #0d0d0d;
+      --header-bg: #121212;
+      --text-primary: #f1f1f1;
+      --text-muted: #9ca3af;
+      --green: #22c55e;
+      --green-dark: #16a34a;
+      --green-glow: #4ade80;
+      --font-sans: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
     * {
+      margin: 0;
+      padding: 0;
       box-sizing: border-box;
     }
 
-    html, body {
-      margin: 0;
-      padding: 0;
-      background-color: #0d0d0d;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
-        Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
-      color: #eee;
+    body {
+      background-color: var(--bg);
+      color: var(--text-primary);
+      font-family: var(--font-sans);
       min-height: 100vh;
     }
 
-    body {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 20px 0 40px;
-      gap: 8px;
-    }
-
-    .header {
-      width: 90%;
-      max-width: 900px;
-      height: 70px;
-      background: linear-gradient(145deg, #1c1c1c, #0a0a0a);
-      border-radius: 25px;
-      box-shadow:
-        inset 0 0 10px #111,
-        0 8px 15px rgba(0, 0, 0, 0.6),
-        0 0 0 4px #1a1a1a;
+    header {
+      background-color: var(--header-bg);
+      height: 56px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 20px;
+      padding: 0 24px;
+      border-bottom: 1px solid #1f1f1f;
       position: sticky;
-      top: 20px;
-      z-index: 999;
-      margin-bottom: 20px;
+      top: 0;
+      z-index: 1000;
     }
 
-    .header .title {
-      color: white;
+    .logo-container {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: default;
+    }
+
+    .logo {
+      width: 38px;
+      height: 38px;
+    }
+
+    .logo svg {
+      width: 100%;
+      height: 100%;
+      fill: var(--green);
+      filter: drop-shadow(0 0 2px var(--green));
+      transition: transform 0.3s ease;
+    }
+
+    .logo:hover svg {
+      transform: scale(1.1);
+      filter: drop-shadow(0 0 5px var(--green));
+    }
+
+    .brand-text {
+      display: flex;
+      flex-direction: column;
+      line-height: 1.1;
+    }
+
+    .brand-text .name {
       font-weight: 700;
-      font-size: 1.3rem;
-      letter-spacing: 1.5px;
-      user-select: none;
-      text-transform: uppercase;
+      font-size: 1.2rem;
+      color: var(--text-primary);
+    }
+
+    .brand-text .tagline {
+      font-weight: 400;
+      font-size: 0.6rem;
+      color: var(--text-muted);
+      font-style: italic;
     }
 
     .profile-pic {
-      width: 40px;
-      height: 40px;
+      width: 44px;
+      height: 44px;
       border-radius: 50%;
-      padding: 4px;
-      border: 2px solid #ff2d95;
-      box-shadow: 0 0 8px #ff2d95, 0 0 15px #b30066;
-      overflow: hidden;
-      flex-shrink: 0;
-    }
-
-    .profile-pic img {
-      width: 100%;
-      height: 100%;
-      border-radius: 50%;
+      border: 2.5px solid var(--green);
       object-fit: cover;
-    }
-
-    .revenue-button {
-      width: 140px;
-      background: linear-gradient(145deg, #2b2b2b, #161616);
-      border-radius: 20px;
-      box-shadow: inset 0 2px 5px #444, 0 0 10px 3px rgba(144, 238, 144, 0.7);
-      color: #90ee90;
-      font-weight: 600;
-      font-size: 1rem;
-      text-align: center;
-      padding: 8px 0;
-      user-select: none;
-      cursor: default;
-      margin-left: 5%;
-    }
-
-    .monetize-status {
-      width: 140px;
-      font-weight: 700;
-      font-size: 0.85rem;
-      text-align: right;
-      color: #90ee90;
-      user-select: none;
-      margin-right: 5%;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
-
-    .progress-container {
-      width: 90%;
-      max-width: 900px;
-      margin-top: 30px;
-    }
-
-    .progress-block {
-      margin-bottom: 20px;
-    }
-
-    .progress-title {
-      font-size: 0.9rem;
-      margin-bottom: 5px;
-      color: #ccc;
-    }
-
-    .progress-bar {
-      height: 15px;
-      border-radius: 8px;
-      background-color: #333;
-      overflow: hidden;
-    }
-
-    .progress-fill {
-      height: 100%;
-      background-color: #90ee90;
-      transition: width 0.4s ease;
-    }
-
-    .monetize-button {
-      width: 90%;
-      max-width: 900px;
-      padding: 15px;
-      margin-top: 20px;
-      font-size: 1.2rem;
-      font-weight: 700;
-      text-align: center;
-      border-radius: 15px;
-      cursor: not-allowed;
-      background-color: #555;
-      color: #aaa;
-      border: none;
-      pointer-events: none;
-      transition: background-color 0.3s ease, color 0.3s ease;
-    }
-
-    .monetize-button.active {
-      background-color: #00cc66;
-      color: #fff;
       cursor: pointer;
-      pointer-events: auto;
+      box-shadow: 0 0 6px var(--green);
     }
+
+    .container {
+      padding: 24px;
+    }
+
+    .stat-title {
+      font-size: 1.4rem;
+      font-weight: 600;
+      margin-bottom: 12px;
+      color: var(--text-primary);
+    }
+
+    .chart-container {
+      background-color: #121212;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+      margin-bottom: 28px;
+    }
+
+    canvas {
+      max-width: 100%;
+    }
+
+    .performance-bar-container {
+      background: #1a1a1a;
+      border-radius: 12px;
+      padding: 12px 20px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.4);
+      margin-bottom: 24px;
+    }
+
+    .performance-label {
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+      font-size: 0.95rem;
+      user-select: none;
+    }
+
+    .performance-bar {
+      position: relative;
+      width: 100%;
+      height: 18px;
+      background: #0f0f0f;
+      border-radius: 9px;
+      overflow: hidden;
+      box-shadow: inset 0 0 8px #000;
+    }
+
+    .performance-bar-fill {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 0;
+      background: linear-gradient(90deg, var(--green-glow), var(--green));
+      box-shadow: 0 0 12px var(--green-glow);
+      border-radius: 9px 0 0 9px;
+      transition: width 0.8s ease-in-out;
+    }
+
+    .performance-bar-text {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-primary);
+      font-weight: 700;
+      font-size: 0.9rem;
+      text-shadow: 0 0 6px var(--green-glow);
+      user-select: none;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      margin-top: 24px;
+    }
+
+    .stat-box {
+      background-color: #1a1a1a;
+      border: 1px solid #333;
+      border-radius: 10px;
+      padding: 16px;
+      text-align: center;
+    }
+
+    .stat-box .label {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .stat-box .value {
+      font-size: 1.4rem;
+      font-weight: 600;
+      color: var(--green);
+    }
+
+    @media (max-width: 480px) {
+      header {
+        height: 48px;
+        padding: 0 12px;
+      }
+
+      .brand-text .name {
+        font-size: 1rem;
+      }
+
+      .brand-text .tagline {
+        font-size: 0.5rem;
+      }
+
+      .profile-pic {
+        width: 36px;
+        height: 36px;
+      }
+
+      .logo {
+        width: 28px;
+        height: 28px;
+      }
+    }
+    .balance-btn {
+  background-color: var(--green);
+  color: var(--bg);
+  font-weight: 700;
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  padding: 6px 16px;
+  border: none;
+  border-radius: 20px;
+  cursor: pointer;
+  box-shadow: 0 0 6px var(--green);
+  margin-right: 16px;
+  user-select: none;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.balance-btn:hover {
+  background-color: #1edc57;
+  box-shadow: 0 0 10px #1edc57;
+}
+.balance-btn {
+  margin-right: 4px; /* tighten the gap */
+}
+
+.profile-pic {
+  margin-left: 6px; /* a little space so they don't stick */
+}
   </style>
-</head>
 <body>
-  <div class="header">
-    <div class="title">CYBERCHAT</div>
-    <div class="profile-pic">
-      <img id="profileImg" src="https://i.imgur.com/4ZQZK4z.png" alt="Profile Picture" />
+  <header>
+    <div class="logo-container">
+      <div class="logo">
+        <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+          <path d="M32 4C16 4 4 16 4 32c0 7 3 13 8 18v8l10-8h10c16 0 28-12 28-28S48 4 32 4zM24 28a8 8 0 1 1 16 0 8 8 0 0 1-16 0z"/>
+        </svg>
+      </div>
+      <div class="brand-text">
+        <div class="name">CYBERCHAT</div>
+        <div class="tagline">Real affiliate stats</div>
+      </div>
     </div>
-  </div>
+    <div class="header-right" style="display:flex; align-items:center;">
+      <button class="balance-btn">$0.000</button>
+      <img src="https://i.pravatar.cc/150?img=12" alt="Profile" class="profile-pic" />
+    </div>
+  </header>
 
-  <div style="width:90%; max-width:900px; display:flex; justify-content: space-between; align-items:center; margin-bottom: 10px;">
-    <button class="revenue-button">Revenue $0.000</button>
-    <div id="monetizeStatus" class="monetize-status">...</div>
-  </div>
+  <div class="container">
+    <div class="stat-title">Today's Views, Clicks & Earnings</div>
+    <div class="chart-container">
+      <canvas id="viewsClicksEarningsChart"></canvas>
+    </div>
 
-  <div class="progress-container">
-    <div class="progress-block">
-      <div class="progress-title">Public Posts (10 required)</div>
-      <div class="progress-bar">
-        <div id="postProgress" class="progress-fill" style="width: 0%"></div>
+    <div class="performance-bar-container">
+      <div class="performance-label">Click Through Rate (CTR)</div>
+      <div class="performance-bar" aria-label="Click Through Rate performance bar">
+        <div class="performance-bar-fill" id="performanceBarFill"></div>
+        <div class="performance-bar-text" id="performanceBarText">0%</div>
       </div>
     </div>
 
-    <div class="progress-block">
-      <div class="progress-title">Following Users (100 required)</div>
-      <div class="progress-bar">
-        <div id="followProgress" class="progress-fill" style="width: 0%"></div>
+    <div class="stat-title">Show Stats</div>
+    <div class="stats-grid">
+      <div class="stat-box">
+        <div class="label">Views</div>
+        <div class="value" id="statViews">0</div>
+      </div>
+      <div class="stat-box">
+        <div class="label">Clicks</div>
+        <div class="value" id="statClicks">0</div>
+      </div>
+      <div class="stat-box">
+        <div class="label">Earnings</div>
+        <div class="value" id="statEarnings">$0.00</div>
+      </div>
+      <div class="stat-box">
+        <div class="label">CTR</div>
+        <div class="value" id="statCTR">0%</div>
       </div>
     </div>
-
-    <button id="monetizeNowBtn" class="monetize-button">Monetize Now</button>
   </div>
 
-  <!-- Graph for Revenue Analytics -->
-  <div id="graphContainer" style="display:none;">
-    <canvas id="revenueChart"></canvas>
-  </div>
+  <footer class="sticky-footer"></footer>
 
+  <!-- Firebase and Chart.js scripts -->
+  <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-</body>
 
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-  import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-analytics.js";
-  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
-  import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
+  <script>
+    // Your Firebase config
+    const firebaseConfig = {
+      apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
+      authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
+      databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
+      projectId: "itzhoyoo-f9f7e",
+      storageBucket: "itzhoyoo-f9f7e.filestorage.app",
+      messagingSenderId: "1094792075584",
+      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
+      measurementId: "G-LLT6F9WRKH"
+    };
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
-    authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
-    databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
-    projectId: "itzhoyoo-f9f7e",
-    storageBucket: "itzhoyoo-f9f7e.filestorage.app",
-    messagingSenderId: "1094792075584",
-    appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
-    measurementId: "G-LLT6F9WRKH"
-  };
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.database();
 
-  const app = initializeApp(firebaseConfig);
-  getAnalytics(app);
-  const auth = getAuth();
-  const db = getDatabase();
+    let statsChart = null;
 
-  const profileImg = document.getElementById('profileImg');
-  const revenueBtn = document.querySelector('.revenue-button');
-  const monetizeStatus = document.getElementById('monetizeStatus');
-  const postProgress = document.getElementById('postProgress');
-  const followProgress = document.getElementById('followProgress');
-  const monetizeNowBtn = document.getElementById('monetizeNowBtn');
-  const progressContainer = document.querySelector('.progress-container');
-  const graphContainer = document.getElementById('graphContainer');
+    function updateStatsUI(stats) {
+      const views = stats.views || 0;
+      const clicks = stats.clicks || 0;
+      const earnings = stats.earnings || 0;
 
-  const fallbackUrl = "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT-0NfFQ2gA6VYmRoeTPvEIL4fFtf-fI0ZMQXRkFs4zV91Tu_p9-t5uXZmY&s=10";
+      // Calculate CTR
+      const ctr = views > 0 ? (clicks / views) * 100 : 0;
 
-  let cachedPosts = 0, cachedFollows = 0;
-  let monetizeStatusValue = null;
-  let chartInstance = null;
+      // Update stat boxes
+      document.getElementById('statViews').textContent = views.toLocaleString();
+      document.getElementById('statClicks').textContent = clicks.toLocaleString();
+      document.getElementById('statEarnings').textContent = `$${earnings.toFixed(2)}`;
+      document.getElementById('statCTR').textContent = `${ctr.toFixed(1)}%`;
 
-  onAuthStateChanged(auth, (user) => {
-    if (!user) return;
-    const uid = user.uid;
+      // Update performance bar
+      const perfBarFill = document.getElementById('performanceBarFill');
+      const perfBarText = document.getElementById('performanceBarText');
+      const clampedCTR = Math.min(100, ctr);
 
-    // Profile pic with fallback
-    onValue(ref(db, `users/${uid}/profilePic`), (snap) => {
-      profileImg.src = snap.val() || fallbackUrl;
-    });
-    profileImg.onerror = () => profileImg.src = fallbackUrl;
+      perfBarFill.style.width = clampedCTR + '%';
+      perfBarText.textContent = clampedCTR.toFixed(1) + '%';
 
-    // Revenue button update
-    onValue(ref(db, `users/${uid}/revenue`), (snap) => {
-      const rev = snap.val();
-      const revNum = Number(rev);
-      revenueBtn.textContent = `Revenue $${isNaN(revNum) ? '0.000' : revNum.toFixed(3)}`;
-    });
+      // Update or create Chart.js chart
+      const ctx = document.getElementById('viewsClicksEarningsChart').getContext('2d');
 
-    // Monetize status handling (on, off, banned)
-    onValue(ref(db, `users/${uid}/monetize`), (snap) => {
-      monetizeStatusValue = snap.val();
-
-      if (monetizeStatusValue === 'on') {
-        monetizeStatus.textContent = "YOU MONETIZED";
-        monetizeStatus.style.color = "#90ee90";
-
-        monetizeNowBtn.style.display = 'none';
-        progressContainer.style.display = 'none';
-        graphContainer.style.display = 'block';
-
-        setupLiveGraph(uid);
-
-      } else if (monetizeStatusValue === 'banned') {
-        monetizeStatus.textContent = "YOU ARE BANNED";
-        monetizeStatus.style.color = "#ff4c4c";
-
-        monetizeNowBtn.textContent = "BANNED";
-        monetizeNowBtn.classList.remove('active');
-        monetizeNowBtn.onclick = null;
-        monetizeNowBtn.style.display = 'inline-block';
-        monetizeNowBtn.style.color = '#ff4c4c';
-
-        progressContainer.style.display = 'block';
-        graphContainer.style.display = 'none';
-
+      if (statsChart) {
+        statsChart.data.datasets[0].data = [views, clicks, earnings];
+        statsChart.update();
       } else {
-        monetizeStatus.textContent = "NOT MONETIZED";
-        monetizeStatus.style.color = "#ff4c4c";
-
-        monetizeNowBtn.textContent = "Monetize Now";
-        monetizeNowBtn.style.color = '';
-        monetizeNowBtn.style.display = 'inline-block';
-
-        progressContainer.style.display = 'block';
-        graphContainer.style.display = 'none';
-
-        checkMonetizeEligibility(cachedPosts, cachedFollows);
-      }
-    });
-
-    // Posts count and progress bar
-    onValue(ref(db, `post`), (snap) => {
-      let publicPosts = 0;
-      snap.forEach(child => {
-        const data = child.val();
-        if (data.userId === uid && data.visibility === "public") publicPosts++;
-      });
-      cachedPosts = publicPosts;
-      if (monetizeStatusValue !== 'on' && monetizeStatusValue !== 'banned') {
-        const percent = Math.min((publicPosts / 10) * 100, 100);
-        postProgress.style.width = percent + '%';
-      }
-      checkMonetizeEligibility(publicPosts, null);
-    });
-
-    // Following count and progress bar
-    onValue(ref(db, `users/${uid}/following`), (snap) => {
-      const count = snap.exists() ? Object.keys(snap.val()).length : 0;
-      cachedFollows = count;
-      if (monetizeStatusValue !== 'on' && monetizeStatusValue !== 'banned') {
-        const percent = Math.min((count / 100) * 100, 100);
-        followProgress.style.width = percent + '%';
-      }
-      checkMonetizeEligibility(null, count);
-    });
-  });
-
-  function checkMonetizeEligibility(posts, follows) {
-    if (posts !== null) cachedPosts = posts;
-    if (follows !== null) cachedFollows = follows;
-
-    if (cachedPosts >= 10 && cachedFollows >= 100 && monetizeStatusValue !== 'on' && monetizeStatusValue !== 'banned') {
-      monetizeNowBtn.classList.add('active');
-      monetizeNowBtn.onclick = () => location.href = 'monitizenow.html';
-    } else {
-      monetizeNowBtn.classList.remove('active');
-      monetizeNowBtn.onclick = null;
-    }
-  }
-
-  function setupLiveGraph(uid) {
-    const ctx = document.getElementById('revenueChart').getContext('2d');
-
-    if (chartInstance) {
-      chartInstance.destroy();
-    }
-
-    chartInstance = new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: [], // post titles or IDs
-        datasets: [
-          {
-            label: 'Views',
-            data: [],
-            borderColor: 'blue',
-            fill: false,
+        statsChart = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: ['Views', 'Clicks', 'Earnings ($)'],
+            datasets: [{
+              label: 'Today',
+              data: [views, clicks, earnings],
+              backgroundColor: ['#22c55e', '#16a34a', '#4ade80'],
+              borderRadius: 8,
+              borderSkipped: false,
+            }]
           },
-          {
-            label: 'Revenue ($)',
-            data: [],
-            borderColor: 'green',
-            fill: false,
+          options: {
+            responsive: true,
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                callbacks: {
+                  label: function(ctx) {
+                    return ctx.dataset.label + ': ' + (ctx.dataIndex === 2 ? '$' + ctx.parsed.y : ctx.parsed.y);
+                  }
+                }
+              }
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                ticks: { color: '#9ca3af' },
+                grid: { color: '#1f1f1f' }
+              },
+              x: {
+                ticks: { color: '#9ca3af' },
+                grid: { display: false }
+              }
+            }
           }
-        ],
-      },
-      options: {
-        animation: false,
-        responsive: true,
-        scales: { y: { beginAtZero: true } }
+        });
+      }
+    }
+
+    // Listen for auth state changes
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        // Get user stats from database
+        const statsRef = db.ref(`users/${user.uid}/stats`);
+        statsRef.on('value', snapshot => {
+          const userStats = snapshot.val() || {};
+          updateStatsUI(userStats);
+
+          // Update balance button too if you want
+          if (userStats.earnings !== undefined) {
+            document.querySelector('.balance-btn').textContent = `$${userStats.earnings.toFixed(3)}`;
+          }
+        });
+
+        // Update profile pic dynamically if you want
+        // e.g., if you store profile pic URL in user profile, replace src here
+        // document.querySelector('.profile-pic').src = user.photoURL || 'default-pic-url';
+      } else {
+        // No user logged in — reset stats UI
+        updateStatsUI({ views: 0, clicks: 0, earnings: 0 });
+        document.querySelector('.balance-btn').textContent = '$0.000';
+        // Optional: prompt login or redirect
+        console.log('No user logged in');
       }
     });
-
-    const statsRef = ref(db, `post`);
-    onValue(statsRef, (snap) => {
-      const labels = [];
-      const viewsData = [];
-      const revenueData = [];
-
-      snap.forEach(child => {
-        const post = child.val();
-        if (post.userId === uid) {
-          labels.push(post.title || child.key);
-          viewsData.push(post.views || 0);
-          revenueData.push(post.revenue || 0);
-        }
-      });
-
-      chartInstance.data.labels = labels;
-      chartInstance.data.datasets[0].data = viewsData;
-      chartInstance.data.datasets[1].data = revenueData;
-      chartInstance.update();
-    });
-  }
-</script>
+  </script>
 </body>
 </html>
