@@ -559,6 +559,21 @@ body.light-theme {
 .follow-btn:hover {
   opacity: 0.85;
 }
+.load-more-btn {
+  display: block;
+  margin: 2rem auto;
+  padding: 12px 24px;
+  background: #111;
+  color: #fff;
+  font-size: 1rem;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+.load-more-btn:hover {
+  background: #333;
+}
 </style>
 </head>
 <body>
@@ -1246,47 +1261,145 @@ function createPostElement(post, postId, userLikes = {}) {
 }
 
 // Load All Posts
-async function loadPosts() {
+// Utility: shuffle an array (Fisher-Yates)
+function shuffleArray(array) {
+  let arr = array.slice();
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+// Globals
+const container = document.getElementById('posts-container');
+let observer;
+
+async function getUserLikes(uid) {
+  if (!uid) return {};
+  try {
+    const likesSnap = await get(ref(db, `likes/${uid}`));
+    return likesSnap.exists() ? likesSnap.val() : {};
+  } catch {
+    return {};
+  }
+}
+
+// IntersectionObserver for views counting
+function setupObserver() {
+  if (observer) observer.disconnect();
+  observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting && !entry.target.dataset.viewed) {
+        entry.target.dataset.viewed = 'true';
+        const postId = entry.target.dataset.id;
+        const viewsRef = ref(db, `post/${postId}/views`);
+        get(viewsRef).then(snap => {
+          const currentViews = snap.val() || 0;
+          set(viewsRef, currentViews + 1);
+        });
+      }
+    });
+  }, { threshold: 0.5 });
+}
+
+// Render cached posts all at once, shuffled
+function renderCachedPosts(posts) {
+  container.innerHTML = '';
+  const postIds = shuffleArray(Object.keys(posts));
+
+  postIds.forEach(postId => {
+    const postElement = createPostElement(posts[postId], postId, {}); // no likes offline
+    container.appendChild(postElement);
+  });
+
+  setupObserver();
+  Array.from(container.children).forEach(el => observer.observe(el));
+}
+
+// Insert a fresh post element at roughly the middle or random position
+function insertFreshPostElement(postElement) {
+  const length = container.children.length;
+  let insertIndex = Math.floor(length / 2) + Math.floor(Math.random() * 3) - 1; 
+  if (insertIndex < 0) insertIndex = 0;
+  if (insertIndex > length) insertIndex = length;
+  container.insertBefore(postElement, container.children[insertIndex]);
+  observer.observe(postElement);
+}
+
+// Load fresh posts one by one and mix them in container
+async function loadFreshPostsOneByOne(userLikes = {}) {
   try {
     const snapshot = await get(child(dbRef, 'post'));
     if (!snapshot.exists()) return;
 
-    const posts = snapshot.val();
-    const container = document.getElementById('posts-container');
-    container.innerHTML = '';
+    const freshPosts = snapshot.val();
+    const cachedRaw = localStorage.getItem('cachedPosts');
+    const cachedPosts = cachedRaw ? JSON.parse(cachedRaw) : {};
+    const cachedPostIds = new Set(Object.keys(cachedPosts));
 
-    let userLikes = {};
-    const uid = auth.currentUser?.uid;
-    if (uid) {
-      const likesSnap = await get(ref(db, `likes/${uid}`));
-      if (likesSnap.exists()) userLikes = likesSnap.val();
-    }
+    // Filter fresh posts to exclude cached ones
+    const freshPostIds = Object.keys(freshPosts).filter(id => !cachedPostIds.has(id));
 
-    const observer = new IntersectionObserver(entries => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting && !entry.target.dataset.viewed) {
-          entry.target.dataset.viewed = 'true';
-          const postId = entry.target.dataset.id;
-          const viewsRef = ref(db, `post/${postId}/views`);
-          get(viewsRef).then(snap => {
-            const currentViews = snap.val() || 0;
-            set(viewsRef, currentViews + 1);
-          });
-        }
-      });
-    }, { threshold: 0.5 });
+    for (let i = 0; i < freshPostIds.length; i++) {
+      const postId = freshPostIds[i];
+      const postData = freshPosts[postId];
 
-    for (const postId in posts) {
-      const postElement = createPostElement(posts[postId], postId, userLikes);
-      container.appendChild(postElement);
-      observer.observe(postElement);
+      const postElement = createPostElement(postData, postId, userLikes);
+      insertFreshPostElement(postElement);
+
+      // Save this fresh post into local cache
+      cachedPosts[postId] = postData;
+      localStorage.setItem('cachedPosts', JSON.stringify(cachedPosts));
+
+      // Slight delay for smooth appearance
+      await new Promise(r => setTimeout(r, 350));
     }
   } catch (error) {
-    console.error('Error loading posts:', error);
+    console.error('Error loading fresh posts:', error);
   }
 }
 
-loadPosts();
+// Main load function
+async function loadPostsFlow() {
+  const uid = auth.currentUser?.uid;
+  const userLikes = await getUserLikes(uid);
+
+  const cachedRaw = localStorage.getItem('cachedPosts');
+
+  if (cachedRaw) {
+    // Show cached posts instantly, then show Load More button
+    const cachedPosts = JSON.parse(cachedRaw);
+    renderCachedPosts(cachedPosts);
+
+    // Add Load More button if not already present
+    if (!document.getElementById('load-more-btn')) {
+      const loadMoreBtn = document.createElement('button');
+      loadMoreBtn.id = 'load-more-btn';
+      loadMoreBtn.textContent = 'Load More Posts';
+      loadMoreBtn.style.margin = '20px auto';
+      loadMoreBtn.style.display = 'block';
+      loadMoreBtn.style.padding = '10px 20px';
+      loadMoreBtn.style.fontSize = '16px';
+      loadMoreBtn.style.cursor = 'pointer';
+      loadMoreBtn.onclick = async () => {
+        loadMoreBtn.disabled = true;
+        loadMoreBtn.textContent = 'Loading...';
+        await loadFreshPostsOneByOne(userLikes);
+        loadMoreBtn.remove(); // Remove button after fresh posts loaded
+      };
+      container.after(loadMoreBtn);
+    }
+  } else {
+    // No cache → load fresh posts automatically
+    container.innerHTML = 'Loading posts...';
+    setupObserver();
+    await loadFreshPostsOneByOne(userLikes);
+  }
+}
+
+// Run it
+loadPostsFlow();
 </script>
 </body>
 </html>
