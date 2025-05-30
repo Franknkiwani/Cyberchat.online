@@ -378,7 +378,7 @@ body.light-theme {
   }
 
   .post-card {
-    width: 95%;
+    max-width: 95%;
     max-width: 700px;
     background: rgba(255, 255, 255, 0.04);
     border: 1px solid rgba(255, 255, 255, 0.08);
@@ -1256,182 +1256,122 @@ function createPostElement(post, postId, userLikes = {}) {
       followBtn.style.backgroundColor = 'grey';
     }
   });
-
-  // CLICK TO OPEN POST
-  postDiv.addEventListener('click', (e) => {
-    const isInteractive = e.target.closest('.like-btn, .comment-btn, .follow-btn, .profile-pic, .username');
-    if (!isInteractive) {
-      window.location.href = `viewport.html/${postId}`;
-    }
-  });
-
+// CLICK TO OPEN POST (except on interactive elements)
+postDiv.addEventListener('click', (e) => {
+  const isInteractive = e.target.closest('.like-btn, .comment-btn, .follow-btn, .profile-pic, .username');
+  if (!isInteractive) {
+    window.location.href = `viewpost.html?postId=${postId}`;
+  }
+});
   return postDiv;
 }
 
 // Load All Posts
-// Utility: shuffle an array (Fisher-Yates)
-function shuffleArray(array) {
-  let arr = array.slice();
-  for (let i = arr.length - 1; i > 0; i--) {
+let randomizedPostList = [];
+let currentIndex = 0;
+let observer = null;
+
+// 1. Utility to Shuffle
+function shuffleObject(obj) {
+  const keys = Object.keys(obj);
+  for (let i = keys.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
+    [keys[i], keys[j]] = [keys[j], keys[i]];
   }
-  return arr;
+  return keys;
 }
 
-const container = document.getElementById('posts-container');
-const loadMoreBtn = document.getElementById('load-more-btn');
-const endMessage = document.getElementById('end-message');
+// 2. Load All Cached Posts Immediately (No infinite scroll here)
+function loadCachedPosts() {
+  const cached = localStorage.getItem('cachedPosts');
+  if (!cached) return;
 
-let observer;
-let isLoadingFresh = false;
-let reachedEnd = false;
+  const posts = JSON.parse(cached);
+  const keys = shuffleObject(posts);
+  const container = document.getElementById('posts-container');
+  container.innerHTML = '';
 
-// Cache expiration: 3 hours in ms
-const CACHE_EXPIRATION_MS = 3 * 60 * 60 * 1000;
+  for (const postId of keys) {
+    const postElement = createPostElement(posts[postId], postId, {}); // No likes in offline mode
+    container.appendChild(postElement);
+  }
+}
 
-// Get user likes
-async function getUserLikes(uid) {
-  if (!uid) return {};
+// 3. Load Fresh Posts One by One (Infinite Scroll Mode)
+async function loadPosts() {
   try {
-    const likesSnap = await get(ref(db, `likes/${uid}`));
-    return likesSnap.exists() ? likesSnap.val() : {};
-  } catch {
-    return {};
+    const snapshot = await get(child(dbRef, 'post'));
+    if (!snapshot.exists()) return;
+
+    const posts = snapshot.val();
+    const newCache = JSON.stringify(posts);
+    const oldCache = localStorage.getItem('cachedPosts');
+
+    // Cache new posts if different
+    if (newCache !== oldCache) {
+      localStorage.setItem('cachedPosts', newCache);
+      localStorage.setItem('cachedPostsTimestamp', Date.now());
+
+      // Only now we run the infinite scroll loader
+      const keys = shuffleObject(posts);
+      randomizedPostList = keys.map(k => ({ id: k, data: posts[k] }));
+      currentIndex = 0;
+
+      const container = document.getElementById('posts-container');
+      container.innerHTML = ''; // wipe old cached stuff
+
+      loadNextPost(); // Start infinite scroll
+    }
+  } catch (error) {
+    console.error('Error loading fresh posts:', error);
   }
 }
 
-// Setup IntersectionObserver for views counting
-function setupObserver() {
+// 4. Load One Post at a Time (triggered by view)
+async function loadNextPost() {
+  if (currentIndex >= randomizedPostList.length) return;
+
+  const post = randomizedPostList[currentIndex];
+  const uid = auth.currentUser?.uid;
+  let userLikes = {};
+
+  if (uid) {
+    const likesSnap = await get(ref(db, `likes/${uid}`));
+    if (likesSnap.exists()) userLikes = likesSnap.val();
+  }
+
+  const container = document.getElementById('posts-container');
+  const postElement = createPostElement(post.data, post.id, userLikes);
+  container.appendChild(postElement);
+
+  // Reset + set new observer
   if (observer) observer.disconnect();
   observer = new IntersectionObserver(entries => {
     entries.forEach(entry => {
       if (entry.isIntersecting && !entry.target.dataset.viewed) {
         entry.target.dataset.viewed = 'true';
-        const postId = entry.target.dataset.id;
-        const viewsRef = ref(db, `post/${postId}/views`);
+
+        // View tracking
+        const viewsRef = ref(db, `post/${post.id}/views`);
         get(viewsRef).then(snap => {
           const currentViews = snap.val() || 0;
           set(viewsRef, currentViews + 1);
         });
+
+        // Queue next
+        observer.unobserve(entry.target);
+        currentIndex++;
+        loadNextPost();
       }
     });
   }, { threshold: 0.5 });
-}
 
-// Render cached posts all at once, shuffled
-function renderCachedPosts(posts) {
-  container.innerHTML = '';
-  const postIds = shuffleArray(Object.keys(posts));
-  postIds.forEach(postId => {
-    const postElement = createPostElement(posts[postId], postId, {}); // no likes offline
-    container.appendChild(postElement);
-  });
-  setupObserver();
-  Array.from(container.children).forEach(el => observer.observe(el));
-}
-
-// Insert fresh post element near middle/random spot
-function insertFreshPostElement(postElement) {
-  const length = container.children.length;
-  let insertIndex = Math.floor(length / 2) + Math.floor(Math.random() * 3) - 1;
-  insertIndex = Math.max(0, Math.min(insertIndex, length));
-  container.insertBefore(postElement, container.children[insertIndex]);
   observer.observe(postElement);
 }
 
-// Load fresh posts one by one and mix them in container, updating cache
-async function loadFreshPostsOneByOne(userLikes = {}) {
-  if (isLoadingFresh || reachedEnd) return; // prevent double-loads or loading if ended
-  isLoadingFresh = true;
-  loadMoreBtn.disabled = true;
-  loadMoreBtn.textContent = 'Loading...';
-
-  try {
-    const snapshot = await get(child(dbRef, 'post'));
-    if (!snapshot.exists()) {
-      showCaughtUpMessage();
-      reachedEnd = true;
-      return;
-    }
-
-    const freshPosts = snapshot.val();
-    const cachedRaw = localStorage.getItem('cachedPosts');
-    const cachedPosts = cachedRaw ? JSON.parse(cachedRaw).posts : {};
-    const cachedPostIds = new Set(Object.keys(cachedPosts));
-
-    const freshPostIds = Object.keys(freshPosts).filter(id => !cachedPostIds.has(id));
-
-    if (freshPostIds.length === 0) {
-      showCaughtUpMessage();
-      reachedEnd = true;
-      return;
-    }
-
-    for (let i = 0; i < freshPostIds.length; i++) {
-      const postId = freshPostIds[i];
-      const postData = freshPosts[postId];
-      const postElement = createPostElement(postData, postId, userLikes);
-      insertFreshPostElement(postElement);
-
-      // Update cache
-      cachedPosts[postId] = postData;
-      localStorage.setItem('cachedPosts', JSON.stringify({
-        posts: cachedPosts,
-        timestamp: Date.now()
-      }));
-
-      await new Promise(r => setTimeout(r, 350));
-    }
-
-    // Show Load More button after loading fresh posts
-    loadMoreBtn.style.display = 'block';
-    loadMoreBtn.disabled = false;
-    loadMoreBtn.textContent = 'Load More';
-    endMessage.style.display = 'none';
-  } catch (error) {
-    console.error('Error loading fresh posts:', error);
-    loadMoreBtn.disabled = false;
-    loadMoreBtn.textContent = 'Load More';
-  } finally {
-    isLoadingFresh = false;
-  }
-}
-
-function showCaughtUpMessage() {
-  loadMoreBtn.style.display = 'none';
-  endMessage.style.display = 'block';
-}
-
-// Main load flow with cache expiration logic
-async function loadPostsFlow() {
-  const uid = auth.currentUser?.uid;
-  const userLikes = await getUserLikes(uid);
-
-  const cachedRaw = localStorage.getItem('cachedPosts');
-  if (cachedRaw) {
-    const cachedData = JSON.parse(cachedRaw);
-    const age = Date.now() - (cachedData.timestamp || 0);
-    if (age > CACHE_EXPIRATION_MS) {
-      localStorage.removeItem('cachedPosts');
-      container.innerHTML = 'Loading posts...';
-      setupObserver();
-      await loadFreshPostsOneByOne(userLikes);
-    } else {
-      renderCachedPosts(cachedData.posts);
-      loadMoreBtn.style.display = 'block';
-    }
-  } else {
-    container.innerHTML = 'Loading posts...';
-    setupObserver();
-    await loadFreshPostsOneByOne(userLikes);
-    loadMoreBtn.style.display = 'block';
-  }
-
-  loadMoreBtn.addEventListener('click', () => loadFreshPostsOneByOne(userLikes));
-}
-
-loadPostsFlow();
+// 🚀 Kickoff Logic
+loadCachedPosts(); // Fast feedback
+loadPosts();       // Fresh 1-by-1 loading
 </script>
 </body>
 </html>
