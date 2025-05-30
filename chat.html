@@ -637,7 +637,15 @@ body.light-theme {
 </div>
 <!-- Background blur overlay while search open -->
 <div class="blur-overlay" id="blur-overlay" tabindex="-1" aria-hidden="true"></div>
+<div id="posts-container"></div>
 
+<button id="load-more-btn" style="display:none; margin: 20px auto; padding: 10px 20px; font-weight: bold;">
+  Load More
+</button>
+
+<div id="end-message" style="color: red; text-align: center; font-weight: bold; margin-top: 20px; display: none;">
+  You caught up! Come back later for fresh posts.
+</div>
 <!-- Suggestions Box -->
 <div class="suggestions" id="suggestions" role="listbox" aria-label="Search suggestions"></div>
 <div id="search-results" class="search-results"></div>
@@ -1271,10 +1279,18 @@ function shuffleArray(array) {
   return arr;
 }
 
-// Globals
 const container = document.getElementById('posts-container');
-let observer;
+const loadMoreBtn = document.getElementById('load-more-btn');
+const endMessage = document.getElementById('end-message');
 
+let observer;
+let isLoadingFresh = false;
+let reachedEnd = false;
+
+// Cache expiration: 3 hours in ms
+const CACHE_EXPIRATION_MS = 3 * 60 * 60 * 1000;
+
+// Get user likes
 async function getUserLikes(uid) {
   if (!uid) return {};
   try {
@@ -1285,7 +1301,7 @@ async function getUserLikes(uid) {
   }
 }
 
-// IntersectionObserver for views counting
+// Setup IntersectionObserver for views counting
 function setupObserver() {
   if (observer) observer.disconnect();
   observer = new IntersectionObserver(entries => {
@@ -1307,98 +1323,114 @@ function setupObserver() {
 function renderCachedPosts(posts) {
   container.innerHTML = '';
   const postIds = shuffleArray(Object.keys(posts));
-
   postIds.forEach(postId => {
     const postElement = createPostElement(posts[postId], postId, {}); // no likes offline
     container.appendChild(postElement);
   });
-
   setupObserver();
   Array.from(container.children).forEach(el => observer.observe(el));
 }
 
-// Insert a fresh post element at roughly the middle or random position
+// Insert fresh post element near middle/random spot
 function insertFreshPostElement(postElement) {
   const length = container.children.length;
-  let insertIndex = Math.floor(length / 2) + Math.floor(Math.random() * 3) - 1; 
-  if (insertIndex < 0) insertIndex = 0;
-  if (insertIndex > length) insertIndex = length;
+  let insertIndex = Math.floor(length / 2) + Math.floor(Math.random() * 3) - 1;
+  insertIndex = Math.max(0, Math.min(insertIndex, length));
   container.insertBefore(postElement, container.children[insertIndex]);
   observer.observe(postElement);
 }
 
-// Load fresh posts one by one and mix them in container
+// Load fresh posts one by one and mix them in container, updating cache
 async function loadFreshPostsOneByOne(userLikes = {}) {
+  if (isLoadingFresh || reachedEnd) return; // prevent double-loads or loading if ended
+  isLoadingFresh = true;
+  loadMoreBtn.disabled = true;
+  loadMoreBtn.textContent = 'Loading...';
+
   try {
     const snapshot = await get(child(dbRef, 'post'));
-    if (!snapshot.exists()) return;
+    if (!snapshot.exists()) {
+      showCaughtUpMessage();
+      reachedEnd = true;
+      return;
+    }
 
     const freshPosts = snapshot.val();
     const cachedRaw = localStorage.getItem('cachedPosts');
-    const cachedPosts = cachedRaw ? JSON.parse(cachedRaw) : {};
+    const cachedPosts = cachedRaw ? JSON.parse(cachedRaw).posts : {};
     const cachedPostIds = new Set(Object.keys(cachedPosts));
 
-    // Filter fresh posts to exclude cached ones
     const freshPostIds = Object.keys(freshPosts).filter(id => !cachedPostIds.has(id));
+
+    if (freshPostIds.length === 0) {
+      showCaughtUpMessage();
+      reachedEnd = true;
+      return;
+    }
 
     for (let i = 0; i < freshPostIds.length; i++) {
       const postId = freshPostIds[i];
       const postData = freshPosts[postId];
-
       const postElement = createPostElement(postData, postId, userLikes);
       insertFreshPostElement(postElement);
 
-      // Save this fresh post into local cache
+      // Update cache
       cachedPosts[postId] = postData;
-      localStorage.setItem('cachedPosts', JSON.stringify(cachedPosts));
+      localStorage.setItem('cachedPosts', JSON.stringify({
+        posts: cachedPosts,
+        timestamp: Date.now()
+      }));
 
-      // Slight delay for smooth appearance
       await new Promise(r => setTimeout(r, 350));
     }
+
+    // Show Load More button after loading fresh posts
+    loadMoreBtn.style.display = 'block';
+    loadMoreBtn.disabled = false;
+    loadMoreBtn.textContent = 'Load More';
+    endMessage.style.display = 'none';
   } catch (error) {
     console.error('Error loading fresh posts:', error);
+    loadMoreBtn.disabled = false;
+    loadMoreBtn.textContent = 'Load More';
+  } finally {
+    isLoadingFresh = false;
   }
 }
 
-// Main load function
+function showCaughtUpMessage() {
+  loadMoreBtn.style.display = 'none';
+  endMessage.style.display = 'block';
+}
+
+// Main load flow with cache expiration logic
 async function loadPostsFlow() {
   const uid = auth.currentUser?.uid;
   const userLikes = await getUserLikes(uid);
 
   const cachedRaw = localStorage.getItem('cachedPosts');
-
   if (cachedRaw) {
-    // Show cached posts instantly, then show Load More button
-    const cachedPosts = JSON.parse(cachedRaw);
-    renderCachedPosts(cachedPosts);
-
-    // Add Load More button if not already present
-    if (!document.getElementById('load-more-btn')) {
-      const loadMoreBtn = document.createElement('button');
-      loadMoreBtn.id = 'load-more-btn';
-      loadMoreBtn.textContent = 'Load More Posts';
-      loadMoreBtn.style.margin = '20px auto';
+    const cachedData = JSON.parse(cachedRaw);
+    const age = Date.now() - (cachedData.timestamp || 0);
+    if (age > CACHE_EXPIRATION_MS) {
+      localStorage.removeItem('cachedPosts');
+      container.innerHTML = 'Loading posts...';
+      setupObserver();
+      await loadFreshPostsOneByOne(userLikes);
+    } else {
+      renderCachedPosts(cachedData.posts);
       loadMoreBtn.style.display = 'block';
-      loadMoreBtn.style.padding = '10px 20px';
-      loadMoreBtn.style.fontSize = '16px';
-      loadMoreBtn.style.cursor = 'pointer';
-      loadMoreBtn.onclick = async () => {
-        loadMoreBtn.disabled = true;
-        loadMoreBtn.textContent = 'Loading...';
-        await loadFreshPostsOneByOne(userLikes);
-        loadMoreBtn.remove(); // Remove button after fresh posts loaded
-      };
-      container.after(loadMoreBtn);
     }
   } else {
-    // No cache → load fresh posts automatically
     container.innerHTML = 'Loading posts...';
     setupObserver();
     await loadFreshPostsOneByOne(userLikes);
+    loadMoreBtn.style.display = 'block';
   }
+
+  loadMoreBtn.addEventListener('click', () => loadFreshPostsOneByOne(userLikes));
 }
 
-// Run it
 loadPostsFlow();
 </script>
 </body>
