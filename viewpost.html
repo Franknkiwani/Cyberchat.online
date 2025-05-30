@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>View Post</title>
+<style>
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
+      Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    max-width: 720px;
+    margin: 2rem auto;
+    padding: 1rem;
+    background: #f9f9f9;
+    color: #222;
+  }
+  .post-container {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    padding: 24px;
+  }
+  h1 {
+    margin-top: 0;
+    font-weight: 700;
+    font-size: 2rem;
+  }
+  .author {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1.5rem;
+  }
+  .author img {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    margin-right: 14px;
+    object-fit: cover;
+  }
+  .author-info {
+    flex-grow: 1;
+  }
+  .author-name {
+    font-weight: 600;
+    font-size: 1.1rem;
+    margin-bottom: 0.3rem;
+  }
+  .follow-btn {
+    background-color: #007bff;
+    border: none;
+    color: white;
+    padding: 8px 14px;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    user-select: none;
+    transition: background-color 0.2s ease;
+  }
+  .follow-btn.following {
+    background-color: #6c757d;
+  }
+  .post-description {
+    margin: 1rem 0 1.5rem;
+    line-height: 1.5;
+    font-size: 1.1rem;
+    white-space: pre-wrap;
+  }
+  .post-images {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    margin-bottom: 1.5rem;
+  }
+  .post-images img {
+    max-height: 320px;
+    border-radius: 12px;
+    object-fit: cover;
+    flex-shrink: 0;
+    cursor: zoom-in;
+    transition: transform 0.25s ease;
+  }
+  .post-images img:hover {
+    transform: scale(1.05);
+  }
+  .stats {
+    font-size: 0.9rem;
+    color: #555;
+    margin-bottom: 1.5rem;
+    display: flex;
+    gap: 20px;
+    align-items: center;
+  }
+  .like-btn {
+    cursor: pointer;
+    user-select: none;
+    font-weight: 600;
+    color: #007bff;
+    background: none;
+    border: none;
+    font-size: 1rem;
+    padding: 6px 10px;
+    border-radius: 6px;
+    transition: background-color 0.15s ease;
+  }
+  .like-btn.liked {
+    color: #e0245e;
+  }
+  .like-btn:hover {
+    background-color: rgba(0,123,255,0.1);
+  }
+  /* Comments */
+  .comments-section {
+    margin-top: 2rem;
+  }
+  .comments-header {
+    font-weight: 700;
+    font-size: 1.3rem;
+    margin-bottom: 1rem;
+  }
+  .comment {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .comment img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+  }
+  .comment-body {
+    background: #eee;
+    border-radius: 10px;
+    padding: 12px 16px;
+    flex-grow: 1;
+  }
+  .comment-author {
+    font-weight: 600;
+    font-size: 0.95rem;
+    margin-bottom: 4px;
+  }
+  .comment-text {
+    font-size: 0.9rem;
+    line-height: 1.3;
+    white-space: pre-wrap;
+  }
+  .add-comment {
+    margin-top: 1rem;
+    display: flex;
+    gap: 12px;
+  }
+  .add-comment textarea {
+    flex-grow: 1;
+    resize: vertical;
+    padding: 10px;
+    font-size: 1rem;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-family: inherit;
+  }
+  .add-comment button {
+    background: #007bff;
+    border: none;
+    color: white;
+    padding: 12px 18px;
+    border-radius: 8px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+  .add-comment button:disabled {
+    background: #aaa;
+    cursor: not-allowed;
+  }
+  .loading, .error {
+    text-align: center;
+    font-size: 1.2rem;
+    padding: 3rem;
+    color: #666;
+  }
+  .error {
+    color: crimson;
+    font-weight: 700;
+  }
+</style>
+</head>
+<body>
+<div id="root">
+  <div class="loading">Loading post...</div>
+</div>
+
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js"></script>
+
+<script>
+  // Your real Firebase config
+  const firebaseConfig = {
+    apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
+    authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
+    databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
+    projectId: "itzhoyoo-f9f7e",
+    storageBucket: "itzhoyoo-f9f7e.filestorage.app",
+    messagingSenderId: "1094792075584",
+    appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
+    measurementId: "G-LLT6F9WRKH"
+  };
+
+  // Init Firebase
+  const app = firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+  const db = firebase.database();
+
+  const root = document.getElementById('root');
+
+  // Utils
+  function getPostIdFromURL() {
+    const params = new URLSearchParams(window.location.search);
+    return params.get('postId');
+  }
+  function formatTimestamp(ts) {
+    const d = new Date(ts);
+    return d.toLocaleString();
+  }
+
+  // Render Functions
+  function createPostElement(postId, postData, liked, currentUserId, following) {
+    const title = postData.title || 'Untitled Post';
+    const desc = postData.description || '';
+    const images = postData.images || [];
+    const likes = postData.likes || 0;
+    const commentsCount = postData.commentsCount || 0;
+    const authorName = postData.authorName || 'Anonymous';
+    const authorPic = postData.authorPic || 'https://via.placeholder.com/56?text=User';
+    const authorUid = postData.authorUid || null;
+
+    const container = document.createElement('div');
+    container.className = 'post-container';
+
+    container.innerHTML = `
+      <div class="author">
+        <img src="${authorPic}" alt="Author profile picture" />
+        <div class="author-info">
+          <div class="author-name">${authorName}</div>
+          <button class="follow-btn ${following ? 'following' : ''}">
+            ${following ? 'Following' : 'Follow'}
+          </button>
+        </div>
+      </div>
+      <h1>${title}</h1>
+      <p class="post-description">${desc}</p>
+      <div class="post-images">${images.map(img => `<img src="${img}" alt="Post image" />`).join('')}
+      </div>
+      <div class="stats">
+        <button class="like-btn ${liked ? 'liked' : ''}">
+          ${liked ? '♥ Liked' : '♡ Like'} (${likes})
+        </button>
+        <div>${commentsCount} Comments</div>
+      </div>
+      <div class="comments-section">
+        <div class="comments-header">Comments</div>
+        <div class="comments-list"></div>
+        <div class="add-comment">
+          <textarea placeholder="Add a comment..." rows="2"></textarea>
+          <button disabled>Post</button>
+        </div>
+      </div>
+    `;
+
+    // Event listeners for like button
+    const likeBtn = container.querySelector('.like-btn');
+    likeBtn.addEventListener('click', () => {
+      if (!auth.currentUser) {
+        alert('You gotta log in first, boss.');
+        return;
+      }
+      toggleLike(postId, auth.currentUser.uid, liked).then(newLiked => {
+        liked = newLiked;
+        likeBtn.classList.toggle('liked', liked);
+        likeBtn.textContent = liked ? `♥ Liked (${likes + 1})` : `♡ Like (${likes})`;
+      }).catch(console.error);
+    });
+
+    // Event listener for follow button
+    const followBtn = container.querySelector('.follow-btn');
+    if (authorUid === auth.currentUser?.uid) {
+      followBtn.style.display = 'none'; // can't follow yourself, duh
+    } else {
+      followBtn.addEventListener('click', () => {
+        if (!auth.currentUser) {
+          alert('Log in to follow people, bro.');
+          return;
+        }
+        toggleFollow(auth.currentUser.uid, authorUid).then(isFollowing => {
+          followBtn.textContent = isFollowing ? 'Following' : 'Follow';
+          followBtn.classList.toggle('following', isFollowing);
+        }).catch(console.error);
+      });
+    }
+
+    // Load comments from Firebase and handle adding new comments
+    const commentsList = container.querySelector('.comments-list');
+    const commentTextarea = container.querySelector('.add-comment textarea');
+    const commentBtn = container.querySelector('.add-comment button');
+
+    // Enable/disable post button based on textarea input
+    commentTextarea.addEventListener('input', () => {
+      commentBtn.disabled = commentTextarea.value.trim().length === 0;
+    });
+
+    commentBtn.addEventListener('click', () => {
+      if (!auth.currentUser) {
+        alert('Log in to comment, dude.');
+        return;
+      }
+      const commentText = commentTextarea.value.trim();
+      if (commentText.length === 0) return;
+
+      addComment(postId, auth.currentUser.uid, commentText)
+        .then(() => {
+          commentTextarea.value = '';
+          commentBtn.disabled = true;
+          loadComments(postId, commentsList);
+        }).catch(console.error);
+    });
+
+    // Initial comments load
+    loadComments(postId, commentsList);
+
+    return container;
+  }
+
+  // Toggle Like Logic
+  async function toggleLike(postId, userId, currentlyLiked) {
+    const likesRef = db.ref(`postLikes/${postId}/${userId}`);
+    const postLikesCountRef = db.ref(`post/${postId}/likes`);
+
+    if (currentlyLiked) {
+      await likesRef.remove();
+      await postLikesCountRef.transaction(current => (current || 0) - 1);
+      return false;
+    } else {
+      await likesRef.set(true);
+      await postLikesCountRef.transaction(current => (current || 0) + 1);
+      return true;
+    }
+  }
+
+  // Toggle Follow Logic
+  async function toggleFollow(followerUid, followingUid) {
+    if (!followingUid) return false;
+    const followingRef = db.ref(`following/${followerUid}/${followingUid}`);
+
+    const snapshot = await followingRef.get();
+    if (snapshot.exists()) {
+      await followingRef.remove();
+      return false;
+    } else {
+      await followingRef.set(true);
+      return true;
+    }
+  }
+
+  // Load Comments Logic
+  function loadComments(postId, container) {
+    container.innerHTML = '<div>Loading comments...</div>';
+    const commentsRef = db.ref(`comments/${postId}`);
+
+    commentsRef.off();
+    commentsRef.on('value', snapshot => {
+      container.innerHTML = '';
+      const comments = snapshot.val() || {};
+      const commentEntries = Object.entries(comments);
+
+      if (commentEntries.length === 0) {
+        container.innerHTML = '<div>No comments yet. Be the first!</div>';
+        return;
+      }
+
+      commentEntries.forEach(([commentId, comment]) => {
+        const commentEl = document.createElement('div');
+        commentEl.className = 'comment';
+
+        commentEl.innerHTML = `
+          <img src="${comment.authorPic || 'https://via.placeholder.com/40?text=U'}" alt="Comment author pic" />
+          <div class="comment-body">
+            <div class="comment-author">${comment.authorName || 'Anonymous'}</div>
+            <div class="comment-text">${escapeHtml(comment.text)}</div>
+          </div>
+        `;
+
+        container.appendChild(commentEl);
+      });
+    });
+  }
+
+  // Add Comment Logic
+  async function addComment(postId, userId, text) {
+    const userRef = db.ref(`users/${userId}`);
+    const postCommentsCountRef = db.ref(`post/${postId}/commentsCount`);
+    const commentsRef = db.ref(`comments/${postId}`);
+
+    const userSnapshot = await userRef.get();
+    const userData = userSnapshot.val() || {};
+
+    const newCommentRef = commentsRef.push();
+    await newCommentRef.set({
+      text,
+      authorUid: userId,
+      authorName: userData.username || 'Anonymous',
+      authorPic: userData.profilePic || 'https://via.placeholder.com/40?text=U',
+      timestamp: Date.now()
+    });
+
+    await postCommentsCountRef.transaction(current => (current || 0) + 1);
+  }
+
+  // Escape HTML to avoid XSS in comments
+  function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+  }
+
+  // Check if user liked post
+  async function checkLiked(postId, userId) {
+    if (!userId) return false;
+    const likeSnapshot = await db.ref(`postLikes/${postId}/${userId}`).get();
+    return likeSnapshot.exists();
+  }
+
+  // Check if current user is following the author
+  async function checkFollowing(userId, authorUid) {
+    if (!userId || !authorUid) return false;
+    const followSnapshot = await db.ref(`following/${userId}/${authorUid}`).get();
+    return followSnapshot.exists();
+  }
+
+  // Main render logic
+  async function renderPost() {
+    const postId = getPostIdFromURL();
+    if (!postId) {
+      root.innerHTML = '<div class="error">No post ID specified in the URL.</div>';
+      return;
+    }
+
+    root.innerHTML = '<div class="loading">Loading post...</div>';
+
+    try {
+      const postSnapshot = await db.ref(`post/${postId}`).get();
+      if (!postSnapshot.exists()) {
+        root.innerHTML = '<div class="error">Post not found.</div>';
+        return;
+      }
+      const postData = postSnapshot.val();
+
+      const user = auth.currentUser;
+      let liked = false;
+      let following = false;
+
+      if (user) {
+        liked = await checkLiked(postId, user.uid);
+        following = await checkFollowing(user.uid, postData.authorUid);
+      }
+
+      const postElement = createPostElement(postId, postData, liked, user?.uid, following);
+      root.innerHTML = '';
+      root.appendChild(postElement);
+
+    } catch (err) {
+      console.error(err);
+      root.innerHTML = '<div class="error">Failed to load post data.</div>';
+    }
+  }
+
+  // Firebase Auth listener
+  auth.onAuthStateChanged(() => {
+    renderPost();
+  });
+
+  // Initial call
+  renderPost();
+</script>
+</body>
+</html>
