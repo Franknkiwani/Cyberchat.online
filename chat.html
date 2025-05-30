@@ -1130,14 +1130,14 @@ function createPostElement(post, postId, userLikes = {}) {
   const comments = post.comments || 0;
   const timestamp = post.timestamp || Date.now();
   const liked = userLikes[postId] === true;
-  const isMonetized = post.monetize === true;
+  const isMonetized = post.monetize === 'on';
   const isVerified = post.verified === true;
 
   const shortDesc = description.length > 120 ? description.slice(0, 120) + '...' : description;
   const showReadMore = description.length > 120;
 
   const adHtml = isMonetized
-    ? `<div class="post-ads"><iframe src="https://your-ad-provider.com/adframe" class="ad-frame"></iframe></div>`
+    ? `<div class="post-ads"><iframe src="https://your-ad-provider.com/adframe" class="ad-frame" width="100%" height="90" style="border:none;"></iframe></div>`
     : '';
 
   postDiv.innerHTML = `
@@ -1175,6 +1175,7 @@ function createPostElement(post, postId, userLikes = {}) {
     ${adHtml}
   `;
 
+  // LIKE HANDLER
   postDiv.querySelector('.like-btn').addEventListener('click', async (e) => {
     e.stopPropagation();
     const btn = postDiv.querySelector('.like-btn');
@@ -1196,11 +1197,13 @@ function createPostElement(post, postId, userLikes = {}) {
     }
   });
 
+  // COMMENT REDIRECT
   postDiv.querySelector('.comment-btn').addEventListener('click', (e) => {
     e.stopPropagation();
     window.location.href = `viewport.html/${postId}`;
   });
 
+  // READ MORE
   const readMore = postDiv.querySelector('.read-more');
   if (readMore) {
     readMore.addEventListener('click', (e) => {
@@ -1209,6 +1212,7 @@ function createPostElement(post, postId, userLikes = {}) {
     });
   }
 
+  // FOLLOW
   const followBtn = postDiv.querySelector('.follow-btn');
   followBtn.addEventListener('click', async (e) => {
     e.stopPropagation();
@@ -1230,6 +1234,7 @@ function createPostElement(post, postId, userLikes = {}) {
     }
   });
 
+  // CLICK TO OPEN POST
   postDiv.addEventListener('click', (e) => {
     const isInteractive = e.target.closest('.like-btn, .comment-btn, .follow-btn, .profile-pic, .username');
     if (!isInteractive) {
@@ -1240,13 +1245,11 @@ function createPostElement(post, postId, userLikes = {}) {
   return postDiv;
 }
 
+// Load All Posts
 async function loadPosts() {
   try {
     const snapshot = await get(child(dbRef, 'post'));
-    if (!snapshot.exists()) {
-      console.log('No posts found');
-      return;
-    }
+    if (!snapshot.exists()) return;
 
     const posts = snapshot.val();
     const container = document.getElementById('posts-container');
@@ -1256,9 +1259,7 @@ async function loadPosts() {
     const uid = auth.currentUser?.uid;
     if (uid) {
       const likesSnap = await get(ref(db, `likes/${uid}`));
-      if (likesSnap.exists()) {
-        userLikes = likesSnap.val();
-      }
+      if (likesSnap.exists()) userLikes = likesSnap.val();
     }
 
     const observer = new IntersectionObserver(entries => {
