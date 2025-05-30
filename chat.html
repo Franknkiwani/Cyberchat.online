@@ -1133,11 +1133,9 @@ function createPostElement(post, postId, userLikes = {}) {
   const isMonetized = post.monetize === true;
   const isVerified = post.verified === true;
 
-  // Shorten description for "Read more"
   const shortDesc = description.length > 120 ? description.slice(0, 120) + '...' : description;
   const showReadMore = description.length > 120;
 
-  // Monetization ad placeholder (replace with real ad iframe or component)
   const adHtml = isMonetized
     ? `<div class="post-ads"><iframe src="https://your-ad-provider.com/adframe" class="ad-frame"></iframe></div>`
     : '';
@@ -1177,7 +1175,6 @@ function createPostElement(post, postId, userLikes = {}) {
     ${adHtml}
   `;
 
-  // Like button toggle with DB update
   postDiv.querySelector('.like-btn').addEventListener('click', async (e) => {
     e.stopPropagation();
     const btn = postDiv.querySelector('.like-btn');
@@ -1199,13 +1196,11 @@ function createPostElement(post, postId, userLikes = {}) {
     }
   });
 
-  // Comment button redirects to post detail page
   postDiv.querySelector('.comment-btn').addEventListener('click', (e) => {
     e.stopPropagation();
     window.location.href = `viewport.html/${postId}`;
   });
 
-  // Read more expands description
   const readMore = postDiv.querySelector('.read-more');
   if (readMore) {
     readMore.addEventListener('click', (e) => {
@@ -1214,7 +1209,6 @@ function createPostElement(post, postId, userLikes = {}) {
     });
   }
 
-  // Follow button toggle with DB update
   const followBtn = postDiv.querySelector('.follow-btn');
   followBtn.addEventListener('click', async (e) => {
     e.stopPropagation();
@@ -1236,7 +1230,6 @@ function createPostElement(post, postId, userLikes = {}) {
     }
   });
 
-  // Clicking anywhere else on post redirects to detail page
   postDiv.addEventListener('click', (e) => {
     const isInteractive = e.target.closest('.like-btn, .comment-btn, .follow-btn, .profile-pic, .username');
     if (!isInteractive) {
@@ -1268,7 +1261,6 @@ async function loadPosts() {
       }
     }
 
-    // IntersectionObserver to count views only once per post
     const observer = new IntersectionObserver(entries => {
       entries.forEach(entry => {
         if (entry.isIntersecting && !entry.target.dataset.viewed) {
