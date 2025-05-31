@@ -2,57 +2,22 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>View Post</title>
   <style>
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
-        Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-      background: #121212;
-      color: #eee;
-      padding: 1rem;
-      max-width: 600px;
-      margin: auto;
-    }
-    .loading, .error {
-      text-align: center;
-      font-size: 1.2rem;
-      margin-top: 2rem;
-      color: #888;
-    }
-    .post {
-      background: rgba(255 255 255 / 0.1);
-      border-radius: 12px;
-      padding: 1.5rem;
-      box-shadow: 0 0 15px rgb(255 255 255 / 0.1);
-    }
-    .post h1 {
-      margin-top: 0;
-      font-size: 2rem;
-      color: #fff;
-    }
-    .post img {
-      max-width: 100%;
-      margin-top: 1rem;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(255 255 255 / 0.3);
-    }
-    .post p {
-      font-size: 1.1rem;
-      line-height: 1.5;
-      margin-top: 1rem;
-      color: #ccc;
-    }
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    .loading, .error, .post { font-size: 1.2em; }
+    .error { color: red; }
+    img { max-width: 100%; height: auto; margin-top: 10px; }
   </style>
-  <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js"></script>
 </head>
 <body>
-
   <div id="root" class="loading">Loading post...</div>
 
+  <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js"></script>
+
   <script>
-    // Firebase config - use your actual config here
+    // Your Firebase config here
     const firebaseConfig = {
       apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
       authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
@@ -64,65 +29,57 @@
       measurementId: "G-LLT6F9WRKH"
     };
 
-    // Initialize Firebase
     const app = firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
     const root = document.getElementById('root');
 
-    function getPostIdFromURL() {
+    function getPostId() {
       const params = new URLSearchParams(window.location.search);
       return params.get('postId');
     }
 
+    function escapeHTML(text) {
+      if (!text) return '';
+      return text.replace(/[&<>"']/g, (match) => {
+        const escape = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+        return escape[match];
+      });
+    }
+
     async function loadPost() {
-      const postId = getPostIdFromURL();
+      const postId = getPostId();
       if (!postId) {
         root.className = 'error';
-        root.textContent = 'No post ID specified in URL.';
+        root.textContent = 'No post ID in URL.';
         return;
       }
 
+      root.className = 'loading';
+      root.textContent = 'Loading post...';
+
       try {
-        root.className = 'loading';
-        root.textContent = 'Loading post...';
-
-        const snapshot = await db.ref(`/post/${postId}`).get();
-
+        const snapshot = await db.ref('post/' + postId).get();
         if (!snapshot.exists()) {
           root.className = 'error';
-          root.textContent = 'Post not found or has been deleted.';
+          root.textContent = 'Post not found.';
           return;
         }
-
         const post = snapshot.val();
-        console.log('Post data:', post);
-
         root.className = 'post';
         root.innerHTML = `
-          <h1>${escapeHTML(post.title || 'Untitled')}</h1>
-          ${post.imageUrl ? `<img src="${escapeHTML(post.imageUrl)}" alt="Post image" />` : ''}
-          <p>${escapeHTML(post.description || 'No description provided.')}</p>
+          <h1>${escapeHTML(post.title)}</h1>
+          ${post.imageUrl ? `<img src="${escapeHTML(post.imageUrl)}" alt="Post Image" />` : ''}
+          <p>${escapeHTML(post.description)}</p>
         `;
-      } catch (err) {
-        console.error('Failed to load post:', err);
+      } catch (e) {
         root.className = 'error';
-        root.textContent = 'Failed to load post data. Try again later.';
+        root.textContent = 'Error loading post.';
+        console.error(e);
       }
-    }
-
-    // Basic XSS protection for text content
-    function escapeHTML(str) {
-      return String(str)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#39;");
     }
 
     loadPost();
   </script>
-
 </body>
 </html>
