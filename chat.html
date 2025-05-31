@@ -1372,6 +1372,74 @@ async function loadNextPost() {
 // 🚀 Kickoff Logic
 loadCachedPosts(); // Fast feedback
 loadPosts();       // Fresh 1-by-1 loading
+
+let postsSinceLastAd = 0;
+
+async function loadNextPost() {
+  if (currentIndex >= randomizedPostList.length) return;
+
+  const post = randomizedPostList[currentIndex];
+  const uid = auth.currentUser?.uid;
+  let userLikes = {};
+
+  if (uid) {
+    const likesSnap = await get(ref(db, `likes/${uid}`));
+    if (likesSnap.exists()) userLikes = likesSnap.val();
+  }
+
+  const container = document.getElementById('posts-container');
+  const postElement = createPostElement(post.data, post.id, userLikes);
+  container.appendChild(postElement);
+
+  postsSinceLastAd++;
+
+  if (postsSinceLastAd >= 4) {
+    // Create ad container
+    const adContainer = document.createElement('div');
+    adContainer.className = 'adstera-ad';
+    container.appendChild(adContainer);
+
+    // Create and append the first script tag (ad options)
+    const scriptOptions = document.createElement('script');
+    scriptOptions.type = 'text/javascript';
+    scriptOptions.text = `
+      atOptions = {
+        'key' : 'f17f4bf893957f37c1f0b072d1f31673',
+        'format' : 'iframe',
+        'height' : 50,
+        'width' : 320,
+        'params' : {}
+      };
+    `;
+    adContainer.appendChild(scriptOptions);
+
+    // Create and append the second script tag (invoke)
+    const scriptInvoke = document.createElement('script');
+    scriptInvoke.type = 'text/javascript';
+    scriptInvoke.src = '//www.highperformanceformat.com/f17f4bf893957f37c1f0b072d1f31673/invoke.js';
+    adContainer.appendChild(scriptInvoke);
+
+    postsSinceLastAd = 0; // reset counter
+  }
+
+  // Intersection observer code stays the same ...
+  if (observer) observer.disconnect();
+  observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting && !entry.target.dataset.viewed) {
+        entry.target.dataset.viewed = 'true';
+
+        // View tracking here...
+
+        observer.unobserve(entry.target);
+        currentIndex++;
+        loadNextPost();
+      }
+    });
+  }, { threshold: 0.5 });
+
+  observer.observe(postElement);
+}
 </script>
 </body>
 </html>
