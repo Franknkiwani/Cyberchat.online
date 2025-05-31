@@ -5,230 +5,141 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>View Post</title>
   <style>
-    /* iOS-inspired neat style */
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
-        Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
-      background: #f9f9f9;
-      margin: 0;
-      padding: 20px;
-      color: #111;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen,
+        Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      background: #121212;
+      color: #eee;
+      padding: 1rem;
       display: flex;
-      justify-content: center;
-    }
-
-    .container {
-      max-width: 600px;
-      width: 100%;
-      background: #fff;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgb(0 0 0 / 0.1);
-      padding: 20px;
-    }
-
-    .post-title {
-      font-size: 1.8rem;
-      font-weight: 600;
-      margin-bottom: 12px;
-    }
-
-    .author-info {
-      display: flex;
+      flex-direction: column;
       align-items: center;
-      margin-bottom: 20px;
+      min-height: 100vh;
+      margin: 0;
     }
-
-    .profile-pic {
-      width: 48px;
-      height: 48px;
-      border-radius: 50%;
-      object-fit: cover;
-      margin-right: 12px;
-      cursor: pointer;
-    }
-
-    .username {
-      font-weight: 500;
-      color: #007aff;
-      cursor: pointer;
-    }
-
-    .post-image {
-      max-width: 100%;
-      border-radius: 10px;
-      margin-bottom: 20px;
-      object-fit: contain;
-    }
-
-    .post-description {
-      font-size: 1rem;
-      line-height: 1.4;
-      white-space: pre-wrap;
-      margin-bottom: 20px;
-    }
-
-    .actions {
-      display: flex;
-      gap: 20px;
-    }
-
-    .action-btn {
-      background: none;
-      border: none;
-      font-size: 1rem;
-      color: #007aff;
-      cursor: pointer;
-      padding: 8px 12px;
-      border-radius: 8px;
-      transition: background-color 0.2s ease;
-      user-select: none;
-    }
-
-    .action-btn:hover {
-      background-color: rgba(0, 122, 255, 0.15);
-    }
-
-    .loading {
+    #status {
+      font-weight: 700;
+      font-size: 1.4rem;
+      margin-bottom: 1rem;
+      max-width: 700px;
       text-align: center;
-      font-size: 1.2rem;
-      color: #999;
-      margin-top: 50px;
+    }
+    #post-container {
+      background: rgba(255 255 255 / 0.05);
+      border-radius: 10px;
+      padding: 1.5rem 2rem;
+      max-width: 700px;
+      width: 100%;
+      box-shadow: 0 0 30px rgb(0 255 255 / 0.1);
+      backdrop-filter: blur(10px);
+    }
+    h1 {
+      margin-top: 0;
+      color: #00fff7;
+      font-weight: 900;
+      font-size: 2.5rem;
+      user-select: text;
+    }
+    p {
+      font-size: 1.1rem;
+      line-height: 1.5;
+      user-select: text;
+    }
+    img {
+      max-width: 100%;
+      border-radius: 8px;
+      margin-top: 1rem;
+      user-select: none;
+      pointer-events: none;
+      filter: drop-shadow(0 0 10px cyan);
     }
   </style>
 </head>
 <body>
+  <div id="status">Initializing...</div>
+  <div id="post-container"></div>
 
-  <div class="container" id="post-container">
-    <div class="loading" id="loading">Loading post...</div>
-  </div>
-
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js"></script>
+  <!-- Firebase compat scripts -->
+  <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-database-compat.js"></script>
 
   <script>
-    // Firebase config - replace with your actual config
-    const firebaseConfig = {
-      apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
-      authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
-      databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
-      projectId: "itzhoyoo-f9f7e",
-      storageBucket: "itzhoyoo-f9f7e.filestorage.app",
-      messagingSenderId: "1094792075584",
-      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
-      measurementId: "G-LLT6F9WRKH"
-    };
+    const statusEl = document.getElementById('status');
+    const postContainer = document.getElementById('post-container');
 
-    // Initialize Firebase
-    const app = firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-
-    // Utility: get postId from URL
-    function getPostId() {
-      const urlParams = new URLSearchParams(window.location.search);
-      return urlParams.get('postId');
+    function setStatus(message, color) {
+      statusEl.textContent = message;
+      statusEl.style.color = color;
     }
 
-    // Render post on page
-    function renderPost(post) {
-      const container = document.getElementById('post-container');
-      container.innerHTML = ''; // Clear loading
+    const urlParams = new URLSearchParams(window.location.search);
+    const postId = urlParams.get('postId');
 
-      if (!post) {
-        container.innerHTML = '<p>Post not found or deleted.</p>';
-        return;
+    if (!postId) {
+      setStatus('Error: No post ID provided in URL.', 'red');
+      postContainer.innerHTML = '';
+    } else {
+      setStatus('Loading post...', '#ccc');
+
+      const firebaseConfig = {
+        apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
+        authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
+        databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
+        projectId: "itzhoyoo-f9f7e",
+        storageBucket: "itzhoyoo-f9f7e.filestorage.app",
+        messagingSenderId: "1094792075584",
+        appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
+        measurementId: "G-LLT6F9WRKH"
+      };
+
+      firebase.initializeApp(firebaseConfig);
+      const db = firebase.database();
+
+      function renderPost(postData) {
+        try {
+          if (!postData.title || !postData.description) {
+            setStatus('⚠️ Warning: Post loaded but missing some fields.', 'orange');
+          } else {
+            setStatus('✅ Post loaded successfully.', 'limegreen');
+          }
+
+          postContainer.innerHTML = `
+            <h1>${escapeHtml(postData.title || '(No Title)')}</h1>
+            <p>${escapeHtml(postData.description || '(No Description)')}</p>
+            ${postData.image ? `<img src="${postData.image}" alt="Post image" />` : ''}
+          `;
+        } catch (err) {
+          setStatus('❌ Error rendering post content.', 'red');
+          console.error(err);
+          postContainer.innerHTML = '';
+        }
       }
 
-      // Author section (profile pic + username)
-      const authorDiv = document.createElement('div');
-      authorDiv.className = 'author-info';
-
-      const profilePic = document.createElement('img');
-      profilePic.className = 'profile-pic';
-      profilePic.src = post.authorProfilePic || 'https://via.placeholder.com/48?text=👤';
-      profilePic.alt = `${post.authorUsername || 'User'}'s profile picture`;
-      profilePic.addEventListener('click', () => {
-        window.location.href = `profile.html?user=${post.authorUsername}`;
-      });
-
-      const usernameSpan = document.createElement('span');
-      usernameSpan.className = 'username';
-      usernameSpan.textContent = post.authorUsername || 'Unknown';
-      usernameSpan.addEventListener('click', () => {
-        window.location.href = `profile.html?user=${post.authorUsername}`;
-      });
-
-      authorDiv.appendChild(profilePic);
-      authorDiv.appendChild(usernameSpan);
-
-      // Post title
-      const titleEl = document.createElement('h1');
-      titleEl.className = 'post-title';
-      titleEl.textContent = post.title || '(No title)';
-
-      // Post image - assuming single image for now, adjust if you have multiple images
-      let postImageEl = null;
-      if (post.imageUrl) {
-        postImageEl = document.createElement('img');
-        postImageEl.className = 'post-image';
-        postImageEl.src = post.imageUrl;
-        postImageEl.alt = post.title || 'Post image';
+      function escapeHtml(text) {
+        return text
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
       }
 
-      // Post description
-      const descEl = document.createElement('p');
-      descEl.className = 'post-description';
-      descEl.textContent = post.description || '';
-
-      // Action buttons container
-      const actionsDiv = document.createElement('div');
-      actionsDiv.className = 'actions';
-
-      const likeBtn = document.createElement('button');
-      likeBtn.className = 'action-btn like-btn';
-      likeBtn.textContent = `👍 Like (${post.likes || 0})`;
-
-      const commentBtn = document.createElement('button');
-      commentBtn.className = 'action-btn comment-btn';
-      commentBtn.textContent = `💬 Comment (${post.commentsCount || 0})`;
-
-      const followBtn = document.createElement('button');
-      followBtn.className = 'action-btn follow-btn';
-      followBtn.textContent = `➕ Follow ${post.authorUsername || ''}`;
-
-      // (You can add your event listeners for these buttons here)
-
-      actionsDiv.appendChild(likeBtn);
-      actionsDiv.appendChild(commentBtn);
-      actionsDiv.appendChild(followBtn);
-
-      container.appendChild(authorDiv);
-      container.appendChild(titleEl);
-      if (postImageEl) container.appendChild(postImageEl);
-      container.appendChild(descEl);
-      container.appendChild(actionsDiv);
+      db.ref(`/post/${postId}`).get()
+        .then(snapshot => {
+          if (snapshot.exists()) {
+            const postData = snapshot.val();
+            renderPost(postData);
+          } else {
+            setStatus('❌ Post not found.', 'red');
+            postContainer.innerHTML = '';
+          }
+        })
+        .catch(err => {
+          setStatus('❌ Error fetching post data.', 'red');
+          console.error(err);
+          postContainer.innerHTML = '';
+        });
     }
-
-    // Fetch post data from Firebase
-    async function fetchPost(postId) {
-      const snapshot = await db.ref(`/post/${postId}`).get();
-      if (snapshot.exists()) {
-        return snapshot.val();
-      }
-      return null;
-    }
-
-    async function init() {
-      const postId = getPostId();
-      if (!postId) {
-        document.getElementById('post-container').innerHTML = '<p>Invalid post ID.</p>';
-        return;
-      }
-      const post = await fetchPost(postId);
-      renderPost(post);
-    }
-
-    init();
   </script>
 </body>
 </html>
