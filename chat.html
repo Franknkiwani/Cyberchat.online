@@ -378,7 +378,7 @@ body.light-theme {
   }
 
   .post-card {
-    max-width: 95%;
+    width: 95%;
     max-width: 700px;
     background: rgba(255, 255, 255, 0.04);
     border: 1px solid rgba(255, 255, 255, 0.08);
@@ -559,21 +559,6 @@ body.light-theme {
 .follow-btn:hover {
   opacity: 0.85;
 }
-.load-more-btn {
-  display: block;
-  margin: 2rem auto;
-  padding: 12px 24px;
-  background: #111;
-  color: #fff;
-  font-size: 1rem;
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
-  transition: background 0.3s;
-}
-.load-more-btn:hover {
-  background: #333;
-}
 </style>
 </head>
 <body>
@@ -637,15 +622,7 @@ body.light-theme {
 </div>
 <!-- Background blur overlay while search open -->
 <div class="blur-overlay" id="blur-overlay" tabindex="-1" aria-hidden="true"></div>
-<div id="posts-container"></div>
 
-<button id="load-more-btn" style="display:none; margin: 20px auto; padding: 10px 20px; font-weight: bold;">
-  Load More
-</button>
-
-<div id="end-message" style="color: red; text-align: center; font-weight: bold; margin-top: 20px; display: none;">
-  You caught up! Come back later for fresh posts.
-</div>
 <!-- Suggestions Box -->
 <div class="suggestions" id="suggestions" role="listbox" aria-label="Search suggestions"></div>
 <div id="search-results" class="search-results"></div>
@@ -1256,190 +1233,60 @@ function createPostElement(post, postId, userLikes = {}) {
       followBtn.style.backgroundColor = 'grey';
     }
   });
-// CLICK TO OPEN POST (except on interactive elements)
-postDiv.addEventListener('click', (e) => {
-  const isInteractive = e.target.closest('.like-btn, .comment-btn, .follow-btn, .profile-pic, .username');
-  if (!isInteractive) {
-    window.location.href = `viewpost.html?postId=${postId}`;
-  }
-});
+
+  // CLICK TO OPEN POST
+  postDiv.addEventListener('click', (e) => {
+    const isInteractive = e.target.closest('.like-btn, .comment-btn, .follow-btn, .profile-pic, .username');
+    if (!isInteractive) {
+      window.location.href = `viewport.html/${postId}`;
+    }
+  });
+
   return postDiv;
 }
 
 // Load All Posts
-let randomizedPostList = [];
-let currentIndex = 0;
-let observer = null;
-
-// 1. Utility to Shuffle
-function shuffleObject(obj) {
-  const keys = Object.keys(obj);
-  for (let i = keys.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [keys[i], keys[j]] = [keys[j], keys[i]];
-  }
-  return keys;
-}
-
-// 2. Load All Cached Posts Immediately (No infinite scroll here)
-function loadCachedPosts() {
-  const cached = localStorage.getItem('cachedPosts');
-  if (!cached) return;
-
-  const posts = JSON.parse(cached);
-  const keys = shuffleObject(posts);
-  const container = document.getElementById('posts-container');
-  container.innerHTML = '';
-
-  for (const postId of keys) {
-    const postElement = createPostElement(posts[postId], postId, {}); // No likes in offline mode
-    container.appendChild(postElement);
-  }
-}
-
-// 3. Load Fresh Posts One by One (Infinite Scroll Mode)
 async function loadPosts() {
   try {
     const snapshot = await get(child(dbRef, 'post'));
     if (!snapshot.exists()) return;
 
     const posts = snapshot.val();
-    const newCache = JSON.stringify(posts);
-    const oldCache = localStorage.getItem('cachedPosts');
+    const container = document.getElementById('posts-container');
+    container.innerHTML = '';
 
-    // Cache new posts if different
-    if (newCache !== oldCache) {
-      localStorage.setItem('cachedPosts', newCache);
-      localStorage.setItem('cachedPostsTimestamp', Date.now());
+    let userLikes = {};
+    const uid = auth.currentUser?.uid;
+    if (uid) {
+      const likesSnap = await get(ref(db, `likes/${uid}`));
+      if (likesSnap.exists()) userLikes = likesSnap.val();
+    }
 
-      // Only now we run the infinite scroll loader
-      const keys = shuffleObject(posts);
-      randomizedPostList = keys.map(k => ({ id: k, data: posts[k] }));
-      currentIndex = 0;
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting && !entry.target.dataset.viewed) {
+          entry.target.dataset.viewed = 'true';
+          const postId = entry.target.dataset.id;
+          const viewsRef = ref(db, `post/${postId}/views`);
+          get(viewsRef).then(snap => {
+            const currentViews = snap.val() || 0;
+            set(viewsRef, currentViews + 1);
+          });
+        }
+      });
+    }, { threshold: 0.5 });
 
-      const container = document.getElementById('posts-container');
-      container.innerHTML = ''; // wipe old cached stuff
-
-      loadNextPost(); // Start infinite scroll
+    for (const postId in posts) {
+      const postElement = createPostElement(posts[postId], postId, userLikes);
+      container.appendChild(postElement);
+      observer.observe(postElement);
     }
   } catch (error) {
-    console.error('Error loading fresh posts:', error);
+    console.error('Error loading posts:', error);
   }
 }
 
-// 4. Load One Post at a Time (triggered by view)
-async function loadNextPost() {
-  if (currentIndex >= randomizedPostList.length) return;
-
-  const post = randomizedPostList[currentIndex];
-  const uid = auth.currentUser?.uid;
-  let userLikes = {};
-
-  if (uid) {
-    const likesSnap = await get(ref(db, `likes/${uid}`));
-    if (likesSnap.exists()) userLikes = likesSnap.val();
-  }
-
-  const container = document.getElementById('posts-container');
-  const postElement = createPostElement(post.data, post.id, userLikes);
-  container.appendChild(postElement);
-
-  // Reset + set new observer
-  if (observer) observer.disconnect();
-  observer = new IntersectionObserver(entries => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting && !entry.target.dataset.viewed) {
-        entry.target.dataset.viewed = 'true';
-
-        // View tracking
-        const viewsRef = ref(db, `post/${post.id}/views`);
-        get(viewsRef).then(snap => {
-          const currentViews = snap.val() || 0;
-          set(viewsRef, currentViews + 1);
-        });
-
-        // Queue next
-        observer.unobserve(entry.target);
-        currentIndex++;
-        loadNextPost();
-      }
-    });
-  }, { threshold: 0.5 });
-
-  observer.observe(postElement);
-}
-
-// 🚀 Kickoff Logic
-loadCachedPosts(); // Fast feedback
-loadPosts();       // Fresh 1-by-1 loading
-
-let postsSinceLastAd = 0;
-
-async function loadNextPost() {
-  if (currentIndex >= randomizedPostList.length) return;
-
-  const post = randomizedPostList[currentIndex];
-  const uid = auth.currentUser?.uid;
-  let userLikes = {};
-
-  if (uid) {
-    const likesSnap = await get(ref(db, `likes/${uid}`));
-    if (likesSnap.exists()) userLikes = likesSnap.val();
-  }
-
-  const container = document.getElementById('posts-container');
-  const postElement = createPostElement(post.data, post.id, userLikes);
-  container.appendChild(postElement);
-
-  postsSinceLastAd++;
-
-  if (postsSinceLastAd >= 4) {
-    // Create ad container
-    const adContainer = document.createElement('div');
-    adContainer.className = 'adstera-ad';
-    container.appendChild(adContainer);
-
-    // Create and append the first script tag (ad options)
-    const scriptOptions = document.createElement('script');
-    scriptOptions.type = 'text/javascript';
-    scriptOptions.text = `
-      atOptions = {
-        'key' : 'f17f4bf893957f37c1f0b072d1f31673',
-        'format' : 'iframe',
-        'height' : 50,
-        'width' : 320,
-        'params' : {}
-      };
-    `;
-    adContainer.appendChild(scriptOptions);
-
-    // Create and append the second script tag (invoke)
-    const scriptInvoke = document.createElement('script');
-    scriptInvoke.type = 'text/javascript';
-    scriptInvoke.src = '//www.highperformanceformat.com/f17f4bf893957f37c1f0b072d1f31673/invoke.js';
-    adContainer.appendChild(scriptInvoke);
-
-    postsSinceLastAd = 0; // reset counter
-  }
-
-  // Intersection observer code stays the same ...
-  if (observer) observer.disconnect();
-  observer = new IntersectionObserver(entries => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting && !entry.target.dataset.viewed) {
-        entry.target.dataset.viewed = 'true';
-
-        // View tracking here...
-
-        observer.unobserve(entry.target);
-        currentIndex++;
-        loadNextPost();
-      }
-    });
-  }, { threshold: 0.5 });
-
-  observer.observe(postElement);
-}
+loadPosts();
 </script>
 </body>
 </html>
