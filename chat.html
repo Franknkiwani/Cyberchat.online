@@ -559,6 +559,91 @@ body.light-theme {
 .follow-btn:hover {
   opacity: 0.85;
 }
+#loading-screen {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(10, 10, 30, 0.6);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  flex-direction: column;
+  user-select: none;
+}
+
+.loading-container {
+  text-align: center;
+  color: #00fff7;
+  font-family: 'Orbitron', sans-serif;
+  letter-spacing: 0.08em;
+  text-shadow:
+    0 0 6px #00fff7,
+    0 0 10px #00fff7,
+    0 0 20px #00fff7,
+    0 0 40px #00fff7;
+}
+
+.spinner {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 16px auto;
+  border: 6px solid transparent;
+  border-top: 6px solid #00fff7;
+  border-right: 6px solid #00fff7;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  box-shadow:
+    0 0 10px #00fff7,
+    0 0 20px #00fff7,
+    0 0 40px #00fff7;
+}
+
+.loading-text {
+  font-size: 1.3rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+  /* Disable text selection */
+  body {
+    -webkit-user-select: none;  /* Safari */
+    -moz-user-select: none;     /* Firefox */
+    -ms-user-select: none;      /* IE10+/Edge */
+    user-select: none;          /* Standard */
+  }
+
+  /* Remove default blue highlight on click/focus */
+  *:focus {
+    outline: none !important;
+    box-shadow: none !important;
+  }
+
+  /* Remove blue highlight on tap/click (mobile) */
+  ::selection {
+    background: transparent;
+  }
+  ::-moz-selection {
+    background: transparent;
+  }
+  .like-button:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+/* Optionally: add a custom focus style ONLY for keyboard navigation */
+.like-button:focus-visible {
+  outline: 2px solid #00f; /* Or your custom color */
+  outline-offset: 2px;
+}
 </style>
 </head>
 <body>
@@ -627,6 +712,12 @@ body.light-theme {
 <div class="suggestions" id="suggestions" role="listbox" aria-label="Search suggestions"></div>
 <div id="search-results" class="search-results"></div>
 <div id="posts-container"></div>
+<div id="loading-screen">
+  <div class="loading-container">
+    <div class="spinner"></div>
+    <p class="loading-text">Loading the Matrix...</p>
+  </div>
+</div>
 <script type="module">
   import {
   getAuth,
@@ -1245,7 +1336,53 @@ function createPostElement(post, postId, userLikes = {}) {
   return postDiv;
 }
 
-// Load All Posts
+let randomizedPostList = [];
+let currentIndex = 0;
+let observer = null;
+let postsSinceLastAd = 0;
+let totalPostsLoaded = 0;
+let isLoading = false;
+
+const uid = auth.currentUser?.uid || null;
+
+function getNativeAdIndex(maxPosts) {
+  if (maxPosts < 6) return maxPosts;
+  return Math.min(maxPosts - 1, Math.floor(Math.random() * 6) + 6);
+}
+
+let nativeAdIndex = 6;
+let nativeAdInserted = false;
+let userLikes = {};
+
+// Shuffle keys utility
+function shuffleObject(obj) {
+  const keys = Object.keys(obj);
+  for (let i = keys.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [keys[i], keys[j]] = [keys[j], keys[i]];
+  }
+  return keys;
+}
+
+// Create observer for views update
+function createViewObserver() {
+  return new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting && !entry.target.dataset.viewed) {
+        entry.target.dataset.viewed = 'true';
+        const postId = entry.target.dataset.id;
+        const viewsRef = ref(db, `post/${postId}/views`);
+        get(viewsRef).then(snap => {
+          const currentViews = snap.val() || 0;
+          set(viewsRef, currentViews + 1);
+        }).catch(e => console.warn('Failed to update views:', e));
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.5 });
+}
+
+// Load all posts with shuffle, likes, views and infinite scroll + ads
 async function loadPosts() {
   try {
     const snapshot = await get(child(dbRef, 'post'));
@@ -1255,38 +1392,173 @@ async function loadPosts() {
     const container = document.getElementById('posts-container');
     container.innerHTML = '';
 
-    let userLikes = {};
-    const uid = auth.currentUser?.uid;
+    // Load likes once
     if (uid) {
       const likesSnap = await get(ref(db, `likes/${uid}`));
-      if (likesSnap.exists()) userLikes = likesSnap.val();
+      userLikes = likesSnap.exists() ? likesSnap.val() : {};
     }
 
-    const observer = new IntersectionObserver(entries => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting && !entry.target.dataset.viewed) {
-          entry.target.dataset.viewed = 'true';
-          const postId = entry.target.dataset.id;
-          const viewsRef = ref(db, `post/${postId}/views`);
-          get(viewsRef).then(snap => {
-            const currentViews = snap.val() || 0;
-            set(viewsRef, currentViews + 1);
-          });
-        }
-      });
-    }, { threshold: 0.5 });
+    const keys = shuffleObject(posts);
+    randomizedPostList = keys.map(k => ({ id: k, data: posts[k] }));
+    currentIndex = 0;
+    totalPostsLoaded = 0;
+    postsSinceLastAd = 0;
+    nativeAdInserted = false;
+    nativeAdIndex = getNativeAdIndex(randomizedPostList.length);
 
-    for (const postId in posts) {
-      const postElement = createPostElement(posts[postId], postId, userLikes);
-      container.appendChild(postElement);
-      observer.observe(postElement);
-    }
+    observer = createViewObserver();
+
+    // Kick off loading the first batch
+    loadNextPost();
   } catch (error) {
     console.error('Error loading posts:', error);
   }
 }
 
+async function loadNextPost() {
+  if (isLoading) return;
+  if (currentIndex >= randomizedPostList.length) return;
+  isLoading = true;
+
+  const post = randomizedPostList[currentIndex];
+  const container = document.getElementById('posts-container');
+
+  try {
+    const postElement = createPostElement(post.data, post.id, userLikes);
+    if (!postElement) {
+      console.warn(`Post ${post.id} could not be rendered.`);
+      currentIndex++;
+      isLoading = false;
+      loadNextPost();
+      return;
+    }
+    container.appendChild(postElement);
+    observer.observe(postElement);
+  } catch (e) {
+    console.error('Error creating post element:', e);
+    currentIndex++;
+    isLoading = false;
+    loadNextPost();
+    return;
+  }
+
+  totalPostsLoaded++;
+  postsSinceLastAd++;
+
+  // Insert native ad once at random position
+  if (!nativeAdInserted && totalPostsLoaded === nativeAdIndex) {
+    const nativeWrapper = document.createElement('div');
+
+    const script1 = document.createElement('script');
+    script1.async = true;
+    script1.dataset.cfasync = "false";
+    script1.src = "//pl26795976.profitableratecpm.com/8f9075afd782b06bf3767fa2b0dd5775/invoke.js";
+
+    const adDiv = document.createElement('div');
+    adDiv.id = "container-8f9075afd782b06bf3767fa2b0dd5775";
+
+    nativeWrapper.appendChild(script1);
+    nativeWrapper.appendChild(adDiv);
+    container.appendChild(nativeWrapper);
+
+    nativeAdInserted = true;
+  }
+
+  // Insert short banner ad after 2 posts or after 4 posts since last ad
+  if (totalPostsLoaded === 2 || postsSinceLastAd >= 4) {
+    const adContainer = document.createElement('div');
+    adContainer.className = 'adstera-ad';
+    container.appendChild(adContainer);
+
+    const scriptOptions = document.createElement('script');
+    scriptOptions.type = 'text/javascript';
+    scriptOptions.text = `
+      atOptions = {
+        'key' : 'f17f4bf893957f37c1f0b072d1f31673',
+        'format' : 'iframe',
+        'height' : 50,
+        'width' : 320,
+        'params' : {}
+      };
+    `;
+    adContainer.appendChild(scriptOptions);
+
+    const scriptInvoke = document.createElement('script');
+    scriptInvoke.type = 'text/javascript';
+    scriptInvoke.src = '//www.highperformanceformat.com/f17f4bf893957f37c1f0b072d1f31673/invoke.js';
+    adContainer.appendChild(scriptInvoke);
+
+    postsSinceLastAd = 0;
+  }
+
+  // Insert tall banner ad after every 4 posts
+  if (totalPostsLoaded % 4 === 0) {
+    const tallAd = document.createElement('div');
+    tallAd.className = 'adstera-tall';
+    container.appendChild(tallAd);
+
+    const tallOptions = document.createElement('script');
+    tallOptions.type = 'text/javascript';
+    tallOptions.text = `
+      atOptions = {
+        'key' : 'b03c437546597f62fdb58e4c3fca33a1',
+        'format' : 'iframe',
+        'height' : 300,
+        'width' : 160,
+        'params' : {}
+      };
+    `;
+    tallAd.appendChild(tallOptions);
+
+    const tallScript = document.createElement('script');
+    tallScript.type = 'text/javascript';
+    tallScript.src = '//www.highperformanceformat.com/b03c437546597f62fdb58e4c3fca33a1/invoke.js';
+    tallAd.appendChild(tallScript);
+  }
+
+  currentIndex++;
+  isLoading = false;
+
+  // Automatically load next post to keep feed full
+  loadNextPost();
+}
+
+// Kick it all off
 loadPosts();
+loadPosts();
+async function waitForFirebaseData() {
+  return new Promise((resolve, reject) => {
+    const unsubscribe = auth.onAuthStateChanged(async (user) => {
+      unsubscribe();
+
+      try {
+        const snapshot = await get(child(dbRef, 'post'));
+        resolve();
+      } catch (err) {
+        reject(err);
+      }
+    });
+  });
+}
+
+// Show spinner on page load (already visible by default)
+
+// Set timeout fallback to auto-hide after 10 seconds
+const fallbackTimeout = setTimeout(() => {
+  console.warn('Loading timeout reached, hiding spinner anyway.');
+  document.getElementById('loading-screen').style.display = 'none';
+}, 10000); // 10,000 ms = 10 seconds
+
+waitForFirebaseData()
+  .then(() => {
+    clearTimeout(fallbackTimeout);  // Cancel fallback if successful
+    document.getElementById('loading-screen').style.display = 'none';
+  })
+  .catch((err) => {
+    clearTimeout(fallbackTimeout);  // Cancel fallback on error too
+    console.error('Error loading Firebase data:', err);
+    document.getElementById('loading-screen').style.display = 'none';
+  });
 </script>
 </body>
 </html>
