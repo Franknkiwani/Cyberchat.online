@@ -1,365 +1,216 @@
 <!DOCTYPE html>
-<html lang="en" >
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Post View - YouTube Style</title>
-  <style>
-    * {
-      box-sizing: border-box;
-    }
-    body {
-      margin: 0;
-      background-color: #0f0f0f;
-      color: #fff;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
-    .container {
-      max-width: 960px;
-      margin: 0 auto;
-      padding: 1rem;
-    }
-    .media {
-      width: 100%;
-      border-radius: 12px;
-      overflow: hidden;
-      margin-bottom: 1rem;
-    }
-    .media img {
-      width: 100%;
-      height: auto;
-      border-radius: 12px;
-    }
-    .title {
-      font-size: 1.5rem;
-      font-weight: 600;
-      margin-bottom: 0.5rem;
-    }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Task & Earn</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; user-select:none; }
+  body {
+    background:#121212; color:#eee;
+    font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+    display:flex; flex-direction:column; align-items:center; padding:20px;
+  }
+  h1 { margin-bottom:20px; font-size:1.6rem; }
+  #earnings { margin-bottom:25px; font-weight:700; }
 
-    /* Profile area */
-    .profile {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      margin-bottom: 0.5rem;
-    }
-    .profile-pic {
-      width: 56px;
-      height: 56px;
-      border-radius: 50%;
-      border: 3px solid #1e90ff; /* Blue edge */
-      overflow: hidden;
-      flex-shrink: 0;
-    }
-    .profile-pic img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-    }
-    .user-info {
-      display: flex;
-      flex-direction: column;
-    }
-    .username {
-      font-weight: 600;
-      font-size: 1.1rem;
-      color: #eee;
-    }
-    .followers {
-      font-size: 0.9rem;
-      color: #aaa;
-      margin-top: 0.2rem;
-    }
+  .task {
+    background:#1e1e1e; border:1px solid #444;
+    border-radius:14px; padding:20px; max-width:400px; width:100%;
+    margin-bottom:20px; box-shadow:0 6px 14px rgba(0,0,0,0.6);
+    text-align:center;
+  }
+  .task h2 { margin-bottom:12px; font-size:1.2rem; color:#0af; }
+  .task p { font-size:0.95rem; color:#bbb; margin-bottom:15px; }
+  .task .amount { color:#4caf50; font-weight:700; margin-bottom:18px; }
 
-    .actions {
-      display: flex;
-      gap: 1rem;
-      margin-bottom: 1rem;
-      overflow-x: auto;
-      padding-bottom: 0.25rem;
-      scroll-snap-type: x mandatory;
-      -webkit-overflow-scrolling: touch;
-    }
-    .actions::-webkit-scrollbar {
-      height: 6px;
-    }
-    .actions::-webkit-scrollbar-thumb {
-      background: #555;
-      border-radius: 3px;
-    }
-    .actions::-webkit-scrollbar-track {
-      background: transparent;
-    }
-    .action-button {
-      flex: 0 0 auto;
-      scroll-snap-align: start;
-      background: #222;
-      border: none;
-      color: #fff;
-      padding: 0.5rem 1.2rem;
-      border-radius: 999px;
-      font-size: 1rem;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 0.6rem;
-      transition: background 0.2s;
-      user-select: none;
-    }
-    .action-button:hover {
-      background: #333;
-    }
-    .action-button svg {
-      width: 22px;
-      height: 22px;
-      fill: #fff;
-      flex-shrink: 0;
-    }
-    .count {
-      font-weight: 600;
-      min-width: 28px;
-      text-align: right;
-      color: #eee;
-      user-select: none;
-    }
+  button {
+    width:100%; padding:14px; margin-bottom:10px;
+    background:#0a84ff; border:none; border-radius:12px;
+    color:#fff; font-weight:600; font-size:1.05rem;
+    cursor:pointer; transition:background .3s;
+  }
+  button:disabled { background:#444; cursor: not-allowed; }
+  button:not(:disabled):hover { background:#0060df; }
 
-    /* Description */
-    .description {
-      line-height: 1.5;
-      margin-bottom: 2rem;
-      background: #1a1a1a;
-      padding: 1rem;
-      border-radius: 8px;
-      position: relative;
-      font-size: 1rem;
-      white-space: pre-wrap;
-      color: #ddd;
-    }
-    .description a {
-      color: #1e90ff;
-      text-decoration: none;
-      word-break: break-word;
-    }
-    .description a:hover {
-      text-decoration: underline;
-    }
-    .tags {
-      margin-top: 0.5rem;
-    }
-    .tag {
-      color: #1e90ff;
-      margin-right: 0.5rem;
-      cursor: pointer;
-      user-select: none;
-    }
-    .read-more-btn {
-      color: #1e90ff;
-      cursor: pointer;
-      font-weight: 600;
-      margin-top: 0.5rem;
-      display: inline-block;
-      user-select: none;
-    }
-
-    /* Comments */
-    .comments {
-      border-top: 1px solid #333;
-      padding-top: 1rem;
-    }
-    .comment {
-      border-bottom: 1px solid #333;
-      padding: 0.75rem 0;
-    }
-    .comment-author {
-      font-weight: 500;
-    }
-    .comment-text {
-      margin-top: 0.2rem;
-      color: #ccc;
-      white-space: pre-wrap;
-    }
-
-    /* Modal */
-    .modal-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.85);
-      backdrop-filter: blur(6px);
-      z-index: 1000;
-      justify-content: center;
-      align-items: center;
-      padding: 2rem;
-    }
-    .modal-overlay.active {
-      display: flex;
-    }
-    .modal-content {
-      background: #121212;
-      max-width: 600px;
-      max-height: 80vh;
-      overflow-y: auto;
-      border-radius: 12px;
-      padding: 1.5rem;
-      color: #eee;
-      font-size: 1rem;
-      line-height: 1.6;
-      box-shadow: 0 0 20px #1e90ff;
-    }
-    .modal-close {
-      position: absolute;
-      top: 1.2rem;
-      right: 1.5rem;
-      font-size: 1.8rem;
-      font-weight: 700;
-      cursor: pointer;
-      color: #1e90ff;
-      user-select: none;
-      background: transparent;
-      border: none;
-    }
-  </style>
+  #modal-bg {
+    position:fixed; inset:0; background:rgba(0,0,0,0.75);
+    display:none; justify-content:center; align-items:center; z-index:1000;
+  }
+  #modal {
+    background:#222; border-radius:16px; padding:24px;
+    max-width:320px; width:90%; box-shadow:0 0 20px #0a84ff; text-align:center;
+  }
+  #modal h2 { font-size:1.3rem; margin-bottom:12px; }
+  #modal p { margin-bottom:20px; color:#ccc; }
+</style>
 </head>
 <body>
-  <div class="container">
-    <div class="media">
-      <img
-        id="postImage"
-        src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQdKTwgOD9MYs8iIcJvBx5ioSya0XRJpe-wmQSv5j9mvHeLxdXw9n94n1w&s=10"
-        alt="Post Media"
-      />
-    </div>
 
-    <div class="title" id="postTitle">Sample Post Title</div>
+<h1>Task & Earn</h1>
+<div id="earnings">Loading earnings...</div>
 
-    <div class="profile">
-      <div class="profile-pic">
-        <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="User Profile" />
-      </div>
-      <div class="user-info">
-        <div class="username">@anonUser</div>
-        <div class="followers">100 followers</div>
-      </div>
-    </div>
+<div class="task">
+  <h2>Task 1: Click & Earn</h2>
+  <p>Click once to earn <strong>$0.001</strong>. No auto-click allowed.</p>
+  <button id="btn-task1">Click & Earn $0.001</button>
+</div>
 
-    <div class="actions">
-      <button class="action-button" id="likeBtn" aria-label="Like">
-        <svg viewBox="0 0 24 24" >
-          <path d="M2 21h4V9H2v12zM23 10c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 2 7.59 8.59C7.22 8.95 7 9.45 7 10v9c0 1.1.9 2 2 2h7c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-1z"/>
-        </svg>
-        Like
-        <span class="count" id="likeCount">123</span>
-      </button>
+<div class="task">
+  <h2>Task 2: Visit & Earn</h2>
+  <p>Visit the link, stay 10 sec, then claim <strong>$0.005</strong><br>
+  (20s cooldown, 20/hr, 30/day)</p>
+  <button id="btn-visit">Visit & Earn $0.005</button>
+  <button id="btn-claim" disabled>Claim Reward</button>
+</div>
 
-      <button class="action-button" id="dislikeBtn" aria-label="Dislike">
-        <svg viewBox="0 0 24 24" >
-          <path d="M22 3h-4v12h4V3zM1 14c0 1.1.9 2 2 2h6.31l-.95 4.57-.03.32c0 .41.17.79.44 1.06L9.83 22l6.59-6.59c.36-.36.59-.86.59-1.41V5c0-1.1-.9-2-2-2H7c-.83 0-1.54.5-1.84 1.22L2.14 9.27c-.09.23-.14.47-.14.73v1z"/>
-        </svg>
-        Dislike
-        <span class="count" id="dislikeCount">4</span>
-      </button>
-
-      <button class="action-button" id="shareBtn" aria-label="Share">
-        <svg viewBox="0 0 24 24">
-          <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.02-4.11c.53.5 1.23.81 2.01.81 1.66 0 3-1.34 3-3s-1.34-3-3-3S16 4.34 16 6c0 .24.04.47.09.7L9.07 10.8C8.53 10.3 7.83 10 7.05 10 5.39 10 4.05 11.34 4.05 13s1.34 3 3 3c.78 0 1.48-.3 2.01-.8l7.13 4.18c-.05.21-.09.43-.09.66 0 1.66 1.34 3 3 3s3-1.34 3-3-1.34-3-3-3z"/>
-        </svg>
-        Share
-      </button>
-
-      <button class="action-button" id="saveBtn" aria-label="Save">
-        <svg viewBox="0 0 24 24">
-          <path d="M17 3H7c-1.1 0-2 .9-2 2v16l7-3 7 3V5c0-1.1-.9-2-2-2z"/>
-        </svg>
-        Save
-      </button>
-    </div>
-
-    <div class="description" id="postDescription">
-      <!-- Description content will be injected here -->
-    </div>
-    <div class="tags" id="postTags"></div>
-
-    <div class="comments" id="commentsSection">
-      <div class="comment">
-        <div class="comment-author">User123</div>
-        <div class="comment-text">This is such a dope post!</div>
-      </div>
-      <div class="comment">
-        <div class="comment-author">AnotherUser</div>
-        <div class="comment-text">Loved the visuals, keep it up!</div>
-      </div>
-    </div>
+<div id="modal-bg">
+  <div id="modal">
+    <h2 id="modal-title">Title</h2>
+    <p id="modal-text">Message here</p>
+    <button id="modal-ok">Okay</button>
   </div>
+</div>
 
-  <!-- Modal for full description -->
-  <div class="modal-overlay" id="descModal">
-    <div class="modal-content">
-      <button class="modal-close" id="modalClose">&times;</button>
-      <div id="fullDescription"></div>
-    </div>
-  </div>
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js"></script>
 
-  <script>
-    const descriptionText = `Check out this awesome post! Visit https://example.com for more info.
-Also, don't forget to follow the #Tech #Innovation #Design tags. This description is long enough to test the Read More functionality properly.`;
+<script>
+// --- Firebase config & init ---
+const firebaseConfig = {
+  apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
+  authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
+  databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
+  projectId: "itzhoyoo-f9f7e",
+  storageBucket: "itzhoyoo-f9f7e.filestorage.app",
+  messagingSenderId: "1094792075584",
+  appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
+  measurementId: "G-LLT6F9WRKH"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth(), db = firebase.database();
+let currentUser = null;
 
-    const maxLength = 80;
-    const descriptionEl = document.getElementById('postDescription');
-    const fullDescModal = document.getElementById('descModal');
-    const fullDescContent = document.getElementById('fullDescription');
-    const modalCloseBtn = document.getElementById('modalClose');
-    const tagsContainer = document.getElementById('postTags');
+// UI refs
+const earnDisplay = document.getElementById('earnings');
+const btn1 = document.getElementById('btn-task1');
+const btnVisit = document.getElementById('btn-visit');
+const btnClaim = document.getElementById('btn-claim');
 
-    // Helper: convert URLs to clickable links
-    function linkify(text) {
-      const urlPattern = /(\bhttps?:\/\/[^\s]+)/g;
-      return text.replace(urlPattern, url => `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`);
-    }
+// Modal
+const modalBg = document.getElementById('modal-bg');
+const modalTitle = document.getElementById('modal-title');
+const modalText = document.getElementById('modal-text');
+const modalBtn = document.getElementById('modal-ok');
+function showModal(label, msg){
+  modalTitle.textContent = label;
+  modalText.textContent = msg;
+  modalBg.style.display = 'flex';
+}
+modalBtn.onclick = ()=> modalBg.style.display = 'none';
 
-    // Extract hashtags and display
-    function renderTags(text) {
-      const tagPattern = /#(\w+)/g;
-      let match;
-      const tags = new Set();
-      while ((match = tagPattern.exec(text)) !== null) {
-        tags.add(match[0]);
-      }
-      tagsContainer.innerHTML = '';
-      tags.forEach(tag => {
-        const span = document.createElement('span');
-        span.textContent = tag;
-        span.className = 'tag';
-        tagsContainer.appendChild(span);
-      });
-    }
+// Utility
+const now = ()=>Date.now();
 
-    // Set truncated or full description with read more
-    function renderDescription(text) {
-      if(text.length <= maxLength) {
-        descriptionEl.innerHTML = linkify(text);
-      } else {
-        const truncated = text.slice(0, maxLength) + '... ';
-        descriptionEl.innerHTML = linkify(truncated) + `<span class="read-more-btn" id="readMoreBtn">Read more</span>`;
-        document.getElementById('readMoreBtn').addEventListener('click', () => {
-          fullDescContent.innerHTML = linkify(text);
-          fullDescModal.classList.add('active');
-        });
-      }
-    }
+// Load earnings
+function loadEarnings(){
+  if(!currentUser){ earnDisplay.textContent='Log in to earn.'; return; }
+  const ref = db.ref(`users/${currentUser.uid}/earnings`);
+  ref.on('value', snap=>{
+    const val = snap.val()||0;
+    earnDisplay.textContent = `Earnings: $${parseFloat(val).toFixed(4)}`;
+  });
+}
 
-    modalCloseBtn.addEventListener('click', () => {
-      fullDescModal.classList.remove('active');
-    });
+// Safe earnings update
+async function addEarning(amount){
+  if(!currentUser){ showModal('Not logged in','Login to earn'); return false; }
+  const ref = db.ref(`users/${currentUser.uid}/earnings`);
+  await ref.transaction(curr=>(curr||0)+amount);
+  return true;
+}
 
-    // Clicking outside modal content closes modal
-    fullDescModal.addEventListener('click', e => {
-      if(e.target === fullDescModal) fullDescModal.classList.remove('active');
-    });
+// Auth listener
+auth.onAuthStateChanged(u=>{
+  currentUser = u;
+  loadEarnings();
+});
 
-    // Initialize description and tags
-    renderDescription(descriptionText);
-    renderTags(descriptionText);
-  </script>
+// Task 1 logic
+let cd1 = false;
+btn1.onclick = async ()=>{
+  if(!currentUser){ showModal('Please log in','Log in to earn.'); return; }
+  if(cd1){ showModal('Slow down','Wait a few seconds.'); return; }
+  cd1 = true; btn1.disabled = true;
+  if(await addEarning(0.001)) showModal('Success!','You earned $0.001');
+  setTimeout(()=>{cd1=false; btn1.disabled=false;}, 3000);
+};
+
+// Task 2 logic
+const R = { reward:0.005, minTime:10000, cooldown:20000, hrMax:20, dayMax:30 };
+let visitStart=0, tmr=null, claimOk=false;
+
+function loadRecords(){
+  const arr=JSON.parse(localStorage.getItem('records')||'[]');
+  return arr.filter(r=>now()-r<24*3600*1000);
+}
+function saveRecord(ts){
+  const a=loadRecords(); a.push(ts);
+  localStorage.setItem('records', JSON.stringify(a));
+}
+function countHr(){ return loadRecords().filter(r=>r>now()-3600*1000).length }
+function countDay(){ return loadRecords().length }
+function canVisit(){
+  const last=+localStorage.getItem('lastVisit')||0;
+  return now()-last>R.cooldown;
+}
+function resetVisit(){
+  visitStart=0; claimOk=false; btnClaim.disabled=true;
+  clearTimeout(tmr); localStorage.removeItem('visitStart');
+}
+
+btnVisit.onclick = ()=>{
+  if(!currentUser){ showModal('Please log in','Login to earn.'); return; }
+  if(!canVisit()){ showModal('Too fast','20s cooldown.'); return; }
+  if(countHr()>=R.hrMax){ showModal('Hourly limit','20 visits/hour max.'); return; }
+  if(countDay()>=R.dayMax){ showModal('Daily limit','30 visits/day max.'); return; }
+
+  window.open('https://example.com/ad-link','_blank');
+  visitStart = now();
+  localStorage.setItem('visitStart',visitStart);
+  btnClaim.disabled = true;
+  tmr = setTimeout(()=>{
+    claimOk=true; btnClaim.disabled=false;
+    showModal('Ready!','You may claim your $0.005 reward');
+  }, R.minTime);
+  localStorage.setItem('lastVisit', now());
+};
+
+btnClaim.onclick = async ()=>{
+  if(!claimOk){ showModal('Too soon','Stay 10 seconds first.'); resetVisit(); return; }
+  if(!canVisit()){ showModal('Too fast','20s cooldown.'); resetVisit(); return; }
+  if(countHr()>=R.hrMax){ showModal('Hourly limit','20 visits/hour max.'); resetVisit(); return; }
+  if(countDay()>=R.dayMax){ showModal('Daily limit','30 visits/day max.'); resetVisit(); return; }
+
+  if(await addEarning(R.reward)){
+    saveRecord(now());
+    showModal('Success!','$0.005 added to earnings.');
+  } else showModal('Error','Update failed.');
+  resetVisit();
+};
+
+window.onload = ()=>{
+  const sv = +localStorage.getItem('visitStart')||0;
+  if(sv && now()-sv>=R.minTime){
+    claimOk=true; btnClaim.disabled=false;
+  } else resetVisit();
+};
+
+// Adsterra script
+</script>
+<script type='text/javascript' src='//pl26823677.profitableratecpm.com/1c/f8/cc/1cf8cc5dcace32b6e82fd6c83299cb71.js'></script>
+
 </body>
 </html>
