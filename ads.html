@@ -1,267 +1,193 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" >
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CYBERCHAT ADS</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script type="module">
-    // Firebase Initialization
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-app.js";
-    import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-database.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.4.0/firebase-auth.js";
-
-    // Your Firebase config
-    const firebaseConfig = {
-      apiKey: "AIzaSyDFHskUWiyHhZke3KT9kkOtFI_gPsKfiGo",
-      authDomain: "itzhoyoo-f9f7e.firebaseapp.com",
-      databaseURL: "https://itzhoyoo-f9f7e-default-rtdb.firebaseio.com",
-      projectId: "itzhoyoo-f9f7e",
-      storageBucket: "itzhoyoo-f9f7e.firebasestorage.app",
-      messagingSenderId: "1094792075584",
-      appId: "1:1094792075584:web:d49e9c3f899d3cd31082a5",
-      measurementId: "G-LLT6F9WRKH"
-    };
-
-    // Initialize Firebase
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-    const auth = getAuth(app);
-
-    let user = null;
-    let userAdData = null;
-
-    // Check if the user is logged in
-    onAuthStateChanged(auth, (currentUser) => {
-      if (currentUser) {
-        user = currentUser;
-        loadAdData(currentUser.uid);
-      } else {
-        setTimeout(() => {
-          alert("Redirecting to login page. Please wait...");
-          window.location.href = "login.html";
-        }, 3000);
-      }
-    });
-
-    // Load ad views and clicks from Firebase
-    function loadAdData(userId) {
-      const adRef = ref(db, 'users/' + userId + '/ads');
-      get(adRef).then((snapshot) => {
-        if (snapshot.exists()) {
-          userAdData = snapshot.val();
-          updateStats(userAdData.views, userAdData.clicks);
-          updateChart(userAdData.views, userAdData.clicks);
-        }
-      });
-    }
-
-    // Update stats on the page
-    function updateStats(views, clicks) {
-      document.getElementById('adViews').innerText = views || 0;
-      document.getElementById('adClicks').innerText = clicks || 0;
-    }
-
-    // Update the chart with new data
-    function updateChart(views, clicks) {
-      const ctx = document.getElementById('adsChart').getContext('2d');
-      const adsChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels: ['12 AM', '3 AM', '6 AM', '9 AM', '12 PM', '3 PM', '6 PM', '9 PM'],
-          datasets: [
-            {
-              label: 'Views',
-              data: [views, views, views, views, views, views, views, views],
-              borderColor: '#0ff',
-              borderWidth: 2,
-              fill: false,
-              pointBackgroundColor: '#0ff',
-              tension: 0.4
-            },
-            {
-              label: 'Clicks',
-              data: [clicks, clicks, clicks, clicks, clicks, clicks, clicks, clicks],
-              borderColor: '#00ff00',
-              borderWidth: 2,
-              fill: false,
-              pointBackgroundColor: '#00ff00',
-              tension: 0.4
-            }
-          ]
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          scales: {
-            x: {
-              grid: {
-                color: 'rgba(255, 255, 255, 0.1)'
-              },
-              ticks: {
-                color: '#fff'
-              }
-            },
-            y: {
-              grid: {
-                color: 'rgba(255, 255, 255, 0.1)'
-              },
-              ticks: {
-                color: '#fff'
-              }
-            }
-          },
-          plugins: {
-            legend: {
-              labels: {
-                color: '#fff'
-              }
-            }
-          }
-        }
-      });
-    }
-  </script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CyberChat NekoBot</title>
   <style>
-    :root {
-      --glass-bg: rgba(10, 10, 10, 0.6);
-      --border-glow: #5d5d5d;
-      --primary: #e0e0e0;
-      --accent: #0ff;
-      --green-glow: #00ff00;
-      --neon-glow: #0ff;
-    }
-
     body {
-      font-family: 'Arial', sans-serif;
       margin: 0;
-      padding: 0;
-      background-color: #121212;
+      background: #1c1c24;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      color: #eee;
     }
 
     header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 12px 20px;
-      background: var(--glass-bg);
-      border-bottom: 2px solid var(--border-glow);
-      backdrop-filter: blur(12px);
-      box-shadow: 0 4px 10px rgba(0, 255, 255, 0.2);
+      background: #272733;
+      padding: 16px;
+      font-weight: 700;
+      font-size: 1.3rem;
+      text-align: center;
+      border-bottom: 1px solid #444;
+      user-select: none;
     }
 
-    .app-name {
-      font-size: 18px;
-      color: var(--primary);
-      font-weight: bold;
-      text-align: left;
+    #chatMessages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      scroll-behavior: smooth;
+      background: #121217;
     }
 
-    .profile-container {
-      display: flex;
-      align-items: center;
-      color: var(--primary);
-      cursor: pointer;
+    .message {
+      max-width: 70%;
+      padding: 12px 18px;
+      border-radius: 18px;
+      line-height: 1.4;
+      font-size: 1rem;
+      box-shadow: 0 2px 6px rgb(0 0 0 / 0.4);
+    }
+
+    .user {
+      background: #4a90e2;
+      color: white;
+      align-self: flex-end;
+      border-bottom-right-radius: 4px;
+    }
+
+    .bot {
+      background: #2f2f3f;
+      color: #ddd;
+      align-self: flex-start;
+      border-bottom-left-radius: 4px;
       position: relative;
     }
 
-    .profile-container img {
-      width: 30px;
-      height: 30px;
-      border-radius: 50%;
-      margin-right: 10px;
-      border: 2px solid var(--accent);
-      transition: transform 0.2s ease-in-out;
+    .bot::before {
+      content: "🐱";
+      position: absolute;
+      top: -12px;
+      left: 12px;
+      font-size: 20px;
     }
 
-    .profile-container:hover img {
-      transform: scale(1.1);
-    }
-
-    .profile-text {
-      font-size: 14px;
-    }
-
-    /* Stats Container */
-    .stats-container {
+    form {
       display: flex;
-      justify-content: center;
-      gap: 15px;
-      padding: 15px;
-      margin: 20px auto;
-      max-width: 600px;
+      padding: 12px;
+      background: #272733;
+      border-top: 1px solid #444;
     }
 
-    .stat-box {
-      background: var(--glass-bg);
-      border: 2px solid var(--border-glow);
-      padding: 15px;
-      border-radius: 10px;
-      text-align: center;
+    input[type="text"] {
       flex: 1;
-      color: var(--primary);
-      box-shadow: 0 4px 12px rgba(0, 255, 255, 0.2);
+      padding: 14px 18px;
+      font-size: 1rem;
+      border-radius: 30px;
+      border: none;
+      outline: none;
+      background: #1a1a24;
+      color: #eee;
+      box-shadow: inset 0 0 8px #0009;
+      transition: box-shadow 0.2s ease;
     }
 
-    .stat-number {
-      font-size: 22px;
-      font-weight: bold;
-      color: var(--accent);
+    input[type="text"]:focus {
+      box-shadow: inset 0 0 12px #4a90e2;
     }
 
-    .stat-title {
-      font-size: 12px;
-      margin-top: 6px;
-      text-transform: uppercase;
-      opacity: 0.8;
+    button {
+      margin-left: 12px;
+      padding: 0 20px;
+      border-radius: 30px;
+      border: none;
+      background: #4a90e2;
+      color: white;
+      font-weight: 700;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+      user-select: none;
     }
 
-    /* Chart Container */
-    .chart-container {
-      background: var(--glass-bg);
-      border: 2px solid var(--border-glow);
-      border-radius: 12px;
-      padding: 15px;
-      max-width: 600px;
-      margin: 20px auto;
-      box-shadow: 0 4px 10px rgba(0, 255, 255, 0.2);
+    button:hover {
+      background: #357abd;
     }
 
-    .chart-title {
-      font-size: 16px;
-      color: var(--primary);
-      text-align: center;
-      margin-bottom: 10px;
+    #loadingBot {
+      font-style: italic;
+      color: #aaa;
+      padding-left: 12px;
     }
   </style>
 </head>
 <body>
+  <header>CyberChat NekoBot 🐱</header>
+  <div id="chatMessages" aria-live="polite" aria-relevant="additions"></div>
+  <form id="chatForm" autocomplete="off" aria-label="Send a message">
+    <input type="text" id="messageInput" placeholder="Talk to NekoBot..." required aria-required="true" />
+    <button type="submit" aria-label="Send message">Send</button>
+  </form>
 
-  <header>
-    <div class="app-name">CYBERCHAT ADS</div>
-    <div class="profile-container">
-      <img src="https://via.placeholder.com/30" alt="Profile Picture">
-      <div class="profile-text" onclick="window.location.href='adsaccount.html'">Profile</div>
-    </div>
-  </header>
+<script>
+  const chatMessages = document.getElementById('chatMessages');
+  const form = document.getElementById('chatForm');
+  const input = document.getElementById('messageInput');
 
-  <!-- Stats Section -->
-  <div class="stats-container">
-    <div class="stat-box">
-      <div class="stat-number" id="adViews">0</div>
-      <div class="stat-title">Ad Views</div>
-    </div>
-    <div class="stat-box">
-      <div class="stat-number" id="adClicks">0</div>
-      <div class="stat-title">Ad Clicks</div>
-    </div>
-  </div>
+  // Add message to chat window
+  function addMessage(text, sender = 'bot') {
+    const msg = document.createElement('div');
+    msg.className = 'message ' + sender;
+    msg.textContent = text;
+    chatMessages.appendChild(msg);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+  }
 
-  <!-- Chart Section -->
-  <div class="chart-container">
-    <div class="chart-title">Ad Performance</div>
-    <canvas id="adsChart"></canvas>
-  </div>
+  // Show bot typing indicator
+  function showLoading() {
+    const loading = document.createElement('div');
+    loading.id = 'loadingBot';
+    loading.textContent = 'NekoBot is thinking...';
+    chatMessages.appendChild(loading);
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+    return loading;
+  }
+
+  async function getBotReply(message) {
+    // Free chatbot API, no key, no auth
+    // Using affiliateplus.xyz chatbot API with params for botname and ownername
+    const encodedMsg = encodeURIComponent(message);
+    const botName = 'NekoBot';
+    const ownerName = 'Frank';
+    const url = `https://api.affiliateplus.xyz/api/chatbot?message=${encodedMsg}&botname=${botName}&ownername=${ownerName}`;
+
+    try {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('Network error');
+      const data = await res.json();
+      return data.message || "NekoBot didn't get that 😿";
+    } catch (err) {
+      return "Oops, NekoBot is feeling shy right now...";
+    }
+  }
+
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    const userMsg = input.value.trim();
+    if (!userMsg) return;
+
+    addMessage(userMsg, 'user');
+    input.value = '';
+    input.disabled = true;
+
+    const loadingIndicator = showLoading();
+
+    const botReply = await getBotReply(userMsg);
+
+    loadingIndicator.remove();
+    addMessage(botReply, 'bot');
+    input.disabled = false;
+    input.focus();
+  });
+
+  input.focus();
+</script>
 
 </body>
 </html>
